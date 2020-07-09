@@ -7,8 +7,8 @@ setup(
     description='Python package to create and analyze routable networks',
     author='Aaron Fraint, AICP',
     license='MIT',
-    # entry_points="""
-    #     [console_scripts]
-    #     network=network_routing.cli:main
-    # """,
+    entry_points="""
+        [console_scripts]
+        sidewalk=sidewalk_gaps.cli:main
+    """,
 )
