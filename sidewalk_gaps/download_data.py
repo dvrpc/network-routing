@@ -14,10 +14,23 @@ Assumptions
 Usage
 -----
 
-See ``main.py``
+    In [1]: import sidewalk_gaps
+
+    In [2]: from postgis_helpers import PostgreSQL
+
+    In [3]: from sidewalk_gaps.download_data import download_data
+
+    In [4]: db = PostgreSQL('my_db_name', **sidewalk_gaps.CREDENTIALS["localhost"])
+
+    In [5]: download_data(db, sidewalk_gaps.FOLDER_SHP_INPUT)
+
 
 """
 from pathlib import Path
+import platform
+import socket
+
+import postgis_helpers as pGIS
 from postgis_helpers import PostgreSQL
 
 
@@ -64,33 +77,54 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
             # Save to the local database
             local_db.import_geodataframe(gdf, table_name)
 
-    # Custom query is needed for nj_centerline
-    nj_centerline_query = """
-        SELECT *, (ST_DUMP(shape)).geom
-        FROM transportation.nj_centerline
-    """
+    # # Custom query is needed for nj_centerline
+    # nj_centerline_query = """
+    #     SELECT *, (ST_DUMP(shape)).geom
+    #     FROM transportation.nj_centerline
+    # """
 
-    nj_gdf = remote_db.query_as_geo_df(nj_centerline_query)
+    # nj_gdf = remote_db.query_as_geo_df(nj_centerline_query)
 
-    # Remove 'nan's
-    for idx, row in nj_gdf.iterrows():
-        geom_txt = str(row["geom"])
-        if "nan" in geom_txt:
-            nj_gdf = nj_gdf.drop(idx)
+    # # Remove 'nan's
+    # for idx, row in nj_gdf.iterrows():
+    #     geom_txt = str(row["geom"])
+    #     if "nan" in geom_txt:
+    #         nj_gdf = nj_gdf.drop(idx)
 
-    local_db.import_geodataframe(nj_gdf, "nj_centerlines")
+    # local_db.import_geodataframe(nj_gdf, "nj_centerlines")
 
-    if "nj_centerline" not in local_db.all_spatial_tables_as_dict():
-        print("ERROR! nj_centerline didn't make it! ")
+    # if "nj_centerline" not in local_db.all_spatial_tables_as_dict():
+    #     print("ERROR! nj_centerline didn't make it! ")
 
 
 def import_shapefiles(folder: Path, db: PostgreSQL):
+    """ Import all shapefiles within the folder into SQL. """
 
     for shp_path in folder.rglob("*.shp"):
 
         pg_name = shp_path.name[:-4].replace(" ", "_").lower()
 
         db.import_geodata(pg_name, shp_path, if_exists="replace")
+
+
+def download_data(local_db: PostgreSQL, shp_folder: Path):
+    """ Batch execute the whole process:
+            1) copy SQL data
+            2) import shapefiles
+            3) save pg_dump of database
+    """
+
+    if platform.system() in ["Linux", "Windows"] \
+       and "dvrpc.org" in socket.getfqdn():
+
+        dvrpc_credentials = pGIS.configurations()["dvrpc_gis"]
+        remote_db = PostgreSQL("gis", **dvrpc_credentials)
+
+        import_production_sql_data(remote_db, local_db)
+        import_shapefiles(shp_folder, local_db)
+
+    else:
+        print("\n-> !!!Initial DB setup can only be executed from a DVRPC workstation!!!")
 
 
 if __name__ == "__main__":
