@@ -2,25 +2,39 @@
 ``sidewalk_gaps``
 -----------------
 
-The PROJECT_ROOT filepath below is only accessible within the DVRPC firewall.
+The PROJECT_ROOT filepath is only accessible within the DVRPC firewall.
 
 If you're connecting within WSL you'll need to first mount the U: drive:
 
     $ sudo mkdir /mnt/u
     $ sudo mount -t drvfs U: /mnt/u
 
+
+GDRIVE_ROOT is accessible via MacOS and Windows. 
+
+TODO: Can Google drive be accessed from WSL?
+
 """
 
-import platform
+import os
 from pathlib import Path
+from dotenv import load_dotenv, find_dotenv
 
-if platform.system() == "Linux":
-    PROJECT_ROOT = Path(r"/mnt/u/FY2021/Transportation/TransitBikePed/SidewalkGapAnalysis")
+import postgis_helpers as pGIS
 
-if platform.system() == "Windows":
-    PROJECT_ROOT = Path(r"U:\FY2021\Transportation\TransitBikePed\SidewalkGapAnalysis\shapefiles\inputs")
+# Define filepaths
+load_dotenv(find_dotenv())
+PROJECT_ROOT = os.getenv("PROJECT_ROOT")
+GDRIVE_ROOT = os.getenv("GDRIVE_ROOT")
 
+if PROJECT_ROOT:
+    PROJECT_ROOT = Path(PROJECT_ROOT)
+    FOLDER_SHP = PROJECT_ROOT / "shapefiles"
+    FOLDER_SHP_INPUT = FOLDER_SHP / "inputs"
 
-FOLDER_SHP = PROJECT_ROOT / "shapefiles"
+if GDRIVE_ROOT:
+    GDRIVE_ROOT = Path(GDRIVE_ROOT)
+    FOLDER_DB_BACKUPS = GDRIVE_ROOT / "database_dumps"
 
-FOLDER_SHP_INPUT = FOLDER_SHP / "inputs"
+# Load SQL database credentials
+CREDENTIALS = pGIS.configurations()
