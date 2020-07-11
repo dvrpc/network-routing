@@ -37,6 +37,8 @@ else:
 if GDRIVE_ROOT:
     GDRIVE_ROOT = Path(GDRIVE_ROOT)
     FOLDER_DB_BACKUPS = GDRIVE_ROOT / "database_dumps"
+else:
+    FOLDER_DB_BACKUPS = None
 
 # Load SQL database credentials
 CREDENTIALS = pGIS.configurations()
