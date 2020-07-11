@@ -13,6 +13,11 @@ def clip_inputs(db: PostgreSQL,
                 municipality: str = None,
                 buffer_meters: float = None):
 
+    if state.upper() == "NJ":
+        opposite_state = "Pennsylvania"
+    else:
+        opposite_state = "New Jersey"
+
     # Build up a SQL query that might buffer and/or include
     # a single municipality name
     if buffer_meters:
@@ -21,7 +26,7 @@ def clip_inputs(db: PostgreSQL,
         place_query = "SELECT st_union(geom) "
 
     place_query += f"""
-        FROM municipalboundaries
+        FROM public.municipalboundaries
         WHERE state = '{state.upper()}'
     """
 
@@ -40,33 +45,27 @@ def clip_inputs(db: PostgreSQL,
     """)
 
     data_to_clip = [
-        ("pedestriannetwork_lines", "LineString"),
-        ("points_of_interest", "Point"),
+        ("pedestriannetwork_lines", "sidewalks", "LineString"),
+        ("regional_pois", "points_of_interest", "Point"),
+        (f"{state}_centerline", "centerlines", "LineString")
     ]
 
-    for tbl_name, geom_type in data_to_clip:
+    for src_name, new_name, geom_type in data_to_clip:
 
-        print(f"Clipping {tbl_name}")
+        print(f"Clipping {src_name}")
+
+        # Clip query will respect the buffer provided,
+        # but will NOT include features from the 'opposite_state'
 
         clip_query = f"""
-            CREATE TABLE {schema}.{tbl_name} AS
-            SELECT * FROM {tbl_name} t
+            SELECT * FROM public.{src_name} t
             WHERE ST_INTERSECTS(t.geom, ({place_query}))
+                AND
+             NOT ST_INTERSECTS(geom, (select st_collect(geom)
+                                      from public.regional_counties
+                                      where state_name = '{opposite_state}'))
         """
-        db.execute(clip_query)
-
-        index_query = f"""
-            CREATE INDEX ON {schema}.{tbl_name}
-            USING GIST (geom);
-        """
-        db.execute(index_query)
-
-        update_geom_table = f"""
-            ALTER TABLE {schema}.{tbl_name}
-            ALTER COLUMN geom TYPE geometry({geom_type}, 26918)
-            USING ST_Transform(ST_SetSRID( geom, 26918), 26918);
-        """
-        db.execute(update_geom_table)
+        db.make_geotable_from_query(clip_query, new_name, geom_type, 26918, schema=schema)
 
 
 if __name__ == "__main__":
