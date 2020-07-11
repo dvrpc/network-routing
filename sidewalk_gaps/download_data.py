@@ -123,6 +123,56 @@ def download_data(local_db: PostgreSQL, shp_folder: Path):
         import_production_sql_data(remote_db, local_db)
         import_shapefiles(shp_folder, local_db)
 
+        # Add the median function to the database
+        median_sql_function = """
+            CREATE FUNCTION _final_median(anyarray) RETURNS float8 AS $$ 
+            WITH q AS
+            (
+                SELECT val
+                FROM unnest($1) val
+                WHERE VAL IS NOT NULL
+                ORDER BY 1
+            ),
+            cnt AS
+            (
+                SELECT COUNT(*) as c FROM q
+            )
+            SELECT AVG(val)::float8
+            FROM
+            (
+                SELECT val FROM q
+                LIMIT  2 - MOD((SELECT c FROM cnt), 2)
+                OFFSET GREATEST(CEIL((SELECT c FROM cnt) / 2.0) - 1,0)  
+            ) q2;
+            $$ LANGUAGE sql IMMUTABLE;
+
+            CREATE AGGREGATE median(anyelement) (
+            SFUNC=array_append,
+            STYPE=anyarray,
+            FINALFUNC=_final_median,
+            INITCOND='{}'
+            );
+        """
+        local_db.execute(median_sql_function)
+
+        # Add regional county data
+        regional_counties = """
+            select co_name, state_name, (st_dump(st_union(geom))).geom
+            from public.municipalboundaries m 
+            where (co_name in ('Bucks', 'Chester', 'Delaware', 'Montgomery', 'Philadelphia') and state_name ='Pennsylvania')
+                or
+                (co_name in ('Burlington', 'Camden', 'Gloucester', 'Mercer') and state_name = 'New Jersey')
+            group by co_name, state_name
+        """
+        local_db.make_geotable_from_query(regional_counties, "regional_counties", "Polygon", 26918, schema="public")
+
+        # Clip POIs to those inside DVRPC's region
+        regional_pois = """
+            select * from public.points_of_interest
+            where st_intersects(geom, (select st_collect(geom) from public.regional_counties))
+        """
+        local_db.make_geotable_from_query(regional_counties, "regional_pois", "Point", 26918, schema="public")
+
     else:
         print("\n-> !!!Initial DB setup can only be executed from a DVRPC workstation!!!")
 
