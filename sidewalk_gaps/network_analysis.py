@@ -13,9 +13,9 @@ class SidewalkNetwork:
                  db: PostgreSQL,
                  schema: str,
                  walking_mph: float = 2.5,
-                 max_minutes: float = 60.0,
+                 max_minutes: float = 180.0,
                  epsg: int = 26918,
-                 edge_table_name: str = "pedestriannetwork_lines",
+                 edge_table_name: str = "sidewalks",
                  run_on_create: bool = True):
 
         # Capture user input
@@ -78,16 +78,16 @@ class SidewalkNetwork:
         """
         Use the edge table to generate a set of nodes.
 
-        These nodes are all of the unique start and 
+        These nodes are all of the unique start and
         endpoints of the line segments.
         """
 
         query = f"""
             SELECT st_startpoint(geom) AS geom
-            FROM {self.schema}.pedestriannetwork_lines
+            FROM {self.schema}.{self.edge_table_name}
             UNION
             SELECT st_endpoint(geom) AS geom
-            FROM {self.schema}.pedestriannetwork_lines
+            FROM {self.schema}.{self.edge_table_name}
             GROUP BY geom
         """
 
@@ -204,9 +204,26 @@ class SidewalkNetwork:
             1) Run ``calculate_single_poi()``
             2) Add a QAQC table showing the POI->Node assignment
         """
+        all_results = []
         for theme in self.themes:
-            poi_gdf, _ = self.calculate_single_poi(theme)
+            poi_gdf, access_results = self.calculate_single_poi(theme)
             self.qaqc_poi_assignment(theme, poi_gdf)
+
+            all_results.append(access_results)
+
+        df_all_access_results = pd.concat(all_results, axis=1, sort=False)
+
+        self.db.import_dataframe(df_all_access_results,
+                                 "access_table",
+                                 if_exists="replace")
+
+        final_result_query = f"""
+            select r.*, n.geom
+            from {self.schema}.nodes n
+            left join {self.schema}.access_table r
+            on n.node_id::int = r.node_id::int
+        """
+        self.db.make_geotable_from_query(final_result_query, "access_results", "Point", self.epsg)
 
     def calculate_single_poi(self, this_theme: str):
         """
@@ -233,61 +250,61 @@ class SidewalkNetwork:
         """
         poi_gdf = self.db.query_as_geo_df(poi_query)
 
+        # TODO: find a way to enforce max matching distance
         self.network.set_pois(
             category=nice_theme,
             x_col=poi_gdf["x"],
             y_col=poi_gdf["y"],
             maxdist=self.max_minutes,
-            maxitems=5
+            maxitems=3
         )
 
         result_matrix = self.network.nearest_pois(distance=self.max_minutes,
                                                   category=nice_theme,
-                                                  num_pois=5)
+                                                  num_pois=3)
 
         new_colnames = {}
         for column in result_matrix.columns:
-            new_name = f'n_{column}'
+            new_name = f'n_{column}_{this_theme}'
             new_colnames[column] = new_name
 
         result_matrix = result_matrix.rename(index=str, columns=new_colnames)
 
-        self.db.import_dataframe(result_matrix, f"poi_{nice_theme}")
-
-        self.add_geometries_to_accessibilty_result(f"poi_{nice_theme}")
+        # self.db.import_dataframe(result_matrix, f"poi_{nice_theme}", if_exists="replace")
+        # self.add_geometries_to_accessibilty_result(f"poi_{nice_theme}")
 
         return poi_gdf, result_matrix
 
-    def add_geometries_to_accessibilty_result(self, table_name: str):
-        """
-        Spatialize the non-spatial POI result table with node geometries
-        """
+    # def add_geometries_to_accessibilty_result(self, table_name: str):
+    #     """
+    #     Spatialize the non-spatial POI result table with node geometries
+    #     """
 
-        add_geom_col = f"""
-            SELECT AddGeometryColumn(
-                '{self.schema}',
-                '{table_name}',
-                'geom',
-                {self.epsg},
-                'POINT',
-                2
-            );
-        """
-        self.db.execute(add_geom_col)
+    #     add_geom_col = f"""
+    #         SELECT AddGeometryColumn(
+    #             '{self.schema}',
+    #             '{table_name}',
+    #             'geom',
+    #             {self.epsg},
+    #             'POINT',
+    #             2
+    #         );
+    #     """
+    #     self.db.execute(add_geom_col)
 
-        update_geom_col = f"""
-            UPDATE {self.schema}.{table_name} t
-            SET geom = (select n.geom from {self.schema}.nodes n
-                        where n.node_id::int = t.node_id::int)
-        """
-        self.db.execute(update_geom_col)
+    #     update_geom_col = f"""
+    #         UPDATE {self.schema}.{table_name} t
+    #         SET geom = (select n.geom from {self.schema}.nodes n
+    #                     where n.node_id::int = t.node_id::int)
+    #     """
+    #     self.db.execute(update_geom_col)
 
-        # Register node_id as the primary key for the table
-        add_primary_key = f"""
-            ALTER TABLE {self.schema}.{table_name}
-            ADD PRIMARY KEY (node_id);
-        """
-        self.db.execute(add_primary_key)
+    #     # Register node_id as the primary key for the table
+    #     add_primary_key = f"""
+    #         ALTER TABLE {self.schema}.{table_name}
+    #         ADD PRIMARY KEY (node_id);
+    #     """
+    #     self.db.execute(add_primary_key)
 
     def qaqc_poi_assignment(self, theme: str, poi_gdf: gpd.GeoDataFrame):
         """
@@ -325,6 +342,7 @@ class SidewalkNetwork:
         poi_node_pairs.to_sql(f"poi_{self.themes[theme]}_qa",
                               engine,
                               schema=self.schema,
+                              if_exists="replace",
                               dtype={'geom': Geometry("LineString", srid=self.epsg)})
         engine.dispose()
 
