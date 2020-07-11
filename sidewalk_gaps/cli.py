@@ -164,6 +164,3 @@ def analyze(schema: str,
     db = PostgreSQL(database, verbosity="minimal", **CREDENTIALS["localhost"])
 
     net = SidewalkNetwork(db, schema)
-    net.setup()
-    net.construct_network()
-    net.add_pois_to_network()
