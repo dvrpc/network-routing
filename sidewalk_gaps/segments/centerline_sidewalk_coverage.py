@@ -1,3 +1,22 @@
+"""
+Summary of ``centerline_sidewalk_coverage.py``
+----------------------------------------------
+
+This script evaluates a centerline dataset against
+a sidewalk dataset.
+
+Using a search distance of 25 meters, it identifies
+the sum of the lengths of all sidewalk segments that
+    - 1) is line_type=1
+    - 2) intersection is more than 25 meters or the segment itself is less than 25 meters
+
+
+Another approach compared the angle of the centerline against
+the angle of each sidewalk geometry. This worked really well in
+grid-shaped areas, but didn't fare as well whem n
+
+"""
+
 from tqdm import tqdm
 
 from postgis_helpers import PostgreSQL
