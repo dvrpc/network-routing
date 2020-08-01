@@ -82,13 +82,18 @@ def import_shapefiles(folder: Path, db: PostgreSQL):
     """ Import all shapefiles within the folder into SQL.
         This includes:
             - nj_centerline.shp
+            - TIM_Microzones_poi_surface.SHP
+            - sw_nodes_4326.json
     """
 
-    for shp_path in folder.rglob("*.shp"):
+    endings = [".shp", ".SHP", ".json"]
 
-        pg_name = shp_path.name[:-4].replace(" ", "_").lower()
+    for ending in endings:
 
-        db.import_geodata(pg_name, shp_path, if_exists="replace")
+        for shp_path in folder.rglob(f"*{ending}"):
+            idx = len(ending) * -1
+            pg_name = shp_path.name[:idx].replace(" ", "_").lower()
+            db.import_geodata(pg_name, shp_path, if_exists="replace")
 
 
 def load_helper_functions(db: PostgreSQL):
@@ -126,7 +131,7 @@ def load_helper_functions(db: PostgreSQL):
 
 
 def create_new_geodata(db: PostgreSQL):
-    """ 1) Merge DVRPC municipalities into counties 
+    """ 1) Merge DVRPC municipalities into counties
         2) Filter POIs to those within DVRPC counties
     """
 
@@ -179,9 +184,9 @@ def create_project_database(local_db: PostgreSQL, shp_folder: Path):
         dvrpc_credentials = pGIS.configurations()["dvrpc_gis"]
         remote_db = PostgreSQL("gis", **dvrpc_credentials)
 
-        import_production_sql_data(remote_db, local_db)
+        # import_production_sql_data(remote_db, local_db)
         import_shapefiles(shp_folder, local_db)
-        load_helper_functions(local_db)
+        # load_helper_functions(local_db)
         create_new_geodata(local_db)
 
     else:
