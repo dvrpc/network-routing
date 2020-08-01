@@ -184,9 +184,9 @@ def create_project_database(local_db: PostgreSQL, shp_folder: Path):
         dvrpc_credentials = pGIS.configurations()["dvrpc_gis"]
         remote_db = PostgreSQL("gis", **dvrpc_credentials)
 
-        # import_production_sql_data(remote_db, local_db)
+        import_production_sql_data(remote_db, local_db)
         import_shapefiles(shp_folder, local_db)
-        # load_helper_functions(local_db)
+        load_helper_functions(local_db)
         create_new_geodata(local_db)
 
     else:
