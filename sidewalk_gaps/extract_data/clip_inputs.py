@@ -47,6 +47,7 @@ def clip_inputs(db: PostgreSQL,
     data_to_clip = [
         ("pedestriannetwork_lines", "sidewalks", "LineString"),
         ("regional_pois", "points_of_interest", "Point"),
+        ("sw_nodes", "sw_nodes", "Point"),
         (f"{state}_centerline", "centerlines", "LineString")
     ]
 
