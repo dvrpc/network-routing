@@ -3,7 +3,7 @@ from pathlib import Path
 
 from postgis_helpers import PostgreSQL
 
-from sidewalk_gaps import FOLDER_SHP_INPUT, CREDENTIALS, FOLDER_DB_BACKUPS
+from sidewalk_gaps import FOLDER_SHP_INPUT, CREDENTIALS, FOLDER_DB_BACKUPS, PROJECT_DB_NAME
 
 from .db_setup import create_project_database
 
@@ -12,7 +12,7 @@ from .db_setup import create_project_database
 @click.option(
     "--database", "-d",
     help="Name of the local database",
-    default="sidewalk_gaps",
+    default=PROJECT_DB_NAME,
 )
 @click.option(
     "--folder", "-f",
@@ -37,7 +37,7 @@ def db_setup(database: str, folder: str):
 @click.option(
     "--database", "-d",
     help="Name of the local database",
-    default="sidewalk_gaps",
+    default=PROJECT_DB_NAME,
 )
 @click.option(
     "--folder", "-f",
@@ -61,7 +61,7 @@ def db_freeze(database: PostgreSQL, folder: str):
 @click.option(
     "--database", "-d",
     help="Name of the local database",
-    default="sidewalk_gaps",
+    default=PROJECT_DB_NAME,
 )
 @click.option(
     "--folder", "-f",

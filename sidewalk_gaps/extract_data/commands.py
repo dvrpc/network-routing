@@ -2,7 +2,7 @@ import click
 
 from postgis_helpers import PostgreSQL
 
-from sidewalk_gaps import CREDENTIALS
+from sidewalk_gaps import CREDENTIALS, PROJECT_DB_NAME
 from .clip_inputs import clip_inputs
 
 # CLIP SOURCE DATA TO SMALL STUDY AREA
@@ -24,7 +24,7 @@ from .clip_inputs import clip_inputs
 @click.option(
     "--database", "-d",
     help="Name of the local database",
-    default="sidewalk_gaps",
+    default=PROJECT_DB_NAME,
 )
 def clip_data(state: str,
               municipality: str,

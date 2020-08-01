@@ -42,3 +42,5 @@ else:
 
 # Load SQL database credentials
 CREDENTIALS = pGIS.configurations()
+
+PROJECT_DB_NAME = "gap_analysis"

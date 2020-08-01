@@ -3,7 +3,7 @@ import click
 
 from postgis_helpers import PostgreSQL
 
-from sidewalk_gaps import CREDENTIALS
+from sidewalk_gaps import CREDENTIALS, PROJECT_DB_NAME
 
 from .network_analysis import SidewalkNetwork
 
@@ -12,13 +12,13 @@ from .network_analysis import SidewalkNetwork
 @click.argument("schema")
 @click.option(
     "--database", "-d",
-    help="Name of the local database",
-    default="sidewalk_gaps",
+    help=f"Name of the local database. Default = {PROJECT_DB_NAME}",
+    default=PROJECT_DB_NAME,
 )
 @click.option(
     "--speed", "-s",
-    help="Speed of pedestrians in miles per hour",
-    default="sidewalk_gaps",
+    help="Speed of pedestrians in miles per hour. Default = 2.5",
+    default="2.5",
 )
 def analyze(schema: str,
             database: str,
@@ -32,4 +32,4 @@ def analyze(schema: str,
 
     db = PostgreSQL(database, verbosity="minimal", **CREDENTIALS["localhost"])
 
-    net = SidewalkNetwork(db, schema)
+    network = SidewalkNetwork(db, schema, walking_mph=speed)
