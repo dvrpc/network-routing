@@ -169,6 +169,19 @@ def create_new_geodata(db: PostgreSQL):
     )
 
 
+    # Transform the sw_node layer from 4326 to 26918
+    node_query = """
+        SELECT sw_node_id, ST_TRANSFORM(geom, 26918) AS geom
+        FROM sw_nodes_4326
+    """
+    db.make_geotable_from_query(
+        node_query,
+        "sw_nodes",
+        "Point",
+        26918,
+        schema="public"
+    )
+
 def create_project_database(local_db: PostgreSQL, shp_folder: Path):
     """ Batch execute the whole process:
             1) copy SQL data
