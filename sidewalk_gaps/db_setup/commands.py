@@ -30,6 +30,30 @@ def db_setup(database: str, folder: str):
 
 
 
+# FREEZE A DATABASE
+# -----------------
+
+@click.command()
+@click.option(
+    "--database", "-d",
+    help="Name of the local database",
+    default="sidewalk_gaps",
+)
+@click.option(
+    "--folder", "-f",
+    help="Folder where database backups are stored",
+    default=FOLDER_DB_BACKUPS,
+)
+def db_freeze(database: PostgreSQL, folder: str):
+    """ Export a .SQL file of the database """
+
+    folder = Path(folder)
+
+    db = PostgreSQL(database, verbosity="minimal", **CREDENTIALS["localhost"])
+
+    db.db_export_pgdump_file(folder)
+
+
 # LOAD UP AN ALREADY-CREATED DATABASE
 # -----------------------------------
 
