@@ -55,7 +55,7 @@ class SidewalkNetwork:
         themes = {x[0]: x[0] for x in themes}
 
         for theme in themes:
-            nice_theme = theme.lower().replace(" ", "").replace("/", "")
+            nice_theme = theme.lower().replace(" ", "").replace(r"/", "")
             themes[theme] = nice_theme
 
         return themes
@@ -70,32 +70,32 @@ class SidewalkNetwork:
             2) assigning node ids to the edge network
             3) adding travel time weights (walking)
         """
-        self.make_nodes()
+        # self.make_nodes()
         self.assign_node_ids_to_network()
         self.add_travel_time_weights()
 
-    def make_nodes(self):
-        """
-        Use the edge table to generate a set of nodes.
+    # def make_nodes(self):
+    #     """
+    #     Use the edge table to generate a set of nodes.
 
-        These nodes are all of the unique start and
-        endpoints of the line segments.
-        """
+    #     These nodes are all of the unique start and
+    #     endpoints of the line segments.
+    #     """
 
-        query = f"""
-            SELECT st_startpoint(geom) AS geom
-            FROM {self.schema}.{self.edge_table_name}
-            UNION
-            SELECT st_endpoint(geom) AS geom
-            FROM {self.schema}.{self.edge_table_name}
-            GROUP BY geom
-        """
+    #     query = f"""
+    #         SELECT st_startpoint(geom) AS geom
+    #         FROM {self.schema}.{self.edge_table_name}
+    #         UNION
+    #         SELECT st_endpoint(geom) AS geom
+    #         FROM {self.schema}.{self.edge_table_name}
+    #         GROUP BY geom
+    #     """
 
-        self.db.make_geotable_from_query(query,
-                                         new_table_name="nodes",
-                                         geom_type="Point",
-                                         epsg=self.epsg,
-                                         uid_col="node_id")
+    #     self.db.make_geotable_from_query(query,
+    #                                      new_table_name="nodes",
+    #                                      geom_type="Point",
+    #                                      epsg=self.epsg,
+    #                                      uid_col="node_id")
 
     def assign_node_ids_to_network(self):
         """
@@ -112,8 +112,8 @@ class SidewalkNetwork:
         # Execute the query for the START of each segment
         start_id_query = f"""
             UPDATE {self.schema}.{self.edge_table_name} ln
-            SET start_id = (SELECT pt.node_id
-                            FROM {self.schema}.nodes pt
+            SET start_id = (SELECT pt.sw_node_id
+                            FROM {self.schema}.sw_nodes pt
                             WHERE ST_DWITHIN(pt.geom, st_startpoint(ln.geom), 5)
                             ORDER BY ST_DISTANCE(pt.geom,
                                                 st_startpoint(ln.geom))
@@ -166,11 +166,11 @@ class SidewalkNetwork:
 
         # Get all nodes
         node_query = f"""
-            SELECT node_id,
+            SELECT sw_node_id AS node_id,
                 ST_X(st_transform(geom, 4326)) as x,
                 ST_Y(st_transform(geom, 4326)) as y,
                 geom
-            FROM {self.schema}.nodes
+            FROM {self.schema}.sw_nodes
         """
         node_gdf = self.db.query_as_geo_df(node_query)
 
@@ -219,9 +219,9 @@ class SidewalkNetwork:
 
         final_result_query = f"""
             select r.*, n.geom
-            from {self.schema}.nodes n
+            from {self.schema}.sw_nodes n
             left join {self.schema}.access_table r
-            on n.node_id::int = r.node_id::int
+            on n.sw_node_id::int = r.node_id::int
         """
         self.db.make_geotable_from_query(final_result_query, "access_results", "Point", self.epsg)
 
