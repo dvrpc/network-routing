@@ -100,6 +100,7 @@ def load_helper_functions(db: PostgreSQL):
     """ Add a SQL function to get a median() """
 
     db.execute("""
+        DROP FUNCTION IF EXISTS _final_median(anyarray);
         CREATE FUNCTION _final_median(anyarray) RETURNS float8 AS $$
         WITH q AS
         (
@@ -181,6 +182,7 @@ def create_new_geodata(db: PostgreSQL):
         26918,
         schema="public"
     )
+
 
 def create_project_database(local_db: PostgreSQL, shp_folder: Path):
     """ Batch execute the whole process:
