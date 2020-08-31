@@ -28,10 +28,7 @@ def generate_sidewalk_nodes(db: PostgreSQL,
     # Extract the new table as a dataframe and save as geojson
     # --------------------------------------------------------
     df = db.query_as_geo_df("SELECT * FROM sw_nodes;")
-
-    df = df.to_crs(epsg=4326)
-
-    df.to_file("sw_nodes_4326.json", driver="GeoJSON")
+    df.to_file("sw_nodes.json", driver="GeoJSON")
 
     return df
 
