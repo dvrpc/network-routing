@@ -45,6 +45,7 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
         ("transportation", ["pedestriannetwork_lines",
                             "pedestriannetwork_points",
                             "pa_centerline",
+                            "CircuitTrails",
                             ]),
 
         ("structure", ["points_of_interest"]),
@@ -75,7 +76,7 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
                 gdf = gdf.reset_index()
 
             # Save to the local database
-            local_db.import_geodataframe(gdf, table_name)
+            local_db.import_geodataframe(gdf, table_name.lower())
 
 
 def import_shapefiles(folder: Path, db: PostgreSQL):
@@ -83,10 +84,9 @@ def import_shapefiles(folder: Path, db: PostgreSQL):
         This includes:
             - nj_centerline.shp
             - TIM_Microzones_poi_surface.SHP
-            - sw_nodes_4326.json
     """
 
-    endings = [".shp", ".SHP", ".json"]
+    endings = [".shp", ".SHP"]
 
     for ending in endings:
 
