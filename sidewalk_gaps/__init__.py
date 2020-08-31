@@ -10,10 +10,7 @@ If you're connecting within WSL you'll need to first mount the U: drive:
     $ sudo mount -t drvfs U: /mnt/u
 
 
-GDRIVE_ROOT is accessible via MacOS and Windows. 
-
-TODO: Can Google drive be accessed from WSL?
-
+GDRIVE_ROOT is accessible via MacOS and Windows.
 """
 
 import os
@@ -43,4 +40,4 @@ else:
 # Load SQL database credentials
 CREDENTIALS = pGIS.configurations()
 
-PROJECT_DB_NAME = "gap_analysis"
+PROJECT_DB_NAME = "sidewalk_gap_analysis"
