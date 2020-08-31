@@ -3,9 +3,15 @@ from pathlib import Path
 
 from postgis_helpers import PostgreSQL
 
-from sidewalk_gaps import FOLDER_SHP_INPUT, CREDENTIALS, FOLDER_DB_BACKUPS, PROJECT_DB_NAME
+from sidewalk_gaps import (
+    FOLDER_SHP_INPUT,
+    CREDENTIALS,
+    FOLDER_DB_BACKUPS,
+    PROJECT_DB_NAME
+)
 
 from .db_setup import create_project_database
+from .generate_sidewalk_nodes import generate_sidewalk_nodes
 
 
 @click.command()
@@ -44,7 +50,7 @@ def db_setup(database: str, folder: str):
     help="Folder where database backups are stored",
     default=FOLDER_DB_BACKUPS,
 )
-def db_freeze(database: PostgreSQL, folder: str):
+def db_freeze(database: str, folder: str):
     """ Export a .SQL file of the database """
 
     folder = Path(folder)
@@ -68,7 +74,7 @@ def db_freeze(database: PostgreSQL, folder: str):
     help="Folder where database backups are stored",
     default=FOLDER_DB_BACKUPS,
 )
-def db_load(database: PostgreSQL, folder: str):
+def db_load(database: str, folder: str):
     """ Load up a .SQL file created by another process """
 
     folder = Path(folder)
@@ -93,3 +99,24 @@ def db_load(database: PostgreSQL, folder: str):
 
     db = PostgreSQL(database, verbosity="minimal", **CREDENTIALS["localhost"])
     db.db_load_pgdump_file(latest_file)
+
+
+# GENERATE SIDEWALK NODES
+# -----------------------
+
+@click.command()
+@click.option(
+    "--database", "-d",
+    help="Name of the local database",
+    default=PROJECT_DB_NAME,
+)
+@click.option(
+    "--tablename", "-t",
+    help="Name of the table with sidewalk lines",
+    default="pedestriannetwork_lines",
+)
+def generate_nodes(database: str, tablename: str):
+    """ Generate topologically-sound nodes for the sidewalk lines """
+
+    db = PostgreSQL(database, verbosity="minimal", **CREDENTIALS["localhost"])
+    generate_sidewalk_nodes(db, tablename)
