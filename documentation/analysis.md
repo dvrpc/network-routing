@@ -33,7 +33,7 @@ All actions will begin with the command ``sidewalk``. To see a list of all avail
 ## [Segment Analysis](../sidewalk_gaps/segments)
 
 
-7) Classify centerlines with the amount of sidewalk coverage (TODO - wire up a command)
+7) Classify centerlines with the amount of sidewalk coverage with ``sidewalk analyze-segments nj`` and ``sidewalk analyze-segments pa``. Runtime is ~4 hrs for NJ and double for PA. This is a one-time execution, so kick it off at the end of a workday and let them run concurrently over the evening.
 
 
 ## [Network Analysis](../sidewalk_gaps/accessibility)
