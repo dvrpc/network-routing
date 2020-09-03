@@ -18,36 +18,33 @@ All actions will begin with the command ``sidewalk``. To see a list of all avail
 3) Load the text file onto your machine of choice with ``sidewalk db-load``.
 
 
-4) Merge the sidewalk lines with the existing trail network, splitting lines from each layer anywhere that they intersect. (UNDER DEVELOPMENT)
-
-
-5) Generate the node layer with ``sidewalk generate-nodes``
+4) Generate the node layer with ``sidewalk generate-nodes``. This process will create a file named ``sw_nodes.json`` which is ~65 MB. Use this file for any web-based mapping of the node-level analysis outputs.
 
 
 ## [Extract Data](../sidewalk_gaps/extract_data)
 
 
-6) Clip the datasets by state with ``sidewalk clip-data NJ`` and ``sidewalk clip-data PA``. The result of this is a new database schema for each state, and the subsequent analyses will take places within these state-specific schemas.
+5 & 6) Clip the datasets by state with ``sidewalk clip-data NJ`` and ``sidewalk clip-data PA``. The result of this is a new database schema for each state, and the subsequent analyses will take places within these state-specific schemas.
 
 
 ## [Segment Analysis](../sidewalk_gaps/segments)
 
 
-7) Classify centerlines with the amount of sidewalk coverage with ``sidewalk analyze-segments nj`` and ``sidewalk analyze-segments pa``. Runtime is ~4 hrs for NJ and double for PA. This is a one-time execution, so kick it off at the end of a workday and let them run concurrently over the evening.
+7 & 8) Classify centerlines with the amount of sidewalk coverage with ``sidewalk analyze-segments nj`` and ``sidewalk analyze-segments pa``. Runtime is ~4 hrs for NJ and double for PA. This is a one-time execution, so kick it off at the end of a workday and let them run concurrently over the evening.
 
 
 ## [Network Analysis](../sidewalk_gaps/accessibility)
 
 
-8) Execute a network-based accessibility analysis with ``sidewalk analyze SCHEMA``
+9 & 10) Execute a network-based accessibility analysis with ``sidewalk analyze SCHEMA``
 
-9) Summarize the network analysis results with a hexagon overlay that identifies locations where connectivity within the sidewalk network could be improved. (TODO)
+11) Summarize the network analysis results with a hexagon overlay that identifies locations where connectivity within the sidewalk network could be improved. (TODO)
 
 
 ## [Export Data Products for Visualization](../sidewalk_gaps/data_viz)
 
 
-10) The results of this analytic process are exported to file with (TODO - wire up command). These outputs are used in interactive webmaps. The code for these maps are contained within another GitHub repository - https://github.com/dvrpc/sidewalk-data-viz
+12) The results of this analytic process are exported to file with (TODO - wire up command). These outputs are used in interactive webmaps. The code for these maps are contained within another GitHub repository - https://github.com/dvrpc/sidewalk-data-viz
 
 
 
