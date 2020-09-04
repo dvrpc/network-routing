@@ -24,19 +24,26 @@ All actions will begin with the command ``sidewalk``. To see a list of all avail
 ## [Extract Data](../sidewalk_gaps/extract_data)
 
 
-5 & 6) Clip the datasets by state with ``sidewalk clip-data NJ`` and ``sidewalk clip-data PA``. The result of this is a new database schema for each state, and the subsequent analyses will take places within these state-specific schemas.
+5) Clip the datasets by to the NJ region with ``sidewalk clip-data NJ``
+
+
+6) Repeat for PA with ``sidewalk clip-data PA``. The result of this is a new database schema for each state, and the subsequent analyses will take places within these state-specific schemas.
 
 
 ## [Segment Analysis](../sidewalk_gaps/segments)
 
 
-7 & 8) Classify centerlines with the amount of sidewalk coverage with ``sidewalk analyze-segments nj`` and ``sidewalk analyze-segments pa``. Runtime is ~4 hrs for NJ and double for PA. This is a one-time execution, so kick it off at the end of a workday and let them run concurrently over the evening.
+7) Classify centerlines with the amount of sidewalk coverage in NJ with ``sidewalk analyze-segments nj`` 
+
+8) Repeat for PA with ``sidewalk analyze-segments pa``. Runtime is ~4 hrs for NJ and double for PA. This is a one-time execution, so kick it off at the end of a workday and let them run concurrently over the evening.
 
 
 ## [Network Analysis](../sidewalk_gaps/accessibility)
 
 
-9 & 10) Execute a network-based accessibility analysis with ``sidewalk analyze SCHEMA``
+9) Execute a network-based accessibility analysis for NJ with ``sidewalk analyze-network nj``
+
+10) Repeat for PA with ``sidewalk analyze-network pa``
 
 11) Summarize the network analysis results with a hexagon overlay that identifies locations where connectivity within the sidewalk network could be improved. (TODO)
 
