@@ -263,9 +263,12 @@ class SidewalkNetwork:
                                                   category=nice_theme,
                                                   num_pois=3)
 
+        # Make sure 'food/drink' turns into 'food_drink'
+        theme_name_for_postgres = this_theme.replace(r"/", "_")
+
         new_colnames = {}
         for column in result_matrix.columns:
-            new_name = f'n_{column}_{this_theme}'
+            new_name = f'n_{column}_{theme_name_for_postgres}'
             new_colnames[column] = new_name
 
         result_matrix = result_matrix.rename(index=str, columns=new_colnames)
