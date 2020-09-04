@@ -37,24 +37,58 @@ All actions will begin with the command ``sidewalk``. To see a list of all avail
 
 8) Repeat for PA with ``sidewalk analyze-segments pa``. Runtime is ~4 hrs for NJ and double for PA. This is a one-time execution, so kick it off at the end of a workday and let them run concurrently over the evening.
 
+9) Create a layer where all intersecting sidewalk segments are merged into a single feature with ``sidewalk identify-islands nj``
+
+10) Repeat for PA with ``sidewalk identify-islands pa``
+
 
 ## [Network Analysis](../sidewalk_gaps/accessibility)
 
 
-9) Execute a network-based accessibility analysis for NJ with ``sidewalk analyze-network nj``
+11) Execute a network-based accessibility analysis for NJ with ``sidewalk analyze-network nj``
 
-10) Repeat for PA with ``sidewalk analyze-network pa``
+12) Repeat for PA with ``sidewalk analyze-network pa``
 
-11) Summarize the network analysis results with a hexagon overlay that identifies locations where connectivity within the sidewalk network could be improved. (TODO)
-
-
-## [Export Data Products for Visualization](../sidewalk_gaps/data_viz)
+13) Summarize the network analysis results with a hexagon overlay that identifies locations where connectivity within the sidewalk network could be improved. (TODO)
 
 
-12) The results of this analytic process are exported to file with (TODO - wire up command). These outputs are used in interactive webmaps. The code for these maps are contained within another GitHub repository - https://github.com/dvrpc/sidewalk-data-viz
+## [Prepare & Export Data Products for Visualization](../sidewalk_gaps/data_viz)
+
+14) Create a hexagon layer that covers the region, and identify the following conditions:
+    - number of unique islands
+    - difference between high/low connectivity values
+    - length of centerlines that are missing sidewalks
 
 
+15) The results of this analytic process are exported to file with (TODO - wire up command). These outputs are used in interactive webmaps. The code for these maps are contained within another GitHub repository - https://github.com/dvrpc/sidewalk-data-viz
 
+
+## Full Analysis Sequence
+
+```bash
+# Build the development environment using a terminal w/ conda
+(base) > git clone https://github.com/dvrpc/network-routing.git
+(base) > cd network_routing
+(base) > conda env create -f env.yml
+(base) > conda activate network_routing
+(network_routing) > conda activate network_routing
+
+# Prepare the database
+(network_routing) > sidewalk db-setup
+(network_routing) > sidewalk generate-nodes
+
+# Analyze the NJ side of the region
+(network_routing) > sidewalk clip-data NJ
+(network_routing) > sidewalk analyze-segments nj
+(network_routing) > sidewalk identify-islands nj
+(network_routing) > sidewalk analyze-network nj
+
+# Analyze the PA side of the region
+(network_routing) > sidewalk clip-data PA --buffer 2
+(network_routing) > sidewalk analyze-segments pa
+(network_routing) > sidewalk identify-islands pa
+(network_routing) > sidewalk analyze-network pa
+```
 
 ## Notes
 
