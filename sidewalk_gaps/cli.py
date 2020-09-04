@@ -4,6 +4,8 @@ from sidewalk_gaps.db_setup import commands as db_setup_commands
 from sidewalk_gaps.extract_data import commands as data_extraction_commands
 from sidewalk_gaps.accessibility import commands as accessibility_commands
 from sidewalk_gaps.segments import commands as segment_commands
+from sidewalk_gaps.data_viz import commands as viz_commands
+
 
 @click.group()
 def main():
@@ -18,3 +20,4 @@ main.add_command(data_extraction_commands.clip_data)
 main.add_command(segment_commands.analyze_segments)
 main.add_command(segment_commands.identify_islands)
 main.add_command(accessibility_commands.analyze_network)
+main.add_command(viz_commands.summarize_into_hexagons)
