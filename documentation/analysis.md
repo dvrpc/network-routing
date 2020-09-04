@@ -24,10 +24,10 @@ All actions will begin with the command ``sidewalk``. To see a list of all avail
 ## [Extract Data](../sidewalk_gaps/extract_data)
 
 
-5) Clip the datasets by to the NJ region with ``sidewalk clip-data NJ``
+5) Clip the datasets by to the NJ region with ``sidewalk clip-data NJ``. The result of this is a new database schema for each state, and the subsequent analyses will take places within these state-specific schemas.
 
 
-6) Repeat for PA with ``sidewalk clip-data PA``. The result of this is a new database schema for each state, and the subsequent analyses will take places within these state-specific schemas.
+6) Repeat for PA with ``sidewalk clip-data PA --buffer 2``. Note the use of a 2-meter buffer here. There are a few sidewalk segments that extend beyond the county boundary and we'll miss their respective nodes when clipping without a buffer.
 
 
 ## [Segment Analysis](../sidewalk_gaps/segments)
