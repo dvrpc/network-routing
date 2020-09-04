@@ -14,6 +14,6 @@ from .centerline_sidewalk_coverage import classify_centerlines
     default=PROJECT_DB_NAME,
 )
 def analyze_segments(schema: str, database):
-    """ Classify centerline segments with the length of parallel sidewalks """
+    """ Classify centerlines w/ length of parallel sidewalks """
     db = PostgreSQL(database, verbosity="minimal", **CREDENTIALS["localhost"])
     classify_centerlines(db, schema, "centerlines")

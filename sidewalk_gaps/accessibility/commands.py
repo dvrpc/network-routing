@@ -20,10 +20,10 @@ from .network_analysis import SidewalkNetwork
     help="Speed of pedestrians in miles per hour. Default = 2.5",
     default="2.5",
 )
-def analyze(schema: str,
-            database: str,
-            speed: str):
-    """Run the sidewalk analysis"""
+def analyze_network(schema: str,
+                    database: str,
+                    speed: str):
+    """Run the sidewalk network analysis with Pandana"""
 
     try:
         speed = float(speed)
