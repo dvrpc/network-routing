@@ -19,7 +19,7 @@ def hexagon_summary(db: PostgreSQL):
             FROM hexagons
             WHERE
                 st_intersects(
-                    geom,
+                    st_centroid(geom),
                     (select st_collect(geom)
                     from regional_counties
                     where state_name = '{state}'
@@ -40,15 +40,23 @@ def hexagon_summary(db: PostgreSQL):
 
             # Get the number of islands
             # -------------------------
-            q_island = f"""
-                select count(uid)
-                from {schema}.islands
-                where st_intersects(
-                    geom,
-                    ({geom_subquery})
+
+            island_update = f"""
+                update {schema}.hexagon_summary h
+                set islands = (
+                    select count(island_geom) from (
+                        SELECT
+                            ST_COLLECTIONEXTRACT(
+                                UNNEST(ST_CLUSTERINTERSECTING(geom)),
+                                2
+                            ) AS geom
+                        FROM {schema}.sidewalks sw
+                        where st_within(sw.geom, h.geom)
+                    ) as island_geom
                 )
+                where h.uid = {uid}
             """
-            num_islands = db.query_as_single_item(q_island)
+            db.execute(island_update)
 
             # Get the min and max distance to nearest school
             # ----------------------------------------------
@@ -69,43 +77,53 @@ def hexagon_summary(db: PostgreSQL):
             poi_result = db.query_as_list(q_network)
             poi_min, poi_med, poi_max = poi_result[0]
 
-            # Replace "None" values with a dummy number
-            if not poi_min:
-                poi_min = 999
-            if not poi_med:
-                poi_med = 999
-            if not poi_max:
-                poi_max = 999
+            # # Replace "None" values with a dummy number
+            if str(poi_min) == "None":
+                poi_min = "NULL"
+            if str(poi_med) == "None":
+                poi_med = "NULL"
+            if str(poi_max) == "None":
+                poi_max = "NULL"
 
-            # Get the centerline and sidewalk lengths
-            # ---------------------------------------
+            # Get the centerline length
+            # -------------------------
             cl_query = f"""
                 select
                     sum(st_length(st_intersection(
                                         geom,
                                         ({geom_subquery})
-                        ))) as cl_len,
-                    sum(st_length(st_intersection(
-                                        geom,
-                                        ({geom_subquery})
-                        )) / st_length(geom) * sidewalk) as sw_len
+                        ))) as cl_len
                 from {schema}.centerlines
                 where st_intersects(geom, ({geom_subquery}))
             """
             cl_results = db.query_as_list(cl_query)
-            cl_len, sw_len = cl_results[0]
+            cl_len = cl_results[0][0]
 
-            if not cl_len:
+            if str(cl_len) == "None":
                 cl_len = 0
-            if not sw_len:
+
+            # Get the sidewalk length
+            # -------------------------
+            sw_query = f"""
+                select
+                    sum(st_length(st_intersection(
+                                        geom,
+                                        ({geom_subquery})
+                        ))) as sw_len
+                from {schema}.sidewalks
+                where st_intersects(geom, ({geom_subquery}))
+            """
+            sw_results = db.query_as_list(sw_query)
+            sw_len = sw_results[0][0]
+
+            if str(sw_len) == "None":
                 sw_len = 0
 
             # Update the table with the results
             # ---------------------------------
             update_query = f"""
                 UPDATE {schema}.hexagon_summary
-                SET islands = {num_islands},
-                    poi_min = {poi_min},
+                SET poi_min = {poi_min},
                     poi_median = {poi_med},
                     poi_max = {poi_max},
                     cl_len = {cl_len},
@@ -113,3 +131,13 @@ def hexagon_summary(db: PostgreSQL):
                 WHERE uid = {uid}
             """
             db.execute(update_query)
+
+    # Combine state-specific hexagons into one final summary layer
+    # ------------------------------------------------------------
+
+    query = """
+        SELECT * FROM nj.hexagon_summary
+        UNION
+        SELECT * FROM pa.hexagon_summary
+    """
+    db.make_geotable_from_query(query, "hexagon_summary", "POLYGON", 26918)
