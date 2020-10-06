@@ -32,6 +32,7 @@ import socket
 
 import postgis_helpers as pGIS
 from postgis_helpers import PostgreSQL
+from philly_transit_data import TransitData
 
 
 def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
@@ -170,13 +171,37 @@ def create_new_geodata(db: PostgreSQL):
     )
 
 
+def import_transit_data(local_db: PostgreSQL):
+    """
+        Import SEPTA, NJT, and PATCO stops & lines.
+        This code lives in another repo:
+            https://github.com/aaronfraint/philly-transit-data
+    """
+
+    transit_data = TransitData()
+    stops, lines = transit_data.all_spatial_data()
+
+    # Import transit stops
+    local_db.import_geodataframe(stops, "regional_transit_stops")
+
+    # Massage the lines before importing
+    # - reset index and then explode so all are singlepart lines
+    line_gdf = lines.reset_index()
+    line_gdf = line_gdf.explode()
+    line_gdf["explode_idx"] = line_gdf.index
+    line_gdf = line_gdf.reset_index()
+
+    local_db.import_geodataframe(line_gdf, "regional_transit_lines")
+
+
 def create_project_database(local_db: PostgreSQL, shp_folder: Path):
     """ Batch execute the whole process:
             1) copy SQL data
             2) import shapefiles
             3) load a median() function
             4) make some helper GIS data
-            5) save pg_dump of database
+            5) import transit data from OpenData portals
+            6) save pg_dump of database
     """
 
     if platform.system() in ["Linux", "Windows"] \
@@ -189,6 +214,7 @@ def create_project_database(local_db: PostgreSQL, shp_folder: Path):
         import_shapefiles(shp_folder, local_db)
         load_helper_functions(local_db)
         create_new_geodata(local_db)
+        import_transit_data(local_db)
 
     else:
         print("\n-> !!!Initial DB setup can only be executed from a DVRPC workstation!!!")
