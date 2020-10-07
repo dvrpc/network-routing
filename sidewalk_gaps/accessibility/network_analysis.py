@@ -48,8 +48,8 @@ class SidewalkNetwork:
 
         """
         theme_query = f"""
-            SELECT distinct theme
-            FROM {self.schema}.points_of_interest
+            SELECT distinct src
+            FROM {self.schema}.transit_stops
         """
         themes = self.db.query_as_list(theme_query)
         themes = {x[0]: x[0] for x in themes}
@@ -73,29 +73,6 @@ class SidewalkNetwork:
         # self.make_nodes()
         self.assign_node_ids_to_network()
         self.add_travel_time_weights()
-
-    # def make_nodes(self):
-    #     """
-    #     Use the edge table to generate a set of nodes.
-
-    #     These nodes are all of the unique start and
-    #     endpoints of the line segments.
-    #     """
-
-    #     query = f"""
-    #         SELECT st_startpoint(geom) AS geom
-    #         FROM {self.schema}.{self.edge_table_name}
-    #         UNION
-    #         SELECT st_endpoint(geom) AS geom
-    #         FROM {self.schema}.{self.edge_table_name}
-    #         GROUP BY geom
-    #     """
-
-    #     self.db.make_geotable_from_query(query,
-    #                                      new_table_name="nodes",
-    #                                      geom_type="Point",
-    #                                      epsg=self.epsg,
-    #                                      uid_col="node_id")
 
     def assign_node_ids_to_network(self):
         """
@@ -195,8 +172,8 @@ class SidewalkNetwork:
         self.edge_gdf = edge_gdf
         self.node_gdf = node_gdf
 
-    # ANALYZE POINTS OF INTEREST
-    # --------------------------
+    # ANALYZE POINTS OF INTEREST (/transit stops!)
+    # --------------------------------------------
 
     def analyze_pois(self):
         """
@@ -240,17 +217,22 @@ class SidewalkNetwork:
 
         nice_theme = self.themes[this_theme]
 
-        # POIS
+        # Get all transit stops by theme
+        # that are within 45 meters of a sidewalk (aka 150 feet)
         poi_query = f"""
             SELECT *,
                 ST_X(st_transform(geom, 4326)) as x,
                 ST_Y(st_transform(geom, 4326)) as y
-            FROM {self.schema}.points_of_interest
-            WHERE theme = '{this_theme}'
+            FROM {self.schema}.transit_stops
+            WHERE src = '{this_theme}'
+            AND ST_DWITHIN(
+                geom,
+                (SELECT ST_COLLECT(geom) FROM {self.schema}.sidewalks),
+                45
+            )
         """
         poi_gdf = self.db.query_as_geo_df(poi_query)
 
-        # TODO: find a way to enforce max matching distance
         self.network.set_pois(
             category=nice_theme,
             x_col=poi_gdf["x"],
@@ -263,51 +245,17 @@ class SidewalkNetwork:
                                                   category=nice_theme,
                                                   num_pois=3)
 
-        # Make sure 'food/drink' turns into 'food_drink'
-        theme_name_for_postgres = this_theme.replace(r"/", "_")
+        # # Make sure 'food/drink' turns into 'food_drink'
+        # theme_name_for_postgres = this_theme.replace(r"/", "_")
 
         new_colnames = {}
         for column in result_matrix.columns:
-            new_name = f'n_{column}_{theme_name_for_postgres}'
+            new_name = f'n_{column}_{nice_theme}'
             new_colnames[column] = new_name
 
         result_matrix = result_matrix.rename(index=str, columns=new_colnames)
 
-        # self.db.import_dataframe(result_matrix, f"poi_{nice_theme}", if_exists="replace")
-        # self.add_geometries_to_accessibilty_result(f"poi_{nice_theme}")
-
         return poi_gdf, result_matrix
-
-    # def add_geometries_to_accessibilty_result(self, table_name: str):
-    #     """
-    #     Spatialize the non-spatial POI result table with node geometries
-    #     """
-
-    #     add_geom_col = f"""
-    #         SELECT AddGeometryColumn(
-    #             '{self.schema}',
-    #             '{table_name}',
-    #             'geom',
-    #             {self.epsg},
-    #             'POINT',
-    #             2
-    #         );
-    #     """
-    #     self.db.execute(add_geom_col)
-
-    #     update_geom_col = f"""
-    #         UPDATE {self.schema}.{table_name} t
-    #         SET geom = (select n.geom from {self.schema}.nodes n
-    #                     where n.node_id::int = t.node_id::int)
-    #     """
-    #     self.db.execute(update_geom_col)
-
-    #     # Register node_id as the primary key for the table
-    #     add_primary_key = f"""
-    #         ALTER TABLE {self.schema}.{table_name}
-    #         ADD PRIMARY KEY (node_id);
-    #     """
-    #     self.db.execute(add_primary_key)
 
     def qaqc_poi_assignment(self, theme: str, poi_gdf: gpd.GeoDataFrame):
         """
