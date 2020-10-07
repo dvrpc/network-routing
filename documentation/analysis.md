@@ -18,7 +18,7 @@ All actions will begin with the command ``sidewalk``. To see a list of all avail
 3) Load the text file onto your machine of choice with ``sidewalk db-load``.
 
 
-4) Generate the node layer with ``sidewalk generate-nodes``. This process will create a file named ``sw_nodes.json`` which is ~65 MB. Use this file for any web-based mapping of the node-level analysis outputs.
+4) Generate the node layer with ``sidewalk generate-nodes``.
 
 
 ## [Extract Data](../sidewalk_gaps/extract_data)

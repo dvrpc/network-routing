@@ -25,13 +25,6 @@ def generate_sidewalk_nodes(db: PostgreSQL,
 
     db.make_geotable_from_query(node_query, **kwargs)
 
-    # Extract the new table as a dataframe and save as geojson
-    # --------------------------------------------------------
-    df = db.query_as_geo_df("SELECT * FROM sw_nodes;")
-    df.to_file("sw_nodes.json", driver="GeoJSON")
-
-    return df
-
 
 if __name__ == "__main__":
     from sidewalk_gaps import CREDENTIALS
