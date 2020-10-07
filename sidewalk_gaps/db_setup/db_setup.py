@@ -193,6 +193,10 @@ def import_transit_data(local_db: PostgreSQL):
 
     local_db.import_geodataframe(line_gdf, "regional_transit_lines")
 
+    # Reproject from 4326 to 26918
+    local_db.table_reproject_spatial_data("regional_transit_lines", 4326, 26918, "LINESTRING")
+    local_db.table_reproject_spatial_data("regional_transit_stops", 4326, 26918, "POINT")
+
 
 def create_project_database(local_db: PostgreSQL, shp_folder: Path):
     """ Batch execute the whole process:
