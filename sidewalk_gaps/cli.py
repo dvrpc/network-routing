@@ -9,6 +9,7 @@ from sidewalk_gaps.data_viz import commands as viz_commands
 
 @click.group()
 def main():
+    "The command 'sidewalk' is used for the Sidewalk Gap Analysis project."
     pass
 
 
@@ -21,3 +22,4 @@ main.add_command(segment_commands.analyze_segments)
 main.add_command(segment_commands.identify_islands)
 main.add_command(accessibility_commands.analyze_network)
 main.add_command(viz_commands.summarize_into_hexagons)
+main.add_command(viz_commands.classify_hexagons)
