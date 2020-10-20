@@ -16,6 +16,11 @@ class SidewalkNetwork:
                  max_minutes: float = 180.0,
                  epsg: int = 26918,
                  edge_table_name: str = "sidewalks",
+                 poi_table_name: str = "transit_stops",
+                 poi_id_column: str = "src",
+                 output_table_name: str = "access",
+                 num_pois: int = 3,
+                 poi_match_threshold: int = 45,
                  run_on_create: bool = True):
 
         # Capture user input
@@ -25,6 +30,11 @@ class SidewalkNetwork:
         self.max_minutes = max_minutes
         self.epsg = epsg
         self.edge_table_name = edge_table_name
+        self.poi_table_name = poi_table_name
+        self.poi_id_column = poi_id_column
+        self.output_table_name = output_table_name
+        self.num_pois = num_pois
+        self.poi_match_threshold = poi_match_threshold
 
         # Get a list of POI themes within the schema
         self.themes = self._get_themes()
@@ -48,8 +58,8 @@ class SidewalkNetwork:
 
         """
         theme_query = f"""
-            SELECT distinct src
-            FROM {self.schema}.transit_stops
+            SELECT distinct {self.poi_id_column}::text
+            FROM {self.schema}.{self.poi_table_name}
         """
         themes = self.db.query_as_list(theme_query)
         themes = {x[0]: x[0] for x in themes}
@@ -66,13 +76,22 @@ class SidewalkNetwork:
     def setup(self):
         """
         Set up the analysis by:
-            1) making nodes
-            2) assigning node ids to the edge network
-            3) adding travel time weights (walking)
+            1) assigning node ids to the edge network
+            2) adding travel time weights (walking)
+
+        Only execute these functions if they haven't been done yet
         """
-        # self.make_nodes()
-        self.assign_node_ids_to_network()
-        self.add_travel_time_weights()
+
+        edge_columns = self.db.table_columns_as_list(
+                            table_name=self.edge_table_name,
+                            schema=self.schema
+        )
+
+        if "start_id" not in edge_columns:
+            self.assign_node_ids_to_network()
+
+        if "minutes" not in edge_columns:
+            self.add_travel_time_weights()
 
     def assign_node_ids_to_network(self):
         """
@@ -80,6 +99,8 @@ class SidewalkNetwork:
         need to assign two node_id values to each
         segment: one at the start, one at the end.
         """
+
+        print("Assigning Node ID values to the edge table")
 
         # Add columns for the start and end node_id values
         for column_name in ["start_id", "end_id"]:
@@ -112,6 +133,8 @@ class SidewalkNetwork:
                 - divide by defined walking speed in MPH
                 - multiply by 60 to get minutes
         """
+
+        print("Adding travel time weights to the edge table")
 
         # Add a meter length and minutes column
         for column_name in ["len_meters", "minutes"]:
@@ -184,23 +207,29 @@ class SidewalkNetwork:
         all_results = []
         for theme in self.themes:
             poi_gdf, access_results = self.calculate_single_poi(theme)
-            self.qaqc_poi_assignment(theme, poi_gdf)
 
-            all_results.append(access_results)
+            if access_results is not None:
+                self.qaqc_poi_assignment(theme, poi_gdf)
+                all_results.append(access_results)
 
         df_all_access_results = pd.concat(all_results, axis=1, sort=False)
 
         self.db.import_dataframe(df_all_access_results,
-                                 "access_table",
+                                 f"{self.output_table_name}_table",
                                  if_exists="replace")
 
         final_result_query = f"""
             select r.*, n.geom
             from {self.schema}.sw_nodes n
-            left join {self.schema}.access_table r
+            left join {self.schema}.{self.output_table_name}_table r
             on n.sw_node_id::int = r.node_id::int
         """
-        self.db.make_geotable_from_query(final_result_query, "access_results", "Point", self.epsg)
+        self.db.make_geotable_from_query(
+            final_result_query,
+            f"{self.output_table_name}_results",
+            "Point",
+            self.epsg
+        )
 
     def calculate_single_poi(self, this_theme: str):
         """
@@ -217,33 +246,40 @@ class SidewalkNetwork:
 
         nice_theme = self.themes[this_theme]
 
-        # Get all transit stops by theme
+        # Get all POIs by theme
         # that are within 45 meters of a sidewalk (aka 150 feet)
         poi_query = f"""
             SELECT *,
                 ST_X(st_transform(geom, 4326)) as x,
                 ST_Y(st_transform(geom, 4326)) as y
-            FROM {self.schema}.transit_stops
-            WHERE src = '{this_theme}'
+            FROM {self.schema}.{self.poi_table_name}
+            WHERE {self.poi_id_column} = '{this_theme}'
             AND ST_DWITHIN(
                 geom,
                 (SELECT ST_COLLECT(geom) FROM {self.schema}.sidewalks),
-                45
+                {self.poi_match_threshold}
             )
         """
         poi_gdf = self.db.query_as_geo_df(poi_query)
+
+        # If there aren't any rows in the query result,
+        # there are no POIs of this theme that are 'close enough'
+        # to the sidewalk network.
+        # Break out of function early if this happens.
+        if poi_gdf.shape[0] == 0:
+            return None, None
 
         self.network.set_pois(
             category=nice_theme,
             x_col=poi_gdf["x"],
             y_col=poi_gdf["y"],
             maxdist=self.max_minutes,
-            maxitems=3
+            maxitems=self.num_pois
         )
 
         result_matrix = self.network.nearest_pois(distance=self.max_minutes,
                                                   category=nice_theme,
-                                                  num_pois=3)
+                                                  num_pois=self.num_pois)
 
         # # Make sure 'food/drink' turns into 'food_drink'
         # theme_name_for_postgres = this_theme.replace(r"/", "_")
