@@ -1,4 +1,5 @@
 import pandas as pd
+from tqdm import tqdm
 
 from transit_access import db
 
@@ -30,11 +31,13 @@ def generate_isochrones():
 
     for schema in ["nj", "pa"]:
 
+        print(f"Generating isochrone for {schema.upper()}")
+
         result_cols = db.table_columns_as_list("ridescore_results", schema=schema)
 
         station_ids = [x[4:] for x in result_cols if "n_1_" in x]
 
-        for dvrpc_id in station_ids:
+        for dvrpc_id in tqdm(station_ids, total=len(station_ids)):
             # Figure out if there's results
             node_count_query = f"""
                 SELECT COUNT(node_id)
@@ -45,7 +48,6 @@ def generate_isochrones():
 
             # Only make isochrones if there's nodes below the threshold
             if node_count > 0:
-                print(f"Isochrone for DVRPC ID#{dvrpc_id} within {schema}")
 
                 query = f"""
                     select  st_buffer(
@@ -60,6 +62,8 @@ def generate_isochrones():
 
                 gdf["schema"] = schema
                 gdf["dvrpc_id"] = dvrpc_id
+
+                gdf = gdf.rename(columns={'geom': 'geometry'}).set_geometry('geometry')
 
                 all_results.append(gdf)
 
