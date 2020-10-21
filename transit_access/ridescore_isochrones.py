@@ -28,10 +28,11 @@ def generate_isochrones():
     miles = 0.5
     time_cutoff = miles * 60 / 2.5
 
-    for schema in ["pa", "nj"]:
-        station_ids = db.query_as_list(
-            f"SELECT distinct dvrpc_id from {schema}.ridescore_stations"
-        )
+    for schema in ["nj", "pa"]:
+
+        result_cols = db.table_columns_as_list("ridescore_results", schema=schema)
+
+        station_ids = [x[4:] for x in result_cols if "n_1_" in x]
 
         for dvrpc_id in station_ids:
             # Figure out if there's results
