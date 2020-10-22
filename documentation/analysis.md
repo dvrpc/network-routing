@@ -18,7 +18,7 @@ All actions will begin with the command ``sidewalk``. To see a list of all avail
 3) Load the text file onto your machine of choice with ``sidewalk db-load``.
 
 
-4) Generate the node layer with ``sidewalk generate-nodes``.
+4) Generate the node layer with ``sidewalk make-nodes``.
 
 
 ## [Extract Data](../sidewalk_gaps/extract_data)
@@ -75,7 +75,7 @@ All actions will begin with the command ``sidewalk``. To see a list of all avail
 
 # Prepare the database
 (network_routing) > sidewalk db-setup
-(network_routing) > sidewalk generate-nodes
+(network_routing) > sidewalk make-nodes
 
 # Analyze the NJ side of the region
 (network_routing) > sidewalk clip-data NJ
