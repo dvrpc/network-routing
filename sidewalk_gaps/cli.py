@@ -16,7 +16,7 @@ def main():
 main.add_command(db_setup_commands.db_setup)
 main.add_command(db_setup_commands.db_load)
 main.add_command(db_setup_commands.db_freeze)
-main.add_command(db_setup_commands.generate_nodes)
+main.add_command(db_setup_commands.make_nodes)
 main.add_command(data_extraction_commands.clip_data)
 main.add_command(segment_commands.analyze_segments)
 main.add_command(segment_commands.identify_islands)
