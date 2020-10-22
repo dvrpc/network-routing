@@ -11,7 +11,8 @@ from sidewalk_gaps import (
 )
 
 from .db_setup import create_project_database
-from .generate_sidewalk_nodes import generate_sidewalk_nodes
+# from .generate_sidewalk_nodes import generate_sidewalk_nodes
+from helpers import generate_nodes
 
 
 @click.command()
@@ -115,8 +116,16 @@ def db_load(database: str, folder: str):
     help="Name of the table with sidewalk lines",
     default="pedestriannetwork_lines",
 )
-def generate_nodes(database: str, tablename: str):
+def make_nodes(database: str, tablename: str):
     """ Generate topologically-sound nodes for the sidewalk lines """
 
     db = PostgreSQL(database, verbosity="minimal", **CREDENTIALS["localhost"])
-    generate_sidewalk_nodes(db, tablename)
+
+    kwargs = {
+        "new_table_name": "sw_nodes",
+        "geom_type": "Point",
+        "epsg": 26918,
+        "uid_col": "sw_node_id",
+    }
+
+    generate_nodes(db, tablename, "public", kwargs)
