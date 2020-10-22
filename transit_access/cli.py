@@ -2,10 +2,7 @@ import click
 
 # from postgis_helpers import PostgreSQL
 
-from transit_access import GDRIVE_ROOT, db
-from helpers import generate_nodes
-# from sidewalk_gaps.db_setup.db_setup import import_shapefiles
-from helpers import import_shapefiles
+from helpers import db_connection, generate_nodes
 
 from transit_access.ridescore_isochrones import (
     calculate_sidewalk_walksheds,
@@ -20,15 +17,10 @@ def main():
 
 
 @click.command()
-def import_data():
-    """Import RideScore data into the SQL database"""
-    ridescore_inputs = GDRIVE_ROOT / "inputs"
-    import_shapefiles(ridescore_inputs, db)
-
-
-@click.command()
 def data_engineering():
     """Massage the data to prepare for analysis"""
+
+    db = db_connection()
 
     for schema, state_name in [("nj", "New Jersey"), ("pa", "Pennsylvania")]:
         query = f"""
@@ -52,33 +44,41 @@ def data_engineering():
 @click.command()
 def calculate_sidewalks():
     """Analyze sidewalk network distance around each rail stop """
-    calculate_sidewalk_walksheds()
+
+    db = db_connection()
+    
+    calculate_sidewalk_walksheds(db)
 
 
 @click.command()
 def isochrones():
     """Turn access results into isochrone polygons"""
-    generate_isochrones()
+
+    db = db_connection()
+
+    generate_isochrones(db)
 
 
 @click.command()
 def make_nodes():
     """ Generate topologically-sound nodes for the centerlines """
 
+    db = db_connection()
+
     kwargs = {
-        "new_table_name": "cl_nodes",
+        "new_table_name": "nodes_for_osm",
         "geom_type": "Point",
         "epsg": 26918,
-        "uid_col": "cl_node_id",
+        "uid_col": "node_id",
     }
 
-    for schema in ["nj", "pa"]:
-        print(f"Generating nodes for {schema.upper()}")
-        generate_nodes(db, "centerlines", schema, kwargs)
+    edge_table = "osm_edges"
+
+    print(f"Generating nodes for {edge_table}")
+    generate_nodes(db, edge_table, "public", kwargs)
 
 
 all_commands = [
-    import_data,
     data_engineering,
     calculate_sidewalks,
     isochrones,
