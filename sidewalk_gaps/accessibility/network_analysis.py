@@ -260,7 +260,7 @@ class SidewalkNetwork:
             WHERE {self.poi_id_column} = '{this_theme}'
             AND ST_DWITHIN(
                 geom,
-                (SELECT ST_COLLECT(geom) FROM {self.schema}.sidewalks),
+                (SELECT ST_COLLECT(geom) FROM {self.schema}.{self.edge_table_name}),
                 {self.poi_match_threshold}
             )
         """
