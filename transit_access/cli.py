@@ -4,7 +4,8 @@ import click
 
 from transit_access import GDRIVE_ROOT, db
 from helpers import generate_nodes
-from sidewalk_gaps.db_setup.db_setup import import_shapefiles
+# from sidewalk_gaps.db_setup.db_setup import import_shapefiles
+from helpers import import_shapefiles
 
 from transit_access.ridescore_isochrones import (
     calculate_sidewalk_walksheds,

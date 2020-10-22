@@ -34,6 +34,8 @@ import postgis_helpers as pGIS
 from postgis_helpers import PostgreSQL
 from philly_transit_data import TransitData
 
+from helpers import import_shapefiles
+
 
 def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
     """
@@ -78,23 +80,6 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
 
             # Save to the local database
             local_db.import_geodataframe(gdf, table_name.lower())
-
-
-def import_shapefiles(folder: Path, db: PostgreSQL):
-    """ Import all shapefiles within the folder into SQL.
-        This includes:
-            - nj_centerline.shp
-            - TIM_Microzones_poi_surface.SHP
-    """
-
-    endings = [".shp", ".SHP"]
-
-    for ending in endings:
-
-        for shp_path in folder.rglob(f"*{ending}"):
-            idx = len(ending) * -1
-            pg_name = shp_path.name[:idx].replace(" ", "_").lower()
-            db.import_geodata(pg_name, shp_path, if_exists="replace")
 
 
 def load_helper_functions(db: PostgreSQL):
