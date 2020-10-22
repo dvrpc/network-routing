@@ -1,12 +1,15 @@
 import click
 
-from postgis_helpers import PostgreSQL
+# from postgis_helpers import PostgreSQL
 
 from transit_access import GDRIVE_ROOT, db
-
+from helpers import generate_nodes
 from sidewalk_gaps.db_setup.db_setup import import_shapefiles
 
-from transit_access.ridescore_isochrones import calculate_sidewalk_walksheds, generate_isochrones
+from transit_access.ridescore_isochrones import (
+    calculate_sidewalk_walksheds,
+    generate_isochrones
+)
 
 
 @click.group()
@@ -57,7 +60,29 @@ def isochrones():
     generate_isochrones()
 
 
-all_commands = [import_data, data_engineering, calculate_sidewalks, isochrones]
+@click.command()
+def make_nodes():
+    """ Generate topologically-sound nodes for the centerlines """
+
+    kwargs = {
+        "new_table_name": "cl_nodes",
+        "geom_type": "Point",
+        "epsg": 26918,
+        "uid_col": "cl_node_id",
+    }
+
+    for schema in ["nj", "pa"]:
+        print(f"Generating nodes for {schema.upper()}")
+        generate_nodes(db, "centerlines", schema, kwargs)
+
+
+all_commands = [
+    import_data,
+    data_engineering,
+    calculate_sidewalks,
+    isochrones,
+    make_nodes
+]
 
 for cmd in all_commands:
     main.add_command(cmd)
