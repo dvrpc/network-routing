@@ -1,12 +1,12 @@
 import pandas as pd
 from tqdm import tqdm
 
-from transit_access import db
+from postgis_helpers import PostgreSQL
 
 from sidewalk_gaps.accessibility.network_analysis import SidewalkNetwork
 
 
-def calculate_sidewalk_walksheds():
+def calculate_sidewalk_walksheds(db: PostgreSQL):
 
     ridescore_arguments = {
         "poi_table_name": "ridescore_stations",
@@ -21,7 +21,7 @@ def calculate_sidewalk_walksheds():
         network = SidewalkNetwork(db, schema, **ridescore_arguments)
 
 
-def generate_isochrones():
+def generate_isochrones(db: PostgreSQL):
 
     all_results = []
 
