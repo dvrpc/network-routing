@@ -16,6 +16,8 @@ class SidewalkNetwork:
                  max_minutes: float = 180.0,
                  epsg: int = 26918,
                  edge_table_name: str = "sidewalks",
+                 node_table_name: str = "sw_nodes",
+                 node_id_column: str = "sw_node_id",
                  poi_table_name: str = "transit_stops",
                  poi_id_column: str = "src",
                  output_table_name: str = "access",
@@ -30,6 +32,8 @@ class SidewalkNetwork:
         self.max_minutes = max_minutes
         self.epsg = epsg
         self.edge_table_name = edge_table_name
+        self.node_table_name = node_table_name
+        self.node_id_column = node_id_column
         self.poi_table_name = poi_table_name
         self.poi_id_column = poi_id_column
         self.output_table_name = output_table_name
@@ -110,8 +114,8 @@ class SidewalkNetwork:
         # Execute the query for the START of each segment
         start_id_query = f"""
             UPDATE {self.schema}.{self.edge_table_name} ln
-            SET start_id = (SELECT pt.sw_node_id
-                            FROM {self.schema}.sw_nodes pt
+            SET start_id = (SELECT pt.{self.node_id_column}
+                            FROM {self.schema}.{self.node_table_name} pt
                             WHERE ST_DWITHIN(pt.geom, st_startpoint(ln.geom), 5)
                             ORDER BY ST_DISTANCE(pt.geom,
                                                 st_startpoint(ln.geom))
@@ -166,11 +170,11 @@ class SidewalkNetwork:
 
         # Get all nodes
         node_query = f"""
-            SELECT sw_node_id AS node_id,
+            SELECT {self.node_id_column} AS node_id,
                 ST_X(st_transform(geom, 4326)) as x,
                 ST_Y(st_transform(geom, 4326)) as y,
                 geom
-            FROM {self.schema}.sw_nodes
+            FROM {self.schema}.{self.node_table_name}
         """
         node_gdf = self.db.query_as_geo_df(node_query)
 
@@ -220,9 +224,9 @@ class SidewalkNetwork:
 
         final_result_query = f"""
             select r.*, n.geom
-            from {self.schema}.sw_nodes n
+            from {self.schema}.{self.node_table_name} n
             left join {self.schema}.{self.output_table_name}_table r
-            on n.sw_node_id::int = r.node_id::int
+            on n.{self.node_id_column}::int = r.node_id::int
         """
         self.db.make_geotable_from_query(
             final_result_query,
