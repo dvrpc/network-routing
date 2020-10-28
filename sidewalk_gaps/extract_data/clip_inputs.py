@@ -47,9 +47,10 @@ def clip_inputs(db: PostgreSQL,
     data_to_clip = [
         ("pedestriannetwork_lines", "sidewalks", "LineString"),
         ("regional_pois", "points_of_interest", "Point"),
-        ("sw_nodes", "sw_nodes", "Point"),
+        ("nodes_for_osm", "nodes_for_osm", "Point"),
+        ("nodes_for_sidewalks", "nodes_for_sidewalks", "Point"),
         ("regional_transit_stops", "transit_stops", "Point"),
-        (f"{state}_centerline", "centerlines", "LineString")
+        ("osm_edges", "osm_edges", "LineString")
     ]
 
     for src_name, new_name, geom_type in data_to_clip:
@@ -70,10 +71,10 @@ def clip_inputs(db: PostgreSQL,
         db.make_geotable_from_query(clip_query, new_name, geom_type, 26918, schema=schema)
 
 
-if __name__ == "__main__":
-    import postgis_helpers as pGIS
-    from sidewalk_gaps import CREDENTIALS
+# if __name__ == "__main__":
+#     import postgis_helpers as pGIS
+#     from sidewalk_gaps import CREDENTIALS
 
-    db = pGIS.PostgreSQL("sidewalk_gaps", verbosity="minimal", **CREDENTIALS["localhost"])
+#     db = pGIS.PostgreSQL("sidewalk_gaps", verbosity="minimal", **CREDENTIALS["localhost"])
 
-    clip_inputs(db, "nj", "camden")
+#     clip_inputs(db, "nj", "camden")
