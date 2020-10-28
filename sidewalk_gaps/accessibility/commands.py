@@ -3,33 +3,16 @@ import click
 
 from postgis_helpers import PostgreSQL
 
-from sidewalk_gaps import CREDENTIALS, PROJECT_DB_NAME
-
-from .network_analysis import SidewalkNetwork
+from helpers import RoutableNetwork, db_connection
 
 
 @click.command()
 @click.argument("schema")
-@click.option(
-    "--database", "-d",
-    help=f"Name of the local database. Default = {PROJECT_DB_NAME}",
-    default=PROJECT_DB_NAME,
-)
-@click.option(
-    "--speed", "-s",
-    help="Speed of pedestrians in miles per hour. Default = 2.5",
-    default="2.5",
-)
-def analyze_network(schema: str,
-                    database: str,
-                    speed: str):
+def analyze_network(schema: str):
     """Run the sidewalk network analysis with Pandana"""
 
-    try:
-        speed = float(speed)
-    except ValueError:
-        speed = None
+    db = db_connection()
 
-    db = PostgreSQL(database, verbosity="minimal", **CREDENTIALS["localhost"])
-
-    network = SidewalkNetwork(db, schema, walking_mph=speed)
+    # note: the default inputs for RouteableNetwork 
+    # are tailored to this analysis
+    network = RoutableNetwork(db, schema, output_schema=f"gaps_{schema}")
