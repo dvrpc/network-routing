@@ -4,10 +4,12 @@ import click
 
 from helpers import db_connection, generate_nodes
 
-from transit_access.ridescore_isochrones import (
-    calculate_sidewalk_walksheds,
+from .ridescore_isochrones import (
+    # calculate_sidewalk_walksheds,
     generate_isochrones
 )
+
+from .network_analysis import osm_analysis, sidewalk_analysis
 
 
 @click.group()
@@ -16,29 +18,35 @@ def main():
     pass
 
 
+# @click.command()
+# def data_engineering():
+#     """Massage the data to prepare for analysis"""
+
+#     db = db_connection()
+
+#     for schema, state_name in [("nj", "New Jersey"), ("pa", "Pennsylvania")]:
+#         query = f"""
+#             select * from passengerrailstations p
+#             where
+#                 st_within(
+#                     geom,
+#                     (select st_collect(geom) from regional_counties
+#                         where state_name = '{state_name}')
+#                 )
+#         """
+#         db.make_geotable_from_query(
+#             query,
+#             "ridescore_stations",
+#             "POINT",
+#             26918,
+#             schema=schema
+#         )
+
+
 @click.command()
-def data_engineering():
-    """Massage the data to prepare for analysis"""
-
+def calculate_osm():
     db = db_connection()
-
-    for schema, state_name in [("nj", "New Jersey"), ("pa", "Pennsylvania")]:
-        query = f"""
-            select * from passengerrailstations p
-            where
-                st_within(
-                    geom,
-                    (select st_collect(geom) from regional_counties
-                        where state_name = '{state_name}')
-                )
-        """
-        db.make_geotable_from_query(
-            query,
-            "ridescore_stations",
-            "POINT",
-            26918,
-            schema=schema
-        )
+    osm_analysis(db)
 
 
 @click.command()
@@ -47,7 +55,7 @@ def calculate_sidewalks():
 
     db = db_connection()
     
-    calculate_sidewalk_walksheds(db)
+    sidewalk_analysis(db)
 
 
 @click.command()
@@ -79,7 +87,8 @@ def make_nodes():
 
 
 all_commands = [
-    data_engineering,
+    # data_engineering,
+    calculate_osm,
     calculate_sidewalks,
     isochrones,
     make_nodes

@@ -3,22 +3,22 @@ from tqdm import tqdm
 
 from postgis_helpers import PostgreSQL
 
-from sidewalk_gaps.accessibility.network_analysis import SidewalkNetwork
+from helpers import RoutableNetwork
 
 
-def calculate_sidewalk_walksheds(db: PostgreSQL):
+# def calculate_sidewalk_walksheds(db: PostgreSQL):
 
-    ridescore_arguments = {
-        "poi_table_name": "ridescore_stations",
-        "poi_id_column": "dvrpc_id",
-        "output_table_name": "ridescore",
-        "num_pois": 1,
-        "poi_match_threshold": 152  # aka 500'
-    }
+#     ridescore_arguments = {
+#         "poi_table_name": "ridescore_stations",
+#         "poi_id_column": "dvrpc_id",
+#         "output_table_name": "ridescore",
+#         "num_pois": 1,
+#         "poi_match_threshold": 152  # aka 500'
+#     }
 
-    for schema in ["nj", "pa"]:
-        print("Calculating sidewalk network distance for:", schema)
-        network = SidewalkNetwork(db, schema, **ridescore_arguments)
+#     for schema in ["nj", "pa"]:
+#         print("Calculating sidewalk network distance for:", schema)
+#         network = RoutableNetwork(db, schema, **ridescore_arguments)
 
 
 def generate_isochrones(db: PostgreSQL):
