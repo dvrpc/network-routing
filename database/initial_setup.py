@@ -1,32 +1,4 @@
-"""
-Summary of ``download_data.py``
--------------------------------
-
-This script copies the sidewalk data from DVRPC's production database.
-
-It will create a database on localhost, and also save a pg_dump snapshot.
-
-Assumptions
------------
-    - You've executed "pGIS init" to generate the db connection file
-    - You've added an entry with credentials for "dvrpc_gis"
-
-Usage
------
-
-    In [1]: import sidewalk_gaps
-
-    In [2]: from postgis_helpers import PostgreSQL
-
-    In [3]: from sidewalk_gaps.download_data import download_data
-
-    In [4]: db = PostgreSQL('my_db_name', **sidewalk_gaps.CREDENTIALS["localhost"])
-
-    In [5]: download_data(db, sidewalk_gaps.FOLDER_SHP_INPUT)
-
-
-"""
-from pathlib import Path
+import os
 import platform
 import socket
 
@@ -34,12 +6,11 @@ import postgis_helpers as pGIS
 from postgis_helpers import PostgreSQL
 from philly_transit_data import TransitData
 
-# from helpers import import_shapefiles
-
 
 def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
     """
-    Copy data from DVRPC's production SQL database to a SQL database on localhost.
+    Copy data from DVRPC's production SQL database to a
+    SQL database on localhost.
 
     Note - this connection will only work within the firewall.
     """
@@ -47,6 +18,8 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
     data_to_download = [
         ("transportation", ["pedestriannetwork_lines",
                             "pedestriannetwork_points",
+                            "passengerrailstations",
+                            "transitparkingfacilities",
                             ]),
 
         ("structure", ["points_of_interest"]),
@@ -58,10 +31,13 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
 
         for table_name in table_list:
 
-            # Extract the data from the remote database and rename the geom column
+            # Extract the data from the remote database
+            # and rename the geom column
             query = f"SELECT * FROM {schema}.{table_name};"
             gdf = remote_db.query_as_geo_df(query, geom_col="shape")
-            gdf = gdf.rename(columns={"shape": "geometry"}).set_geometry("geometry")
+            gdf = gdf.rename(
+                columns={"shape": "geometry"}
+            ).set_geometry("geometry")
 
             # Check if we have multipart geometries.
             # If so, explode them (but keep the index)
@@ -120,13 +96,15 @@ def create_new_geodata(db: PostgreSQL):
         2) Filter POIs to those within DVRPC counties
     """
 
-    pa_counties = "('Bucks', 'Chester', 'Delaware', 'Montgomery', 'Philadelphia')"
+    pa_counties = """
+        ('Bucks', 'Chester', 'Delaware', 'Montgomery', 'Philadelphia')
+    """
     nj_counties = "('Burlington', 'Camden', 'Gloucester', 'Mercer')"
 
     # Add regional county data
     regional_counties = f"""
         select co_name, state_name, (st_dump(st_union(geom))).geom
-        from public.municipalboundaries m 
+        from public.municipalboundaries m
         where (co_name in {pa_counties} and state_name ='Pennsylvania')
             or
             (co_name in {nj_counties} and state_name = 'New Jersey')
@@ -143,7 +121,8 @@ def create_new_geodata(db: PostgreSQL):
     # Clip POIs to those inside DVRPC's region
     regional_pois = """
         select * from public.points_of_interest
-        where st_intersects(geom, (select st_collect(geom) from public.regional_counties))
+        where st_intersects(geom, (select st_collect(geom)
+                                   from public.regional_counties))
     """
     db.make_geotable_from_query(
         regional_pois,
@@ -154,15 +133,8 @@ def create_new_geodata(db: PostgreSQL):
     )
 
 
-def create_project_database(local_db: PostgreSQL, shp_folder: Path):
-    """ Batch execute the whole process:
-            1) copy SQL data
-            2) import shapefiles
-            3) load a median() function
-            4) make some helper GIS data
-            5) import transit data from OpenData portals
-            6) save pg_dump of database
-    """
+def create_project_database(local_db: PostgreSQL):
+    """ Batch execute the entire process """
 
     if platform.system() in ["Linux", "Windows"] \
        and "dvrpc.org" in socket.getfqdn():
@@ -170,18 +142,33 @@ def create_project_database(local_db: PostgreSQL, shp_folder: Path):
         dvrpc_credentials = pGIS.configurations()["dvrpc_gis"]
         remote_db = PostgreSQL("gis", **dvrpc_credentials)
 
+        # 1) Copy SQL data from production database
         import_production_sql_data(remote_db, local_db)
+
+        # 2) Load the MEDIAN() function into SQL
         load_helper_functions(local_db)
+
+        # 3) Create new layers using what's already been imported
         create_new_geodata(local_db)
 
+        # 4) Import all regional transit stops
+        transit_data = TransitData()
+        stops, lines = transit_data.all_spatial_data()
+        local_db.import_geodataframe(stops, "regional_transit_stops")
+
+        # 5) Import OSM data for the entire region
+        os.system("db-import osm")
+
     else:
-        print("\n-> !!!Initial DB setup can only be executed from a DVRPC workstation!!!")
+        print("""
+            -> ! DB setup can only be executed from a DVRPC workstation!!!
+        """)
 
 
 if __name__ == "__main__":
 
-    from sidewalk_gaps import CREDENTIALS, FOLDER_SHP_INPUT
+    from helpers import db_connection
 
-    db = PostgreSQL('my_db_name', **CREDENTIALS["localhost"])
+    db = db_connection()
 
-    create_project_database(db, FOLDER_SHP_INPUT)
+    create_project_database(db)
