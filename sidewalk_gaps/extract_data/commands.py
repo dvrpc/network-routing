@@ -1,13 +1,12 @@
 import click
 
-from postgis_helpers import PostgreSQL
+from helpers import db_connection
 
-from sidewalk_gaps import CREDENTIALS, PROJECT_DB_NAME
 from .clip_inputs import clip_inputs
+
 
 # CLIP SOURCE DATA TO SMALL STUDY AREA
 # ------------------------------------
-
 
 @click.command()
 @click.argument("state")
@@ -21,15 +20,9 @@ from .clip_inputs import clip_inputs
     help="Buffer distance in meters",
     default="",
 )
-@click.option(
-    "--database", "-d",
-    help="Name of the local database",
-    default=PROJECT_DB_NAME,
-)
 def clip_data(state: str,
               municipality: str,
-              buffer: str,
-              database):
+              buffer: str):
     """Clip source data down to a single municipality"""
 
     if municipality == "":
@@ -40,5 +33,6 @@ def clip_data(state: str,
     except ValueError:
         buffer = None
 
-    db = PostgreSQL(database, verbosity="minimal", **CREDENTIALS["localhost"])
+    db = db_connection()
+
     clip_inputs(db, state, municipality=municipality, buffer_meters=buffer)

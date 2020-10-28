@@ -34,6 +34,8 @@ import postgis_helpers as pGIS
 from postgis_helpers import PostgreSQL
 from philly_transit_data import TransitData
 
+# from helpers import import_shapefiles
+
 
 def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
     """
@@ -45,8 +47,6 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
     data_to_download = [
         ("transportation", ["pedestriannetwork_lines",
                             "pedestriannetwork_points",
-                            "pa_centerline",
-                            "CircuitTrails",
                             ]),
 
         ("structure", ["points_of_interest"]),
@@ -78,23 +78,6 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
 
             # Save to the local database
             local_db.import_geodataframe(gdf, table_name.lower())
-
-
-def import_shapefiles(folder: Path, db: PostgreSQL):
-    """ Import all shapefiles within the folder into SQL.
-        This includes:
-            - nj_centerline.shp
-            - TIM_Microzones_poi_surface.SHP
-    """
-
-    endings = [".shp", ".SHP"]
-
-    for ending in endings:
-
-        for shp_path in folder.rglob(f"*{ending}"):
-            idx = len(ending) * -1
-            pg_name = shp_path.name[:idx].replace(" ", "_").lower()
-            db.import_geodata(pg_name, shp_path, if_exists="replace")
 
 
 def load_helper_functions(db: PostgreSQL):
@@ -171,33 +154,6 @@ def create_new_geodata(db: PostgreSQL):
     )
 
 
-def import_transit_data(local_db: PostgreSQL):
-    """
-        Import SEPTA, NJT, and PATCO stops & lines.
-        This code lives in another repo:
-            https://github.com/aaronfraint/philly-transit-data
-    """
-
-    transit_data = TransitData()
-    stops, lines = transit_data.all_spatial_data()
-
-    # Import transit stops
-    local_db.import_geodataframe(stops, "regional_transit_stops")
-
-    # Massage the lines before importing
-    # - reset index and then explode so all are singlepart lines
-    line_gdf = lines.reset_index()
-    line_gdf = line_gdf.explode()
-    line_gdf["explode_idx"] = line_gdf.index
-    line_gdf = line_gdf.reset_index()
-
-    local_db.import_geodataframe(line_gdf, "regional_transit_lines")
-
-    # Reproject from 4326 to 26918
-    local_db.table_reproject_spatial_data("regional_transit_lines", 4326, 26918, "LINESTRING")
-    local_db.table_reproject_spatial_data("regional_transit_stops", 4326, 26918, "POINT")
-
-
 def create_project_database(local_db: PostgreSQL, shp_folder: Path):
     """ Batch execute the whole process:
             1) copy SQL data
@@ -215,10 +171,8 @@ def create_project_database(local_db: PostgreSQL, shp_folder: Path):
         remote_db = PostgreSQL("gis", **dvrpc_credentials)
 
         import_production_sql_data(remote_db, local_db)
-        import_shapefiles(shp_folder, local_db)
         load_helper_functions(local_db)
         create_new_geodata(local_db)
-        import_transit_data(local_db)
 
     else:
         print("\n-> !!!Initial DB setup can only be executed from a DVRPC workstation!!!")

@@ -10,5 +10,6 @@ setup(
     entry_points="""
         [console_scripts]
         sidewalk=sidewalk_gaps.cli:main
+        transit=transit_access.cli:main
     """,
 )

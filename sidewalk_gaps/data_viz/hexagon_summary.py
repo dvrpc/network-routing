@@ -1,5 +1,36 @@
+import pandas as pd
 from tqdm import tqdm
 from postgis_helpers import PostgreSQL
+
+
+def combine_transit_results(db: PostgreSQL):
+
+    # For each state, get the sidewalk nodes with the
+    # walk time to the closest transit stop (of any kind)
+
+    all_gdfs = []
+
+    for schema in ["nj", "pa"]:
+
+        # Get one row from the access results
+        gdf_sample = db.query_as_geo_df(
+            f"SELECT * FROM {schema}.access_results LIMIT 1"
+        )
+
+        # Make a list of all columns that have 'n_1_' in their name
+        cols_to_query = [col for col in gdf_sample.columns if "n_1_" in col]
+
+        # Build a dynamic SQL query, getting the LEAST of the n_1_* columns
+        query = "SELECT geom, LEAST(" + ", ".join(cols_to_query)
+        query += f") as walk_time FROM {schema}.access_results"
+
+        gdf = db.query_as_geo_df(query)
+
+        all_gdfs.append(gdf)
+
+    combined_gdf = pd.concat(all_gdfs)
+
+    db.import_geodataframe(combined_gdf, "results_transit_access")
 
 
 def hexagon_summary(db: PostgreSQL):
@@ -141,3 +172,56 @@ def hexagon_summary(db: PostgreSQL):
         SELECT * FROM pa.hexagon_summary
     """
     db.make_geotable_from_query(query, "hexagon_summary", "POLYGON", 26918)
+
+
+def classify_hex_results(db: PostgreSQL):
+
+    # Classify the hexagon results into two columns:
+    # 1) Can the SW network be expanded to streets w/out SWs?
+    # 2) Can the existing SW network be better connected to itself?
+
+    # Streets without sidewalks
+    # Classify those that have roadways but NO sidewalks
+
+    db.table_add_or_nullify_column("hexagon_summary", "growth", "TEXT")
+    db.table_add_or_nullify_column("hexagon_summary", "connectivity", "TEXT")
+
+    growth_breakpoint_1 = 0.1
+    growth_breakpoint_2 = 0.8
+
+    sql_growth = f"""
+        UPDATE hexagon_summary
+        SET growth = CASE
+            WHEN cl_len  > 0
+                 and
+                 sw_len / cl_len  <= {growth_breakpoint_1}
+                THEN 'Few Sidewalks'
+
+            WHEN cl_len  > 0
+                 and
+                 sw_len > 0
+                 and
+                 sw_len / cl_len  > {growth_breakpoint_1}
+                 and
+                 sw_len / cl_len  <= {growth_breakpoint_2}
+                THEN 'Some Sidewalks'
+
+            WHEN cl_len  > 0
+                 and
+                 sw_len > 0
+                 and
+                 sw_len / cl_len  > {growth_breakpoint_2}
+                THEN 'Many Sidewalks'
+
+            ELSE NULL
+        END
+    """
+    db.execute(sql_growth)
+
+
+if __name__ == "__main__":
+    from sidewalk_gaps import CREDENTIALS, PROJECT_DB_NAME
+
+    db = PostgreSQL(PROJECT_DB_NAME, **CREDENTIALS["localhost"])
+
+    combine_transit_results(db)

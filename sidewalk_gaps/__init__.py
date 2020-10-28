@@ -39,6 +39,6 @@ else:
     FOLDER_DB_BACKUPS, FOLDER_DATA_PRODUCTS = None, None
 
 # Load SQL database credentials
-CREDENTIALS = pGIS.configurations()
+# CREDENTIALS = pGIS.configurations()
 
-PROJECT_DB_NAME = "sidewalk_gap_analysis"
+# PROJECT_DB_NAME = "sidewalk_gap_analysis"
