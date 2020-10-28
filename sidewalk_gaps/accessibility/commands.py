@@ -1,8 +1,6 @@
 
 import click
 
-from postgis_helpers import PostgreSQL
-
 from helpers import RoutableNetwork, db_connection
 
 
@@ -13,6 +11,6 @@ def analyze_network(schema: str):
 
     db = db_connection()
 
-    # note: the default inputs for RouteableNetwork 
+    # note: the default inputs for RouteableNetwork
     # are tailored to this analysis
-    network = RoutableNetwork(db, schema, output_schema=f"gaps_{schema}")
+    _ = RoutableNetwork(db, schema, output_schema=f"gaps_{schema}")

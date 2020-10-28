@@ -17,7 +17,7 @@ def osm_analysis(db: PostgreSQL):
         "node_id_column": "node_id",
     }
 
-    network = RoutableNetwork(db, "public", **arguments)
+    _ = RoutableNetwork(db, "public", **arguments)
 
 
 def sidewalk_analysis(db: PostgreSQL):
@@ -33,7 +33,7 @@ def sidewalk_analysis(db: PostgreSQL):
         "node_id_column": "sw_node_id",
     }
 
-    network = RoutableNetwork(db, "public", **arguments)
+    _ = RoutableNetwork(db, "public", **arguments)
 
 
 if __name__ == "__main__":

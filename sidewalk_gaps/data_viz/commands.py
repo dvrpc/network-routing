@@ -5,6 +5,7 @@ from postgis_helpers import PostgreSQL
 from sidewalk_gaps import CREDENTIALS, PROJECT_DB_NAME
 from .hexagon_summary import hexagon_summary, classify_hex_results
 
+
 @click.command()
 @click.option(
     "--database", "-d",

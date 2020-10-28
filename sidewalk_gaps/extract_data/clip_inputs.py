@@ -68,13 +68,10 @@ def clip_inputs(db: PostgreSQL,
                                       from public.regional_counties
                                       where state_name = '{opposite_state}'))
         """
-        db.make_geotable_from_query(clip_query, new_name, geom_type, 26918, schema=schema)
-
-
-# if __name__ == "__main__":
-#     import postgis_helpers as pGIS
-#     from sidewalk_gaps import CREDENTIALS
-
-#     db = pGIS.PostgreSQL("sidewalk_gaps", verbosity="minimal", **CREDENTIALS["localhost"])
-
-#     clip_inputs(db, "nj", "camden")
+        db.make_geotable_from_query(
+            clip_query,
+            new_name,
+            geom_type,
+            26918,
+            schema=schema
+        )
