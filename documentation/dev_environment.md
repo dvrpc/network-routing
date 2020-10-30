@@ -15,30 +15,22 @@ Activate the environment:
 
 ## Create a ``.env`` file
 
-This project uses ``python-dotenv`` to configure paths to folders.
-You don't always need access to these variables, but a few commands
-require a pre-configured folder path.
+This project uses ``python-dotenv`` to configure environment variables.
+You'll need to create a file named `.env` in the root project folder. (i.e. `~/github/network_routing`)
 
-    - ``sidewalk db-setup`` requires ``PROJECT_ROOT``
-    - ``sidewalk db-freeze`` requires ``GDRIVE_ROOT``
-
-
-If you're on Linux\WSL, it might look something like:
-
-```text
-PROJECT_ROOT=/mnt/u/folder1/folder2/etc/sidewalk_gap_analysis
+It should define the following three variables:
+```
+DB_NAME=network_routing_analysis
+DB_HOST=localhost
+GDRIVE_ROOT=/Volumes/GoogleDrive/My Drive
 ```
 
-Windows users might have:
-```text
-PROJECT_ROOT=U:\folder1\folder2\etc\sidewalk_gap_analysis
-GDRIVE_ROOT=G:\My Drive\projects\Sidewalk Gaps
+On Windows, replace the final line with:
+```
+GDRIVE_ROOT=G:\My Drive
 ```
 
-And on MacOS:
-```text
-GDRIVE_ROOT=/Volumes/GoogleDrive/My Drive/projects/Sidewalk Gaps
-```
+Defining these variables in this way simplifies the database and folder connections all across the project.
 
 ## Define SQL database connections
 

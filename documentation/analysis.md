@@ -9,15 +9,6 @@ All actions will begin with the command ``sidewalk``. To see a list of all avail
 ## [Database Setup](../sidewalk_gaps/db_setup)
 
 
-1) Build a PostgreSQL database from DVRPC's data sources with ``sidewalk db-setup``. This must be done from a workstation behind DVRPC's firewall. Most datasets are loaded directly from DVRPC's GIS SQL server, and this requires a PostGIS connection defined with the name ``dvrpc_gis``. In addition, there are a few flat files that must be loaded from the ``U:\`` drive, and as a result the ``PROJECT_ROOT`` must be defined in the ``.env`` file. For more info on this, review the [dev environment setup process](dev_environment.md).
-
-
-2) Save the SQL database to text file with ``sidewalk db-freeze``. If ``GDRIVE_ROOT`` is configured, it will automatically be placed in the proper cloud folder. If unspecified it will be in the active directory and must be manually copied to Google Drive.
-
-
-3) Load the text file onto your machine of choice with ``sidewalk db-load``.
-
-
 4) Generate the node layer with ``sidewalk make-nodes``.
 
 
