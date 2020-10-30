@@ -18,31 +18,6 @@ def main():
     pass
 
 
-# @click.command()
-# def data_engineering():
-#     """Massage the data to prepare for analysis"""
-
-#     db = db_connection()
-
-#     for schema, state_name in [("nj", "New Jersey"), ("pa", "Pennsylvania")]:
-#         query = f"""
-#             select * from passengerrailstations p
-#             where
-#                 st_within(
-#                     geom,
-#                     (select st_collect(geom) from regional_counties
-#                         where state_name = '{state_name}')
-#                 )
-#         """
-#         db.make_geotable_from_query(
-#             query,
-#             "ridescore_stations",
-#             "POINT",
-#             26918,
-#             schema=schema
-#         )
-
-
 @click.command()
 def calculate_osm():
     db = db_connection()
@@ -80,7 +55,7 @@ def make_nodes():
         "uid_col": "node_id",
     }
 
-    edge_table = "osm_edges"
+    edge_table = "osm_edges_drive"
 
     print(f"Generating nodes for {edge_table}")
     generate_nodes(db, edge_table, "public", kwargs)
