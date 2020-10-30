@@ -12,7 +12,7 @@ def osm_analysis(db: PostgreSQL):
         "output_schema": "rs_osm",
         "num_pois": 1,
         "poi_match_threshold": 152,  # aka 500'
-        "edge_table_name": "osm_edges",
+        "edge_table_name": "osm_edges_drive",
         "node_table_name": "nodes_for_osm",
         "node_id_column": "node_id",
     }
