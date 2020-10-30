@@ -1,14 +1,8 @@
 import click
 
-# from postgis_helpers import PostgreSQL
-
 from helpers import db_connection, generate_nodes
 
-from .ridescore_isochrones import (
-    # calculate_sidewalk_walksheds,
-    generate_isochrones
-)
-
+from .ridescore_isochrones import generate_isochrones
 from .network_analysis import osm_analysis, sidewalk_analysis
 
 
@@ -20,6 +14,7 @@ def main():
 
 @click.command()
 def calculate_osm():
+    """Analyze OSM network distance around each rail stop """
     db = db_connection()
     osm_analysis(db)
 
@@ -29,7 +24,7 @@ def calculate_sidewalks():
     """Analyze sidewalk network distance around each rail stop """
 
     db = db_connection()
-    
+
     sidewalk_analysis(db)
 
 
@@ -62,7 +57,6 @@ def make_nodes():
 
 
 all_commands = [
-    # data_engineering,
     calculate_osm,
     calculate_sidewalks,
     isochrones,
