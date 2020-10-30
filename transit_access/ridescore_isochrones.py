@@ -41,11 +41,20 @@ def generate_isochrones(db: PostgreSQL):
             # Only make isochrones if there's nodes below the threshold
             if node_count > 0:
 
+                # If there's only two points we want to extract
+                # the linestring from the concavehull operation
+                if node_count == 2:
+                    geom_idx = 2
+                # Otherwise, grab the polygon instead
+                # See: https://postgis.net/docs/ST_CollectionExtract.html
+                else:
+                    geom_idx = 3
+
                 query = f"""
                     select  st_buffer(
                                 st_collectionextract(
                                     st_concavehull(st_collect(geom), 0.99),
-                                    3),
+                                    {geom_idx}),
                                 45) as geom
                     from {schema}.{result_table}
                     where n_1_{dvrpc_id} <= {time_cutoff}
