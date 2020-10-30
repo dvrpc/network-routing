@@ -2,7 +2,7 @@ import click
 
 from helpers import db_connection, generate_nodes
 
-from .ridescore_isochrones import generate_isochrones
+from .ridescore_isochrones import generate_isochrones, calculate_sidewalkscore
 from .network_analysis import osm_analysis, sidewalk_analysis
 
 
@@ -38,6 +38,15 @@ def isochrones():
 
 
 @click.command()
+def sidewalkscore():
+    """Calculate the SidewalkScore for each rail stop"""
+
+    db = db_connection()
+
+    calculate_sidewalkscore(db)
+
+
+@click.command()
 def make_nodes():
     """ Generate topologically-sound nodes for the centerlines """
 
@@ -60,7 +69,8 @@ all_commands = [
     calculate_osm,
     calculate_sidewalks,
     isochrones,
-    make_nodes
+    make_nodes,
+    sidewalkscore,
 ]
 
 for cmd in all_commands:

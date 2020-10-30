@@ -71,3 +71,31 @@ def generate_isochrones(db: PostgreSQL):
     merged_gdf = pd.concat(all_results)
 
     db.import_geodataframe(merged_gdf, "ridescore_isos", schema="data_viz")
+
+
+def calculate_sidewalkscore(db: PostgreSQL):
+    gdf = db.query_as_geo_df("SELECT * FROM passengerrailstations")
+
+    gdf["rs_osm"] = 0.0
+    gdf["rs_sw"] = 0.0
+
+    for idx, row in tqdm(gdf.iterrows(), total=gdf.shape[0]):
+
+        # Find all isochrones for this station
+        query = f"""
+            select schema, st_area(geom) as area
+            from data_viz.ridescore_isos
+            where dvrpc_id = '{row.dvrpc_id}'
+        """
+
+        result = db.query_as_list(query)
+
+        # Drop each result into the appropriate column
+        for colname, iso_area in result:
+            gdf.at[idx, colname] = iso_area
+
+    print(gdf)
+
+    gdf["sidewalkscore"] = gdf["rs_sw"] / gdf["rs_osm"]
+
+    db.import_geodataframe(gdf, "sidewalkscore", schema="data_viz")
