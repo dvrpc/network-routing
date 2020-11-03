@@ -27,7 +27,7 @@ transit calculate-osm
 
 The results of this analysis will end up in a schema named `rs_osm`
 
-## [Generate isochrones](../transit_access/ridescore_isochrones.py) from the sidewalk & OSM analysis runs:
+## [Generate isochrones](../transit_access/ridescore_isochrones.py#L7) from the sidewalk & OSM analysis runs:
 
 ```bash
 transit isochrones
@@ -37,11 +37,11 @@ The output is a polygon table named `ridescore_isos` in a schema named `data_viz
 
 
 
-## Calculate the "sidewalkscore" for each rail station:
+## Calculate the ["sidewalkscore"](../transit_access/ridescore_isochrones.py#L76) for each rail station:
 
 
 ```bash
 transit sidewalkscore
 ```
 
-The output is a point table named `sidewalkscore` in a schema named `data_viz`
+The output is a point table named `sidewalkscore` in a schema named `data_viz`.
