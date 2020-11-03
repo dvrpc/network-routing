@@ -13,6 +13,8 @@ data_to_download = [
                         ]),
 
     ("Boundaries", ["MunicipalBoundaries"]),
+
+    ("Demographics", ["IPD_2018"]),
 ]
 
 # Make a wget command for each table
@@ -36,7 +38,7 @@ if __name__ == "__main__":
 
     data_folder = Path(".")
 
-    for geojson in data_folder.rglob("*.geojson"):
+    for geojson in data_folder.rglob("ipd_2018.geojson"):
         gdf = gpd.read_file(geojson)
 
         sql_tablename = geojson.name.replace(".geojson", "")

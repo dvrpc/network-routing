@@ -25,6 +25,8 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
         ("structure", ["points_of_interest"]),
 
         ("boundaries", ["municipalboundaries"]),
+
+        ("demographics", "ipd_2018")
     ]
 
     for schema, table_list in data_to_download:
@@ -154,6 +156,9 @@ def create_project_database(local_db: PostgreSQL):
         # 4) Import all regional transit stops
         transit_data = TransitData()
         stops, lines = transit_data.all_spatial_data()
+
+        stops = stops.to_crs("EPSG:26918")
+
         local_db.import_geodataframe(stops, "regional_transit_stops")
 
         # 5) Import OSM data for the entire region
