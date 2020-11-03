@@ -50,7 +50,7 @@ def clip_inputs(db: PostgreSQL,
         ("nodes_for_osm", "nodes_for_osm", "Point"),
         ("nodes_for_sidewalks", "nodes_for_sidewalks", "Point"),
         ("regional_transit_stops", "transit_stops", "Point"),
-        ("osm_edges", "osm_edges", "LineString")
+        ("osm_edges_drive", "osm_edges", "LineString")
     ]
 
     for src_name, new_name, geom_type in data_to_clip:
