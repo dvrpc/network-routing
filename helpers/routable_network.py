@@ -74,8 +74,15 @@ class RoutableNetwork:
         themes = self.db.query_as_list(theme_query)
         themes = {x[0]: x[0] for x in themes}
 
+        bad_characters = [" ", r"/", "-"]
+
         for theme in themes:
-            nice_theme = theme.lower().replace(" ", "").replace(r"/", "")
+
+            nice_theme = theme.lower()
+
+            for char in bad_characters:
+                nice_theme = nice_theme.replace(char, "")
+
             themes[theme] = nice_theme
 
         return themes
