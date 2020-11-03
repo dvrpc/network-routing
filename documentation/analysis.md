@@ -6,7 +6,7 @@ This python module includes a command-line-interface (CLI). To use the CLI you'l
 Commands will begin with ``sidewalk`` or `transit`. To see a list of all available sub-commands, use ``sidewalk --help`` or `transit --help`.
 
 
-## [Database Setup](../sidewalk_gaps/db_setup)
+## [Database Setup](../database)
 
 1) There's a few ways to get the database spooled up for analysis:
 
@@ -51,8 +51,6 @@ Commands will begin with ``sidewalk`` or `transit`. To see a list of all availab
 - Execute a network-based accessibility analysis for NJ with ``sidewalk analyze-network nj``
 
 - Repeat for PA with ``sidewalk analyze-network pa``
-
-- Summarize the network analysis results with a hexagon overlay that identifies locations where connectivity within the sidewalk network could be improved. (TODO)
 
 
 ### [Prepare & Export Data Products for Visualization](../sidewalk_gaps/data_viz)
