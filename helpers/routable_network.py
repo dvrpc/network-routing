@@ -57,7 +57,9 @@ class RoutableNetwork:
 
     def _get_themes(self):
         """
-        Return a dictionary with each unique POI theme within the schema.
+        Return a dictionary with each unique POI 'theme' within the schema.
+
+        In this case, a 'theme' is any kind of unique identifier.
 
         Key is the raw text from SQL, value is the santinized table name
 
