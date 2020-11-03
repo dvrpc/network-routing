@@ -36,7 +36,7 @@ a copy of the database for use on another computer:
 db-export freeze
 ```
 
-This process will attempt to place it into a GoogleDrive folder, and will ask you to create the folder first if it doesn't exist yet.
+This process will attempt to place it into a GoogleDrive folder, and will ask you to create the folder first if it doesn't exist yet. If you want to see a list of all available options provided with this command, run `db-export freeze --help`
 
 
 To load up the frozen database named `SNAPSHOT` on a new machine, run:
@@ -62,6 +62,7 @@ Generate a node layer for the Sidewalk data:
 sidewalk make-nodes
 ```
 
+These processes output tables named `nodes_for_osm` and `nodes_for_sidewalks`, respectively. Both are stored within the `public` schema.
 
 ## Data in initial database:
 

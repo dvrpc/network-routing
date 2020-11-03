@@ -1,5 +1,20 @@
 # Development Environment
 
+Clone this repo to your local machine with:
+
+```
+git clone https://github.com/dvrpc/network-routing.git
+```
+
+Change directory into the new folder:
+
+```
+cd network-routing
+```
+
+Execute all following commands from this directory
+
+
 ## Create the environment with ``conda`` using the ``env.yml`` file
 
 ```bash

@@ -1,16 +1,12 @@
 # Sidewalk Gap Analysis Process
 
-This python module includes a command-line-interface (CLI). To use the CLI you'll need to open a terminal and activate the environment with ``conda activate network_analysis``
+## Before we start:
 
+Set up your [development environment](dev_environment.md)
+and [build the analysis database](database_setup.md) first.
 
-Commands for the sidewalk gap analysis project will begin with ``sidewalk``  To see a list of all available sub-commands, use ``sidewalk --help`` 
+All commands related to this project are prefixed with `sidewalk`. To see a list of all available commands, run: `sidewalk --help`
 
-## [Database Setup](../database)
-
-- Follow the process outlined in the [database setup instructions](database_setup.md)
-
-
-- Generate the sidewalk node layer with ``sidewalk make-nodes``.
 
 ## [Extract Data](../sidewalk_gaps/extract_data)
 
