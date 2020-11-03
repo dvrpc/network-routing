@@ -20,7 +20,6 @@ grid-shaped areas, but didn't fare as well with curved/irregular features.
 from tqdm import tqdm
 
 from postgis_helpers import PostgreSQL
-from sidewalk_gaps import CREDENTIALS
 
 database_name = "sidewalk_gaps"
 
@@ -34,7 +33,7 @@ def classify_centerlines(
 
     # Get a list of all centerlines we want to iterate over.
     oid_query = f"""
-        SELECT objectid FROM {schema}.{tbl}
+        SELECT uid FROM {schema}.{tbl}
     """
 
     # But first...  check if the new_col exists
@@ -66,9 +65,9 @@ def classify_centerlines(
                 )
             )
         FROM
-            {schema}.sidewalks sw, {schema}.centerlines c
+            {schema}.sidewalks sw, {schema}.{tbl} c
         where
-            c.objectid = OID_PLACEHOLDER
+            c.uid = OID_PLACEHOLDER
             AND
             ST_INTERSECTS(sw.geom, (SELECT ST_BUFFER(c.geom,25)))
             AND
@@ -92,7 +91,7 @@ def classify_centerlines(
         update_query = f"""
             UPDATE {schema}.{tbl} c
             SET {new_col} = {sidwalk_length_in_meters}
-            WHERE objectid = {oid}
+            WHERE uid = {oid}
         """
         db.execute(update_query)
 

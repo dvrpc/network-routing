@@ -2,7 +2,7 @@ import click
 
 # from sidewalk_gaps.db_setup import commands as db_setup_commands
 from sidewalk_gaps.accessibility import commands as accessibility_commands
-# from sidewalk_gaps.segments import commands as segment_commands
+from sidewalk_gaps.segments import commands as segment_commands
 # from sidewalk_gaps.data_viz import commands as viz_commands
 from sidewalk_gaps.extract_data import commands as extraction_commands
 
@@ -34,19 +34,14 @@ def make_nodes():
 all_commands = [
     make_nodes,
     extraction_commands.clip_data,
-    accessibility_commands.analyze_network
+    accessibility_commands.analyze_network,
+    segment_commands.analyze_segments,
+    segment_commands.identify_islands
 ]
 
 for cmd in all_commands:
     main.add_command(cmd)
 
 
-# main.add_command(db_setup_commands.db_setup)
-# main.add_command(db_setup_commands.db_load)
-# main.add_command(db_setup_commands.db_freeze)
-# main.add_command(db_setup_commands.make_nodes)
-# main.add_command(segment_commands.analyze_segments)
-# main.add_command(segment_commands.identify_islands)
-# main.add_command(accessibility_commands.analyze_network)
 # main.add_command(viz_commands.summarize_into_hexagons)
 # main.add_command(viz_commands.classify_hexagons)
