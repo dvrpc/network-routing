@@ -1,6 +1,7 @@
 import click
+from pathlib import Path
 
-from helpers import db_connection, generate_nodes
+from helpers import db_connection, generate_nodes, GDRIVE_ROOT
 
 from .ridescore_isochrones import generate_isochrones, calculate_sidewalkscore
 from .network_analysis import osm_analysis, sidewalk_analysis
@@ -65,12 +66,36 @@ def make_nodes():
     generate_nodes(db, edge_table, "public", kwargs)
 
 
+@click.command()
+def export_geojson_for_webmap():
+    """Save .geojson files to be tiled for webmaps"""
+
+    db = db_connection()
+
+    output_folder = Path(GDRIVE_ROOT) / "projects/RideScore/outputs"
+
+    tables_to_export = ["ridescore_isos", "sidewalkscore"]
+
+    for tbl in tables_to_export:
+
+        output_path = output_folder / f"{tbl}.geojson"
+
+        query = f"SELECT * FROM data_viz.{tbl}"
+
+        gdf = db.query_as_geo_df(query)
+
+        gdf = gdf.to_crs("EPSG:4326")
+
+        gdf.to_file(output_path, driver="GeoJSON")
+
+
 all_commands = [
     calculate_osm,
     calculate_sidewalks,
     isochrones,
     make_nodes,
     sidewalkscore,
+    export_geojson_for_webmap,
 ]
 
 for cmd in all_commands:
