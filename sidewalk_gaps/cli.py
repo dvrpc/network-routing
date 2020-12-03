@@ -3,7 +3,7 @@ import click
 # from sidewalk_gaps.db_setup import commands as db_setup_commands
 from sidewalk_gaps.accessibility import commands as accessibility_commands
 from sidewalk_gaps.segments import commands as segment_commands
-# from sidewalk_gaps.data_viz import commands as viz_commands
+from sidewalk_gaps.data_viz import commands as viz_commands
 from sidewalk_gaps.extract_data import commands as extraction_commands
 
 from helpers import db_connection, generate_nodes
@@ -36,7 +36,8 @@ all_commands = [
     extraction_commands.clip_data,
     accessibility_commands.analyze_network,
     segment_commands.analyze_segments,
-    segment_commands.identify_islands
+    segment_commands.identify_islands,
+    viz_commands.combine_centerlines,
 ]
 
 for cmd in all_commands:
