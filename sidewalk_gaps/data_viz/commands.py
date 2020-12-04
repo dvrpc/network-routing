@@ -2,6 +2,7 @@ import click
 
 from helpers import db_connection
 from .hexagon_summary import hexagon_summary, classify_hex_results
+from .handle_osm_tags import scrub_osm_tags as _scrub_osm_tags
 
 
 @click.command()
@@ -34,6 +35,11 @@ def combine_centerlines():
         'schema': "data_viz"
     }
     db.make_geotable_from_query(query, "osm_sw_coverage", **kwargs)
+
+@click.command()
+def scrub_osm_tags():
+    """ Clean 'highway' tags in the OSM data """
+    _scrub_osm_tags()
 
 
 @click.command()

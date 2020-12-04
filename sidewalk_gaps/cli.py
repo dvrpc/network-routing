@@ -38,6 +38,7 @@ all_commands = [
     segment_commands.analyze_segments,
     segment_commands.identify_islands,
     viz_commands.combine_centerlines,
+    viz_commands.scrub_osm_tags,
 ]
 
 for cmd in all_commands:
