@@ -39,11 +39,14 @@ All commands related to this project are prefixed with `sidewalk`. To see a list
 
 ## [Prepare & Export Data Products for Visualization](../sidewalk_gaps/data_viz)
 
-- Create a hexagon layer that covers the region, and identify the following conditions:
+- Merge the PA and NJ centerlines together with `sidewalk combine-centerlines`
+
+- Clean up the OSM highway tags with `sidewalk scrub-osm-tags`
+
+- **Need to update:** Create a hexagon layer that covers the region, and identify the following conditions:
     - number of unique islands
     - difference between high/low connectivity values
     - length of centerlines that are missing sidewalks
 
-
-- The results of this analytic process are exported to file with (TODO - wire up command). These outputs are used in interactive webmaps. The code for these maps are contained within another GitHub repository - https://github.com/dvrpc/sidewalk-data-viz
+- ***The results of this analytic process are exported to file with (TODO - wire up command).*** These outputs are used in interactive webmaps. The code for these maps are contained within another GitHub repository - https://github.com/dvrpc/sidewalk-data-viz
 
