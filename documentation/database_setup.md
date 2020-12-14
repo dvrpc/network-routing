@@ -13,21 +13,18 @@ Python environment](dev_environment.md). Activate it before moving on.
 
 There's a few ways to get the database spooled up for analysis:
 
-### 1) From a DVRPC workstation, run:
+### 1) To build the database from scratch, run:
 
 ```
 python database/initial_setup.py
 ```
 
-### 2) From any other computer, run:
+Note: This will only work if one of the following two conditions is met:
 
-```
-python database/setup_from_portal.py
-```
+1) You're using a DVRPC workstation and have defined a connection to the production PostgreSQL database.
+2) You're on any other computer `wget` is installed and available on the system path.
 
-Note: This will only work if `wget` is installed and available on the system path.
-
-### 3) Load a snapshot of the database
+### 2) Load a snapshot of the database
 
 The analysis code runs substantially slower on Windows machines. To save
 a copy of the database for use on another computer:
