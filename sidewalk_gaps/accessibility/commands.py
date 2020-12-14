@@ -11,6 +11,11 @@ def analyze_network(schema: str):
 
     db = db_connection()
 
-    # note: the default inputs for RouteableNetwork
+    # Note: the default inputs for RouteableNetwork
     # are tailored to this analysis
-    _ = RoutableNetwork(db, schema, output_schema=f"gaps_{schema}")
+    arguments = {
+        "output_schema": f"gaps_{schema}",
+        "max_minutes": 180,
+    }
+
+    _ = RoutableNetwork(db, schema, **arguments)
