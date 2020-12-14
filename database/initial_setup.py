@@ -205,22 +205,22 @@ def create_project_database(local_db: PostgreSQL):
         # 1b) Import data from public ArcGIS Portal
         import_data_from_portal_with_wget(local_db)
 
-    # # 2) Load the MEDIAN() function into SQL
-    # load_helper_functions(local_db)
+    # 2) Load the MEDIAN() function into SQL
+    load_helper_functions(local_db)
 
-    # # 3) Create new layers using what's already been imported
-    # create_new_geodata(local_db)
+    # 3) Create new layers using what's already been imported
+    create_new_geodata(local_db)
 
-    # # 4) Import all regional transit stops
-    # transit_data = TransitData()
-    # stops, lines = transit_data.all_spatial_data()
+    # 4) Import all regional transit stops
+    transit_data = TransitData()
+    stops, lines = transit_data.all_spatial_data()
 
-    # stops = stops.to_crs("EPSG:26918")
+    stops = stops.to_crs("EPSG:26918")
 
-    # local_db.import_geodataframe(stops, "regional_transit_stops")
+    local_db.import_geodataframe(stops, "regional_transit_stops")
 
-    # # 5) Import OSM data for the entire region
-    # os.system("db-import osm")
+    # 5) Import OSM data for the entire region
+    os.system("db-import osm")
 
 
 if __name__ == "__main__":
