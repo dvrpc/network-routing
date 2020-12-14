@@ -33,8 +33,9 @@ else:
 
 if GDRIVE_ROOT:
     GDRIVE_ROOT = Path(GDRIVE_ROOT)
-    FOLDER_DB_BACKUPS = GDRIVE_ROOT / "database_dumps"
-    FOLDER_DATA_PRODUCTS = GDRIVE_ROOT / "data products"
+    GDRIVE_PROJECT_ROOT = GDRIVE_ROOT / "projects/Sidewalk Gaps"
+    FOLDER_DB_BACKUPS = GDRIVE_PROJECT_ROOT / "database_dumps"
+    FOLDER_DATA_PRODUCTS = GDRIVE_PROJECT_ROOT / "data products"
 else:
     FOLDER_DB_BACKUPS, FOLDER_DATA_PRODUCTS = None, None
 
