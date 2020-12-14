@@ -11,7 +11,7 @@ Each step in the process is described in detail on its own page:
 
 To summarize the process:
 
-## Setup the dev environment
+## 1) Setup the dev environment
 
 ```bash
 git clone https://github.com/dvrpc/network-routing.git
@@ -22,14 +22,14 @@ conda activate network_routing
 
 ... then create your `.env` file ...
 
-## Roll the starter database
+## 2) Build the starter database
 
 ```bash
 sidewalk make-nodes
 transit make-nodes
 ```
 
-## Run the `SidewalkScore` analysis
+## 3) Run the `SidewalkScore` analysis
 
 ```bash
 transit calculate-sidewalk
@@ -38,7 +38,7 @@ transit isochrones
 transit sidewalkscore
 ```
 
-## Run the `Sidewalk Gaps` analysis
+## 4) Run the `Sidewalk Gaps` analysis
 
 Analyze NJ:
 
