@@ -1,10 +1,32 @@
 import os
 import platform
 import socket
+from pathlib import Path
+import geopandas as gpd
+from geopandas import GeoDataFrame
 
 import postgis_helpers as pGIS
 from postgis_helpers import PostgreSQL
 from philly_transit_data import TransitData
+
+
+def explode_gdf_if_multipart(gdf: GeoDataFrame) -> GeoDataFrame:
+    """ Check if the geodataframe has multipart geometries.
+        If so, explode them (but keep the index)
+    """
+
+    multipart = False
+
+    for geom_type in gdf.geom_type.unique():
+        if "Multi" in geom_type:
+            multipart = True
+
+    if multipart:
+        gdf = gdf.explode()
+        gdf['explode'] = gdf.index
+        gdf = gdf.reset_index()
+
+    return gdf
 
 
 def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
@@ -41,21 +63,53 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
                 columns={"shape": "geometry"}
             ).set_geometry("geometry")
 
-            # Check if we have multipart geometries.
-            # If so, explode them (but keep the index)
-            multipart = False
-            for geom_type in gdf.geom_type.unique():
-                if "Multi" in geom_type:
-                    multipart = True
+            gdf = explode_gdf_if_multipart(gdf)
 
-            if multipart:
-                print(f"EXPLODING {table_name}")
-                gdf = gdf.explode()
-                gdf['explode'] = gdf.index
-                gdf = gdf.reset_index()
+            gdf = gdf.to_crs("EPSG:26918")
 
             # Save to the local database
             local_db.import_geodataframe(gdf, table_name.lower())
+
+
+def import_data_from_portal_with_wget(db: PostgreSQL):
+    data_to_download = [
+        ("Transportation", ["PedestrianNetwork_lines",
+                            "PedestrianNetwork_points",
+                            "PassengerRailStations",
+                            "TransitParkingFacilities",
+                            ]),
+
+        ("Boundaries", ["MunicipalBoundaries"]),
+
+        ("Demographics", ["IPD_2018"]),
+    ]
+
+    # Make a wget command for each table
+    commands = []
+
+    for schema, table_list in data_to_download:
+        for tbl in table_list:
+            wget_cmd = f'wget -O database/{tbl.lower()}.geojson "https://arcgis.dvrpc.org/portal/services/{schema}/{tbl}/MapServer/WFSServer?request=GetFeature&service=WFS&typename={tbl}&outputformat=GEOJSON&format_options=filename:{tbl.lower()}.geojson"'
+
+            commands.append(wget_cmd)
+
+    # # Download GeoJSON data from DVRPC's ArcGIS REST portal
+    # for cmd in commands:
+    #     os.system(cmd)
+
+    # Import all of the geojson files into the SQL database
+    data_folder = Path(".")
+
+    for geojson in data_folder.rglob("*.geojson"):
+        gdf = gpd.read_file(geojson)
+
+        gdf = explode_gdf_if_multipart(gdf)
+
+        gdf = gdf.to_crs("EPSG:26918")
+
+        sql_tablename = geojson.name.replace(".geojson", "")
+
+        db.import_geodataframe(gdf, sql_tablename)
 
 
 def load_helper_functions(db: PostgreSQL):
@@ -120,19 +174,19 @@ def create_new_geodata(db: PostgreSQL):
         schema="public"
     )
 
-    # Clip POIs to those inside DVRPC's region
-    regional_pois = """
-        select * from public.points_of_interest
-        where st_intersects(geom, (select st_collect(geom)
-                                   from public.regional_counties))
-    """
-    db.make_geotable_from_query(
-        regional_pois,
-        "regional_pois",
-        "Point",
-        26918,
-        schema="public"
-    )
+    # # Clip POIs to those inside DVRPC's region
+    # regional_pois = """
+    #     select * from public.points_of_interest
+    #     where st_intersects(geom, (select st_collect(geom)
+    #                                from public.regional_counties))
+    # """
+    # db.make_geotable_from_query(
+    #     regional_pois,
+    #     "regional_pois",
+    #     "Point",
+    #     26918,
+    #     schema="public"
+    # )
 
 
 def create_project_database(local_db: PostgreSQL):
@@ -147,27 +201,26 @@ def create_project_database(local_db: PostgreSQL):
         # 1) Copy SQL data from production database
         import_production_sql_data(remote_db, local_db)
 
-        # 2) Load the MEDIAN() function into SQL
-        load_helper_functions(local_db)
-
-        # 3) Create new layers using what's already been imported
-        create_new_geodata(local_db)
-
-        # 4) Import all regional transit stops
-        transit_data = TransitData()
-        stops, lines = transit_data.all_spatial_data()
-
-        stops = stops.to_crs("EPSG:26918")
-
-        local_db.import_geodataframe(stops, "regional_transit_stops")
-
-        # 5) Import OSM data for the entire region
-        os.system("db-import osm")
-
     else:
-        print("""
-            -> ! DB setup can only be executed from a DVRPC workstation!!!
-        """)
+        # 1b) Import data from public ArcGIS Portal
+        import_data_from_portal_with_wget(local_db)
+
+    # # 2) Load the MEDIAN() function into SQL
+    # load_helper_functions(local_db)
+
+    # # 3) Create new layers using what's already been imported
+    # create_new_geodata(local_db)
+
+    # # 4) Import all regional transit stops
+    # transit_data = TransitData()
+    # stops, lines = transit_data.all_spatial_data()
+
+    # stops = stops.to_crs("EPSG:26918")
+
+    # local_db.import_geodataframe(stops, "regional_transit_stops")
+
+    # # 5) Import OSM data for the entire region
+    # os.system("db-import osm")
 
 
 if __name__ == "__main__":
