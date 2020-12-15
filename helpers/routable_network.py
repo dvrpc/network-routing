@@ -178,7 +178,19 @@ class RoutableNetwork:
     def construct_network(self):
 
         # Get all edges
-        query = f"SELECT * FROM {self.schema}.{self.edge_table_name}"
+        query = f"""
+            SELECT start_id, end_id, minutes, geom
+            FROM {self.schema}.{self.edge_table_name}
+            WHERE start_id IN (
+                    select distinct {self.node_id_column}
+                    FROM {self.schema}.{self.node_table_name}
+                )
+                AND
+                end_id IN (
+                    select distinct {self.node_id_column}
+                    FROM {self.schema}.{self.node_table_name}
+                )
+        """
         edge_gdf = self.db.query_as_geo_df(query)
 
         # Get all nodes
@@ -197,6 +209,10 @@ class RoutableNetwork:
 
         # Set the index of the NODE gdf to the uid column
         node_gdf.set_index('node_id', inplace=True)
+
+        print(node_gdf.dtypes)
+        print(edge_gdf.dtypes)
+
 
         # Build the pandana network
         print("Making network")
