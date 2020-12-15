@@ -39,6 +39,7 @@ all_commands = [
     segment_commands.identify_islands,
     viz_commands.combine_centerlines,
     viz_commands.scrub_osm_tags,
+    viz_commands.combine_transit_results,
 ]
 
 for cmd in all_commands:

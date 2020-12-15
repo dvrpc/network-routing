@@ -64,6 +64,7 @@ Prepare the final products:
 ```bash
 sidewalk combine-centerlines
 sidewalk scrub-osm-tags
+sidewalk combine-transit-results
 ```
 
 ## TODO:

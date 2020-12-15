@@ -3,6 +3,7 @@ import click
 from helpers import db_connection
 from .hexagon_summary import hexagon_summary, classify_hex_results
 from .handle_osm_tags import scrub_osm_tags as _scrub_osm_tags
+from .combine_network_analysis_results import combine_transit_results as _combine_transit_results
 
 
 @click.command()
@@ -35,6 +36,14 @@ def combine_centerlines():
         'schema': "data_viz"
     }
     db.make_geotable_from_query(query, "osm_sw_coverage", **kwargs)
+
+@click.command()
+def combine_transit_results():
+
+    db = db_connection()
+
+    _combine_transit_results(db)
+
 
 @click.command()
 def scrub_osm_tags():
