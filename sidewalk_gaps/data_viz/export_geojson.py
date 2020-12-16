@@ -1,5 +1,6 @@
 from postgis_helpers import PostgreSQL
-from sidewalk_gaps import CREDENTIALS, PROJECT_DB_NAME, FOLDER_DATA_PRODUCTS
+from sidewalk_gaps import FOLDER_DATA_PRODUCTS
+from helpers import db_connection
 
 
 def write_query_to_geojson(
@@ -35,22 +36,11 @@ def export_webmap_data(db: PostgreSQL):
 
     # Centerlines with sidewalk amounts, as a ratio
     query_centerlines = """
-        select
-            sidewalk / st_length(geom) / 2 as sw,
-            st_transform(geom, 4326) as geom
-        from
-            nj.centerlines
-
-        union
-
-        select
-            sidewalk / st_length(geom) / 2 as sw,
-            st_transform(geom, 4326) as geom
-        from
-            pa.centerlines
+        select hwy_tag, sw_ratio, state, st_transform(geom, 4326) as geom
+        from data_viz.osm_sw_coverage
     """
 
-    write_query_to_geojson("centerlines", query_centerlines, db)
+    write_query_to_geojson("osm_sw_coverage", query_centerlines, db)
 
     # Transit accessibility results
     query_transit_results = """
@@ -59,7 +49,7 @@ def export_webmap_data(db: PostgreSQL):
             walk_time,
             st_transform(geom, 4326) as geom
         from
-            results_transit_access
+            data_viz.results_transit_access
     """
     write_query_to_geojson("sw_nodes", query_transit_results, db)
 
@@ -68,6 +58,14 @@ def export_webmap_data(db: PostgreSQL):
         select
             uid,
             src,
+            case
+                when stop_name is not null then stop_name
+                when station_name is not null then station_name
+                when stopname is not null then stopname
+                when station is not null then station
+                when bsl is not null then bsl
+                when on_street is not null then concat(on_street, ' @ ', at_street)
+            end as stop_name,
             st_transform(geom, 4326) as geom
         from
             regional_transit_stops
@@ -81,9 +79,7 @@ def export_webmap_data(db: PostgreSQL):
 
 
 if __name__ == "__main__":
-    db = PostgreSQL(
-        PROJECT_DB_NAME,
-        verbosity="minimal",
-        **CREDENTIALS["localhost"]
-    )
+
+    db = db_connection()
+
     export_webmap_data(db)
