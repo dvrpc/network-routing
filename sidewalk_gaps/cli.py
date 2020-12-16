@@ -40,6 +40,8 @@ all_commands = [
     viz_commands.combine_centerlines,
     viz_commands.scrub_osm_tags,
     viz_commands.combine_transit_results,
+    viz_commands.export_geojson_for_webmap,
+    viz_commands.make_vector_tiles,
 ]
 
 for cmd in all_commands:

@@ -1,9 +1,13 @@
 import click
+import os
 
 from helpers import db_connection
-from .hexagon_summary import hexagon_summary, classify_hex_results
+from helpers import make_vector_tiles as _make_vector_tiles
+from sidewalk_gaps import FOLDER_DATA_PRODUCTS
+# from .hexagon_summary import hexagon_summary, classify_hex_results
 from .handle_osm_tags import scrub_osm_tags as _scrub_osm_tags
 from .combine_network_analysis_results import combine_transit_results as _combine_transit_results
+from .export_geojson import export_webmap_data
 
 
 @click.command()
@@ -37,6 +41,7 @@ def combine_centerlines():
     }
     db.make_geotable_from_query(query, "osm_sw_coverage", **kwargs)
 
+
 @click.command()
 def combine_transit_results():
 
@@ -52,18 +57,32 @@ def scrub_osm_tags():
 
 
 @click.command()
-def summarize_into_hexagons():
-    """ Classify centerlines w/ length of parallel sidewalks """
-
+def export_geojson_for_webmap():
+    """Save .geojson files to be tiled for webmaps"""
     db = db_connection()
 
-    hexagon_summary(db)
+    export_webmap_data(db)
 
 
 @click.command()
-def classify_hexagons():
-    """ Prepare analysis result for bivariate choropleth map """
+def make_vector_tiles():
 
-    db = db_connection()
+    _make_vector_tiles(FOLDER_DATA_PRODUCTS, "sidewalk_gaps_analysis")
 
-    classify_hex_results(db)
+
+# @click.command()
+# def summarize_into_hexagons():
+#     """ Classify centerlines w/ length of parallel sidewalks """
+
+#     db = db_connection()
+
+#     hexagon_summary(db)
+
+
+# @click.command()
+# def classify_hexagons():
+#     """ Prepare analysis result for bivariate choropleth map """
+
+#     db = db_connection()
+
+#     classify_hex_results(db)
