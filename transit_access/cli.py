@@ -1,7 +1,10 @@
 import click
 from pathlib import Path
 
-from helpers import db_connection, generate_nodes, GDRIVE_ROOT
+from helpers import db_connection, generate_nodes
+from helpers import make_vector_tiles as _make_vector_tiles
+
+from transit_access import FOLDER_DATA_PRODUCTS
 
 from .ridescore_isochrones import generate_isochrones, calculate_sidewalkscore
 from .network_analysis import osm_analysis, sidewalk_analysis
@@ -72,13 +75,11 @@ def export_geojson_for_webmap():
 
     db = db_connection()
 
-    output_folder = Path(GDRIVE_ROOT) / "projects/RideScore/outputs"
-
     tables_to_export = ["ridescore_isos", "sidewalkscore"]
 
     for tbl in tables_to_export:
 
-        output_path = output_folder / f"{tbl}.geojson"
+        output_path = FOLDER_DATA_PRODUCTS / f"{tbl}.geojson"
 
         query = f"SELECT * FROM data_viz.{tbl}"
 
@@ -89,6 +90,11 @@ def export_geojson_for_webmap():
         gdf.to_file(output_path, driver="GeoJSON")
 
 
+@click.command()
+def make_vector_tiles():
+    _make_vector_tiles(FOLDER_DATA_PRODUCTS, "ridescore_analysis")
+
+
 all_commands = [
     calculate_osm,
     calculate_sidewalks,
@@ -96,6 +102,7 @@ all_commands = [
     make_nodes,
     sidewalkscore,
     export_geojson_for_webmap,
+    make_vector_tiles,
 ]
 
 for cmd in all_commands:
