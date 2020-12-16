@@ -6,6 +6,7 @@ import postgis_helpers as pGIS
 
 from .nodes import generate_nodes
 from .routable_network import RoutableNetwork
+from .generate_vector_tiles import make_vector_tiles
 
 load_dotenv(find_dotenv())
 DB_NAME = os.getenv("DB_NAME")
