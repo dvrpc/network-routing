@@ -42,6 +42,7 @@ all_commands = [
     viz_commands.combine_transit_results,
     viz_commands.export_geojson_for_webmap,
     viz_commands.make_vector_tiles,
+    viz_commands.combine_islands,
 ]
 
 for cmd in all_commands:
