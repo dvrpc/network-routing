@@ -77,6 +77,13 @@ def export_webmap_data(db: PostgreSQL):
     """
     write_query_to_geojson("transit_stops", query_transit_stops, db)
 
+    # Islands of connectivity
+    query_islands = """
+        SELECT uid, rgba, st_transform(geom, 4326) as geom
+        FROM data_viz.islands
+    """
+    write_query_to_geojson("islands", query_islands, db)
+
 
 if __name__ == "__main__":
 
