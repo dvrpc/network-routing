@@ -1,5 +1,6 @@
 import click
 import os
+from random import randint
 
 from helpers import db_connection
 from helpers import make_vector_tiles as _make_vector_tiles
@@ -43,7 +44,53 @@ def combine_centerlines():
 
 
 @click.command()
+def combine_islands():
+    """ Merge the NJ and PA island analyses """
+
+    db = db_connection()
+
+    query = """
+        SELECT geom FROM nj.islands
+        UNION
+        SELECT geom FROM pa.islands
+    """
+    kwargs = {
+        'geom_type': "MultiLineString",
+        'epsg': 26918,
+        'schema': "data_viz"
+    }
+    db.make_geotable_from_query(query, "islands", **kwargs)
+
+    # Add a column for size
+    db.table_add_or_nullify_column("islands", "size_miles", "FLOAT", schema="data_viz")
+
+    query = "UPDATE data_viz.islands SET size_miles = ST_LENGTH(geom) * 0.000621371;"
+    db.execute(query)
+
+    # For each island, make a rgba() string with random values
+
+    # Add a column for rgba
+    db.table_add_or_nullify_column("islands", "rgba", "TEXT", schema="data_viz")
+
+    # Get a count of the rows
+    query = "SELECT uid FROM data_viz.islands"
+    uids = db.query_as_df(query)
+    for idx, row in uids.iterrows():
+
+        r, g, b = randint(0, 255), randint(0, 255), randint(0, 255)
+        rgba = f"rgba({r}, {g}, {b}, 1)"
+
+        query = f"""
+            UPDATE data_viz.islands
+            SET rgba = '{rgba}'
+            WHERE uid = {row.uid}
+        """
+        db.execute(query)
+
+
+@click.command()
 def combine_transit_results():
+    """ Merge the NJ and PA accessibility analysis """
 
     db = db_connection()
 
@@ -66,6 +113,7 @@ def export_geojson_for_webmap():
 
 @click.command()
 def make_vector_tiles():
+    """Convert exported .geojson files into .mbtiles """
 
     _make_vector_tiles(FOLDER_DATA_PRODUCTS, "sidewalk_gaps_analysis")
 
