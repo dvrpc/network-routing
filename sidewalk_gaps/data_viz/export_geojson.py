@@ -3,12 +3,9 @@ from sidewalk_gaps import FOLDER_DATA_PRODUCTS
 from helpers import db_connection
 
 
-def write_query_to_geojson(
-        filename: str,
-        query: str,
-        db: PostgreSQL):
+def write_query_to_geojson(filename: str, query: str, db: PostgreSQL):
     """
-        Write SQL query out to geojson file on disk.
+    Write SQL query out to geojson file on disk.
     """
 
     # Put into Google Drive, if configured
@@ -23,15 +20,15 @@ def write_query_to_geojson(
     df = db.query_as_geo_df(query)
 
     # Save to file
-    df.to_file(output_filepath,  driver="GeoJSON")
+    df.to_file(output_filepath, driver="GeoJSON")
 
 
 def export_webmap_data(db: PostgreSQL):
     """
-        Export three geojson files:
-            - centerlines
-            - sw_nodes
-            - transit_stops
+    Export three geojson files:
+        - centerlines
+        - sw_nodes
+        - transit_stops
     """
 
     # Centerlines with sidewalk amounts, as a ratio

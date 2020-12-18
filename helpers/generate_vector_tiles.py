@@ -3,22 +3,22 @@ from pathlib import Path
 
 
 def make_vector_tiles(folder: Path, joined_tileset_name: str):
-    """ Loop through the provided folder path and convert
-        each geojson file into its own vector tileset.
+    """Loop through the provided folder path and convert
+    each geojson file into its own vector tileset.
 
-        Then merge all tilesets into a single tileset
-        with layers for each single tileset.
+    Then merge all tilesets into a single tileset
+    with layers for each single tileset.
 
-        The output file will be named:
-            folder / joined_tileset_name.mbtiles
+    The output file will be named:
+        folder / joined_tileset_name.mbtiles
 
-        THIS REQUIRES 'tippecanoe' AND WILL NOT WORK IF
-        THE COMMAND DOES NOT WORK FROM YOUR TERMINAL.
+    THIS REQUIRES 'tippecanoe' AND WILL NOT WORK IF
+    THE COMMAND DOES NOT WORK FROM YOUR TERMINAL.
 
-        On MacOS, install via 'brew install tippecanoe'
-        On Windows, you'll need to use WSL. See https://gist.github.com/ryanbaumann/e5c7d76f6eeb8598e66c5785b677726e
+    On MacOS, install via 'brew install tippecanoe'
+    On Windows, you'll need to use WSL. See https://gist.github.com/ryanbaumann/e5c7d76f6eeb8598e66c5785b677726e
 
-        For more info, see: https://github.com/mapbox/tippecanoe
+    For more info, see: https://github.com/mapbox/tippecanoe
     """
 
     print("\n\nConverting .geojson files to .mbtiles")

@@ -21,10 +21,7 @@ def add_segmentation_to_trails(db: PostgreSQL):
     """
 
     db.make_geotable_from_query(
-        trail_query,
-        "ped_trails",
-        geom_type="LINESTRING",
-        epsg=26918
+        trail_query, "ped_trails", geom_type="LINESTRING", epsg=26918
     )
 
     # Split the trails wherever they intersect a sidwalk
@@ -45,10 +42,7 @@ def add_segmentation_to_trails(db: PostgreSQL):
         from ped_trails t1
     """
     db.make_geotable_from_query(
-        trail_split,
-        "trail_splits",
-        geom_type="LINESTRING",
-        epsg=26918
+        trail_split, "trail_splits", geom_type="LINESTRING", epsg=26918
     )
 
     # Merge the split trails with any trails that didn't get split
@@ -70,10 +64,7 @@ def add_segmentation_to_trails(db: PostgreSQL):
         from trail_splits
     """
     db.make_geotable_from_query(
-        trail_merge,
-        "trail_merged",
-        geom_type="LINESTRING",
-        epsg=26918
+        trail_merge, "trail_merged", geom_type="LINESTRING", epsg=26918
     )
 
 
@@ -97,10 +88,7 @@ def add_segmentation_to_sidewalks(db: PostgreSQL):
         from pedestriannetwork_lines s
     """
     db.make_geotable_from_query(
-        sidewalk_split,
-        "sidewalk_splits",
-        geom_type="LINESTRING",
-        epsg=26918
+        sidewalk_split, "sidewalk_splits", geom_type="LINESTRING", epsg=26918
     )
 
     # Merge the split sidewalks with any sidewalks that didn't get split
@@ -122,10 +110,7 @@ def add_segmentation_to_sidewalks(db: PostgreSQL):
         from sidewalk_splits
     """
     db.make_geotable_from_query(
-        sidewalk_merge,
-        "sidewalk_merged",
-        geom_type="LINESTRING",
-        epsg=26918
+        sidewalk_merge, "sidewalk_merged", geom_type="LINESTRING", epsg=26918
     )
 
 
@@ -136,17 +121,13 @@ def merge_sidewalks_and_trails(db: PostgreSQL):
         SELECT src, geom FROM sidewalk_merged
     """
     db.make_geotable_from_query(
-        query,
-        "sidewalks_and_trails",
-        geom_type="LINESTRING",
-        epsg=26918
+        query, "sidewalks_and_trails", geom_type="LINESTRING", epsg=26918
     )
 
 
 def cleanup_temp_tables(db: PostgreSQL):
     """ Delete the intermediate tables to keep the DB clean """
-    for tbl in ["trail_splits", "trail_merged",
-                "sidewalk_splits", "sidewalk_merged"]:
+    for tbl in ["trail_splits", "trail_merged", "sidewalk_splits", "sidewalk_merged"]:
         db.table_delete(tbl)
 
 
@@ -160,10 +141,6 @@ def merge_topologies(db: PostgreSQL):
 if __name__ == "__main__":
     from sidewalk_gaps import CREDENTIALS, PROJECT_DB_NAME
 
-    db = PostgreSQL(
-        PROJECT_DB_NAME,
-        verbosity="minimal",
-        **CREDENTIALS["localhost"]
-    )
+    db = PostgreSQL(PROJECT_DB_NAME, verbosity="minimal", **CREDENTIALS["localhost"])
 
     merge_topologies(db)

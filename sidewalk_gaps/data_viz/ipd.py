@@ -16,8 +16,10 @@ ipd_tracts["osm_len"] = 0.0
 
 for idx, row in tqdm(ipd_tracts.iterrows(), total=len(ipd_tracts)):
 
-    for col_name, src_tablename in [("sw_len", "pedestriannetwork_lines"),
-                                    ("osm_len", "osm_edges_drive")]:
+    for col_name, src_tablename in [
+        ("sw_len", "pedestriannetwork_lines"),
+        ("osm_len", "osm_edges_drive"),
+    ]:
         query = f"""
             select
                 sum(

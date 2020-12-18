@@ -5,9 +5,12 @@ from random import randint
 from helpers import db_connection
 from helpers import make_vector_tiles as _make_vector_tiles
 from sidewalk_gaps import FOLDER_DATA_PRODUCTS
+
 # from .hexagon_summary import hexagon_summary, classify_hex_results
 from .handle_osm_tags import scrub_osm_tags as _scrub_osm_tags
-from .combine_network_analysis_results import combine_transit_results as _combine_transit_results
+from .combine_network_analysis_results import (
+    combine_transit_results as _combine_transit_results,
+)
 from .export_geojson import export_webmap_data
 
 
@@ -35,11 +38,7 @@ def combine_centerlines():
         from
             pa.osm_edges
     """
-    kwargs = {
-        'geom_type': "LineString",
-        'epsg': 26918,
-        'schema': "data_viz"
-    }
+    kwargs = {"geom_type": "LineString", "epsg": 26918, "schema": "data_viz"}
     db.make_geotable_from_query(query, "osm_sw_coverage", **kwargs)
 
 
@@ -54,11 +53,7 @@ def combine_islands():
         UNION
         SELECT geom FROM pa.islands
     """
-    kwargs = {
-        'geom_type': "MultiLineString",
-        'epsg': 26918,
-        'schema': "data_viz"
-    }
+    kwargs = {"geom_type": "MultiLineString", "epsg": 26918, "schema": "data_viz"}
     db.make_geotable_from_query(query, "islands", **kwargs)
 
     # Add a column for size

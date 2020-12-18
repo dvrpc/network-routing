@@ -10,10 +10,7 @@ def prepare_trail_data(db: PostgreSQL):
     trail_query = " SELECT * FROM circuittrails WHERE circuit = 'Existing' "
 
     db.make_geotable_from_query(
-        trail_query,
-        "existing_trails",
-        geom_type="LINESTRING",
-        epsg=26918
+        trail_query, "existing_trails", geom_type="LINESTRING", epsg=26918
     )
 
     # Figure out if each segment should be included
@@ -66,14 +63,9 @@ def prepare_trail_data(db: PostgreSQL):
         db.execute(update_query)
 
 
-
 if __name__ == "__main__":
     from sidewalk_gaps import CREDENTIALS, PROJECT_DB_NAME
 
-    db = PostgreSQL(
-        PROJECT_DB_NAME,
-        verbosity="minimal",
-        **CREDENTIALS["localhost"]
-    )
+    db = PostgreSQL(PROJECT_DB_NAME, verbosity="minimal", **CREDENTIALS["localhost"])
 
     prepare_trail_data(db)

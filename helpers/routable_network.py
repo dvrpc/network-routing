@@ -10,23 +10,24 @@ from .cleanup import cleanup_outputs
 
 
 class RoutableNetwork:
-
-    def __init__(self,
-                 db: PostgreSQL,
-                 schema: str,
-                 walking_mph: float = 2.5,
-                 max_minutes: float = 45,
-                 epsg: int = 26918,
-                 edge_table_name: str = "sidewalks",
-                 node_table_name: str = "nodes_for_sidewalks",
-                 node_id_column: str = "sw_node_id",
-                 poi_table_name: str = "transit_stops",
-                 poi_id_column: str = "src",
-                 output_table_name: str = "all_transit",
-                 output_schema: str = "transit_gaps",
-                 num_pois: int = 3,
-                 poi_match_threshold: int = 45,
-                 run_on_create: bool = True):
+    def __init__(
+        self,
+        db: PostgreSQL,
+        schema: str,
+        walking_mph: float = 2.5,
+        max_minutes: float = 45,
+        epsg: int = 26918,
+        edge_table_name: str = "sidewalks",
+        node_table_name: str = "nodes_for_sidewalks",
+        node_id_column: str = "sw_node_id",
+        poi_table_name: str = "transit_stops",
+        poi_id_column: str = "src",
+        output_table_name: str = "all_transit",
+        output_schema: str = "transit_gaps",
+        num_pois: int = 3,
+        poi_match_threshold: int = 45,
+        run_on_create: bool = True,
+    ):
 
         # Capture user input
         self.db = db
@@ -100,8 +101,7 @@ class RoutableNetwork:
         """
 
         edge_columns = self.db.table_columns_as_list(
-                            table_name=self.edge_table_name,
-                            schema=self.schema
+            table_name=self.edge_table_name, schema=self.schema
         )
 
         if "start_id" not in edge_columns:
@@ -121,8 +121,9 @@ class RoutableNetwork:
 
         # Add columns for the start and end node_id values
         for column_name in ["start_id", "end_id"]:
-            self.db.table_add_or_nullify_column(self.edge_table_name,
-                                                column_name, "INT")
+            self.db.table_add_or_nullify_column(
+                self.edge_table_name, column_name, "INT"
+            )
 
         # Execute the query for the START of each segment
         start_id_query = f"""
@@ -155,8 +156,9 @@ class RoutableNetwork:
 
         # Add a meter length and minutes column
         for column_name in ["len_meters", "minutes"]:
-            self.db.table_add_or_nullify_column(self.edge_table_name,
-                                                column_name, "FLOAT")
+            self.db.table_add_or_nullify_column(
+                self.edge_table_name, column_name, "FLOAT"
+            )
 
         # Capture length in meters into its own column
         update_meters = f"""
@@ -208,18 +210,20 @@ class RoutableNetwork:
             edge_gdf[col] = edge_gdf[col].astype(int)
 
         # Set the index of the NODE gdf to the uid column
-        node_gdf.set_index('node_id', inplace=True)
+        node_gdf.set_index("node_id", inplace=True)
 
         print(node_gdf.dtypes)
         print(edge_gdf.dtypes)
 
-
         # Build the pandana network
         print("Making network")
         network = pdna.Network(
-            node_gdf["x"], node_gdf["y"],
-            edge_gdf["start_id"], edge_gdf["end_id"], edge_gdf[["minutes"]],
-            twoway=True
+            node_gdf["x"],
+            node_gdf["y"],
+            edge_gdf["start_id"],
+            edge_gdf["end_id"],
+            edge_gdf[["minutes"]],
+            twoway=True,
         )
         print("Precomputing the network")
         network.precompute(self.max_minutes)
@@ -249,9 +253,11 @@ class RoutableNetwork:
 
         df_all_access_results = pd.concat(all_results, axis=1, sort=False)
 
-        self.db.import_dataframe(df_all_access_results,
-                                 f"{self.output_table_name}_table",
-                                 if_exists="replace")
+        self.db.import_dataframe(
+            df_all_access_results,
+            f"{self.output_table_name}_table",
+            if_exists="replace",
+        )
 
         final_result_query = f"""
             select r.*, n.geom
@@ -260,18 +266,17 @@ class RoutableNetwork:
             on n.{self.node_id_column}::int = r.node_id::int
         """
         self.db.make_geotable_from_query(
-            final_result_query,
-            f"{self.output_table_name}_results",
-            "Point",
-            self.epsg
+            final_result_query, f"{self.output_table_name}_results", "Point", self.epsg
         )
 
         # Move results into a new schema and merge all QA tables into one
         tables_to_move = [
             f"{self.output_table_name}_table",
-            f"{self.output_table_name}_results"
+            f"{self.output_table_name}_results",
         ]
-        cleanup_outputs(self.db, self.schema, self.poi_id_column, self.output_schema, tables_to_move)
+        cleanup_outputs(
+            self.db, self.schema, self.poi_id_column, self.output_schema, tables_to_move
+        )
 
     def calculate_single_poi(self, this_theme: str):
         """
@@ -316,19 +321,19 @@ class RoutableNetwork:
             x_col=poi_gdf["x"],
             y_col=poi_gdf["y"],
             maxdist=self.max_minutes,
-            maxitems=self.num_pois
+            maxitems=self.num_pois,
         )
 
-        result_matrix = self.network.nearest_pois(distance=self.max_minutes,
-                                                  category=nice_theme,
-                                                  num_pois=self.num_pois)
+        result_matrix = self.network.nearest_pois(
+            distance=self.max_minutes, category=nice_theme, num_pois=self.num_pois
+        )
 
         # # Make sure 'food/drink' turns into 'food_drink'
         # theme_name_for_postgres = this_theme.replace(r"/", "_")
 
         new_colnames = {}
         for column in result_matrix.columns:
-            new_name = f'n_{column}_{nice_theme}'
+            new_name = f"n_{column}_{nice_theme}"
             new_colnames[column] = new_name
 
         result_matrix = result_matrix.rename(index=str, columns=new_colnames)
@@ -344,35 +349,40 @@ class RoutableNetwork:
         """
 
         # Save the network assignment for QAQC
-        poi_gdf["node_id"] = self.network.get_node_ids(poi_gdf["x"],
-                                                       poi_gdf["y"],
-                                                       mapping_distance=1)
-        poi_node_pairs = pd.merge(poi_gdf,
-                                  self.node_gdf,
-                                  left_on='node_id',
-                                  right_on='node_id',
-                                  how='left',
-                                  sort=False,
-                                  suffixes=['_from', '_to'])
+        poi_gdf["node_id"] = self.network.get_node_ids(
+            poi_gdf["x"], poi_gdf["y"], mapping_distance=1
+        )
+        poi_node_pairs = pd.merge(
+            poi_gdf,
+            self.node_gdf,
+            left_on="node_id",
+            right_on="node_id",
+            how="left",
+            sort=False,
+            suffixes=["_from", "_to"],
+        )
 
         poi_node_pairs["flow"] = [
-            LineString([row["geom_from"], row["geom_to"]]) for idx, row in poi_node_pairs.iterrows()
+            LineString([row["geom_from"], row["geom_to"]])
+            for idx, row in poi_node_pairs.iterrows()
         ]
         poi_node_pairs = poi_node_pairs.set_geometry("flow")
 
-        poi_node_pairs['geom'] = poi_node_pairs["flow"].apply(
-                                    lambda x: WKTElement(x.wkt, srid=self.epsg)
+        poi_node_pairs["geom"] = poi_node_pairs["flow"].apply(
+            lambda x: WKTElement(x.wkt, srid=self.epsg)
         )
 
         for col in ["flow", "geom_from", "geom_to"]:
             poi_node_pairs.drop(col, inplace=True, axis=1)
 
         engine = create_engine(self.db.uri())
-        poi_node_pairs.to_sql(f"poi_{self.themes[theme]}_qa",
-                              engine,
-                              schema=self.schema,
-                              if_exists="replace",
-                              dtype={'geom': Geometry("LineString", srid=self.epsg)})
+        poi_node_pairs.to_sql(
+            f"poi_{self.themes[theme]}_qa",
+            engine,
+            schema=self.schema,
+            if_exists="replace",
+            dtype={"geom": Geometry("LineString", srid=self.epsg)},
+        )
         engine.dispose()
 
         self.poi_gdf = poi_gdf

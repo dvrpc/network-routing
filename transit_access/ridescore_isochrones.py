@@ -16,10 +16,7 @@ def generate_isochrones(db: PostgreSQL):
 
     all_results = []
 
-    ridescore_results = [
-        ("rs_osm", "osm_results"),
-        ("rs_sw", "sw_results")
-    ]
+    ridescore_results = [("rs_osm", "osm_results"), ("rs_sw", "sw_results")]
 
     for schema, result_table in ridescore_results:
 
@@ -64,7 +61,7 @@ def generate_isochrones(db: PostgreSQL):
                 gdf["schema"] = schema
                 gdf["dvrpc_id"] = dvrpc_id
 
-                gdf = gdf.rename(columns={'geom': 'geometry'}).set_geometry('geometry')
+                gdf = gdf.rename(columns={"geom": "geometry"}).set_geometry("geometry")
 
                 all_results.append(gdf)
 

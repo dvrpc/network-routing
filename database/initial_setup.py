@@ -11,8 +11,8 @@ from philly_transit_data import TransitData
 
 
 def explode_gdf_if_multipart(gdf: GeoDataFrame) -> GeoDataFrame:
-    """ Check if the geodataframe has multipart geometries.
-        If so, explode them (but keep the index)
+    """Check if the geodataframe has multipart geometries.
+    If so, explode them (but keep the index)
     """
 
     multipart = False
@@ -23,7 +23,7 @@ def explode_gdf_if_multipart(gdf: GeoDataFrame) -> GeoDataFrame:
 
     if multipart:
         gdf = gdf.explode()
-        gdf['explode'] = gdf.index
+        gdf["explode"] = gdf.index
         gdf = gdf.reset_index()
 
     return gdf
@@ -38,17 +38,18 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
     """
 
     data_to_download = [
-        ("transportation", ["pedestriannetwork_lines",
-                            "pedestriannetwork_points",
-                            "passengerrailstations",
-                            "transitparkingfacilities",
-                            ]),
-
+        (
+            "transportation",
+            [
+                "pedestriannetwork_lines",
+                "pedestriannetwork_points",
+                "passengerrailstations",
+                "transitparkingfacilities",
+            ],
+        ),
         ("structure", ["points_of_interest"]),
-
         ("boundaries", ["municipalboundaries"]),
-
-        ("demographics", "ipd_2018")
+        ("demographics", "ipd_2018"),
     ]
 
     for schema, table_list in data_to_download:
@@ -59,9 +60,7 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
             # and rename the geom column
             query = f"SELECT * FROM {schema}.{table_name};"
             gdf = remote_db.query_as_geo_df(query, geom_col="shape")
-            gdf = gdf.rename(
-                columns={"shape": "geometry"}
-            ).set_geometry("geometry")
+            gdf = gdf.rename(columns={"shape": "geometry"}).set_geometry("geometry")
 
             gdf = explode_gdf_if_multipart(gdf)
 
@@ -73,14 +72,16 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
 
 def import_data_from_portal_with_wget(db: PostgreSQL):
     data_to_download = [
-        ("Transportation", ["PedestrianNetwork_lines",
-                            "PedestrianNetwork_points",
-                            "PassengerRailStations",
-                            "TransitParkingFacilities",
-                            ]),
-
+        (
+            "Transportation",
+            [
+                "PedestrianNetwork_lines",
+                "PedestrianNetwork_points",
+                "PassengerRailStations",
+                "TransitParkingFacilities",
+            ],
+        ),
         ("Boundaries", ["MunicipalBoundaries"]),
-
         ("Demographics", ["IPD_2018"]),
     ]
 
@@ -115,7 +116,8 @@ def import_data_from_portal_with_wget(db: PostgreSQL):
 def load_helper_functions(db: PostgreSQL):
     """ Add a SQL function to get a median() """
 
-    db.execute("""
+    db.execute(
+        """
         DROP FUNCTION IF EXISTS _final_median(anyarray);
         CREATE FUNCTION _final_median(anyarray) RETURNS float8 AS $$
         WITH q AS
@@ -144,12 +146,13 @@ def load_helper_functions(db: PostgreSQL):
         FINALFUNC=_final_median,
         INITCOND='{}'
         );
-    """)
+    """
+    )
 
 
 def create_new_geodata(db: PostgreSQL):
-    """ 1) Merge DVRPC municipalities into counties
-        2) Filter POIs to those within DVRPC counties
+    """1) Merge DVRPC municipalities into counties
+    2) Filter POIs to those within DVRPC counties
     """
 
     pa_counties = """
@@ -167,11 +170,7 @@ def create_new_geodata(db: PostgreSQL):
         group by co_name, state_name
     """
     db.make_geotable_from_query(
-        regional_counties,
-        "regional_counties",
-        "Polygon",
-        26918,
-        schema="public"
+        regional_counties, "regional_counties", "Polygon", 26918, schema="public"
     )
 
     # # Clip POIs to those inside DVRPC's region
@@ -192,8 +191,7 @@ def create_new_geodata(db: PostgreSQL):
 def create_project_database(local_db: PostgreSQL):
     """ Batch execute the entire process """
 
-    if platform.system() in ["Linux", "Windows"] \
-       and "dvrpc.org" in socket.getfqdn():
+    if platform.system() in ["Linux", "Windows"] and "dvrpc.org" in socket.getfqdn():
 
         dvrpc_credentials = pGIS.configurations()["dvrpc_gis"]
         remote_db = PostgreSQL("gis", **dvrpc_credentials)

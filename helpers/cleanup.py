@@ -1,7 +1,13 @@
 from postgis_helpers import PostgreSQL
 
 
-def cleanup_outputs(db: PostgreSQL, analysis_schema: str, poi_id_column: str, new_schema: str, tables_to_move: list):
+def cleanup_outputs(
+    db: PostgreSQL,
+    analysis_schema: str,
+    poi_id_column: str,
+    new_schema: str,
+    tables_to_move: list,
+):
     """ Move results to new schema and merge all tables prefixed with 'poi_' """
 
     schema_query = f"""
@@ -22,13 +28,20 @@ def cleanup_outputs(db: PostgreSQL, analysis_schema: str, poi_id_column: str, ne
 
     if len(qa_tables) >= 2:
 
-        qa_subqueries = [f"SELECT {poi_id_column}, geom FROM {analysis_schema}.{x}" for x in qa_tables]
+        qa_subqueries = [
+            f"SELECT {poi_id_column}, geom FROM {analysis_schema}.{x}"
+            for x in qa_tables
+        ]
 
         query = """
             UNION
-        """.join(qa_subqueries)
+        """.join(
+            qa_subqueries
+        )
 
-        db.make_geotable_from_query(query, "qaqc_node_match", "LINESTRING", 26918, schema=new_schema)
+        db.make_geotable_from_query(
+            query, "qaqc_node_match", "LINESTRING", 26918, schema=new_schema
+        )
 
     for qa_table in qa_tables:
         db.table_delete(qa_table, schema=analysis_schema)
@@ -36,5 +49,8 @@ def cleanup_outputs(db: PostgreSQL, analysis_schema: str, poi_id_column: str, ne
 
 if __name__ == "__main__":
     from helpers import db_connection
+
     db = db_connection()
-    cleanup_outputs(db, "nj", "src", "transit_gaps", ["all_transit_results", "all_transit_table"])
+    cleanup_outputs(
+        db, "nj", "src", "transit_gaps", ["all_transit_results", "all_transit_table"]
+    )

@@ -25,10 +25,7 @@ database_name = "sidewalk_gaps"
 
 
 def classify_centerlines(
-    db: PostgreSQL,
-    schema: str,
-    tbl: str,
-    new_col: str = "sidewalk"
+    db: PostgreSQL, schema: str, tbl: str, new_col: str = "sidewalk"
 ):
 
     # Get a list of all centerlines we want to iterate over.

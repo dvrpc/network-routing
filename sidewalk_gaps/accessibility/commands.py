@@ -1,4 +1,3 @@
-
 import click
 
 from helpers import RoutableNetwork, db_connection

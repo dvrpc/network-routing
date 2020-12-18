@@ -2,8 +2,8 @@ from postgis_helpers import PostgreSQL
 
 
 def generate_islands(db: PostgreSQL, schema: str):
-    """ Use the sidewalk layer to merge intersecting geometries.
-        The output is a layer with one feature per 'island' """
+    """Use the sidewalk layer to merge intersecting geometries.
+    The output is a layer with one feature per 'island'"""
 
     query = f"""
         SELECT
@@ -14,10 +14,5 @@ def generate_islands(db: PostgreSQL, schema: str):
         FROM {schema}.sidewalks
     """
     db.make_geotable_from_query(
-        query,
-        "islands",
-        "MULTILINESTRING",
-        26918,
-        schema=schema
+        query, "islands", "MULTILINESTRING", 26918, schema=schema
     )
-

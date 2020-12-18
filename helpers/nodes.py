@@ -1,10 +1,7 @@
 from postgis_helpers import PostgreSQL
 
 
-def generate_nodes(db: PostgreSQL,
-                   edge_tbl: str,
-                   schema: str,
-                   geotable_kwargs: dict):
+def generate_nodes(db: PostgreSQL, edge_tbl: str, schema: str, geotable_kwargs: dict):
 
     # Query out all unique nodes, then save result to database
     # --------------------------------------------------------

@@ -3,15 +3,15 @@ from helpers import db_connection
 
 def scrub_osm_tags(custom_hierarchy: list = None):
     """
-        Some streets have multiple OSM 'highway' tags.
+    Some streets have multiple OSM 'highway' tags.
 
-        Like this: '{trunk,motorway}'
-               or: '{residential,trunk_link}'
+    Like this: '{trunk,motorway}'
+           or: '{residential,trunk_link}'
 
-        We're using the 'worst' attribute, and
-        the hierarchy list is ordered from 'worst'
-        to 'best'. It can be overridden with a custom
-        hierarchy.
+    We're using the 'worst' attribute, and
+    the hierarchy list is ordered from 'worst'
+    to 'best'. It can be overridden with a custom
+    hierarchy.
     """
 
     db = db_connection()
@@ -34,7 +34,7 @@ def scrub_osm_tags(custom_hierarchy: list = None):
             "crossing",
             "service",
             "unsurfaced",
-            "escape"
+            "escape",
         ]
 
     query = """
@@ -71,11 +71,12 @@ def scrub_osm_tags(custom_hierarchy: list = None):
 
         results.append((tag_tuple[0], hierarchy[lowest_index_number]))
 
-    db.table_add_or_nullify_column("osm_sw_coverage",
-                                   "hwy_tag", "TEXT", schema="data_viz")
+    db.table_add_or_nullify_column(
+        "osm_sw_coverage", "hwy_tag", "TEXT", schema="data_viz"
+    )
 
     for original_tag, simple_tag in results:
-        
+
         print(f"Updating {original_tag} as {simple_tag}")
 
         update_query = f"""

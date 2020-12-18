@@ -8,10 +8,9 @@ out the sidewalk network within a buffer distance.
 from postgis_helpers import PostgreSQL
 
 
-def clip_inputs(db: PostgreSQL,
-                state: str,
-                municipality: str = None,
-                buffer_meters: float = None):
+def clip_inputs(
+    db: PostgreSQL, state: str, municipality: str = None, buffer_meters: float = None
+):
 
     if state.upper() == "NJ":
         opposite_state = "Pennsylvania"
@@ -39,10 +38,12 @@ def clip_inputs(db: PostgreSQL,
     else:
         schema = state.lower()
 
-    db.execute(f"""
+    db.execute(
+        f"""
         DROP SCHEMA IF EXISTS {schema} CASCADE;
         CREATE SCHEMA {schema};
-    """)
+    """
+    )
 
     data_to_clip = [
         ("pedestriannetwork_lines", "sidewalks", "LineString"),
@@ -50,7 +51,7 @@ def clip_inputs(db: PostgreSQL,
         ("nodes_for_osm", "nodes_for_osm", "Point"),
         ("nodes_for_sidewalks", "nodes_for_sidewalks", "Point"),
         ("regional_transit_stops", "transit_stops", "Point"),
-        ("osm_edges_drive", "osm_edges", "LineString")
+        ("osm_edges_drive", "osm_edges", "LineString"),
     ]
 
     for src_name, new_name, geom_type in data_to_clip:
@@ -69,9 +70,5 @@ def clip_inputs(db: PostgreSQL,
                                       where state_name = '{opposite_state}'))
         """
         db.make_geotable_from_query(
-            clip_query,
-            new_name,
-            geom_type,
-            26918,
-            schema=schema
+            clip_query, new_name, geom_type, 26918, schema=schema
         )

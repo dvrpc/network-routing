@@ -10,8 +10,7 @@ def hexagon_summary(db: PostgreSQL):
     for colname in ["islands", "poi_min", "poi_median", "poi_max", "cl_len", "sw_len"]:
         db.table_add_or_nullify_column("hexagons", colname, "FLOAT")
 
-    for state, schema in [("New Jersey", "nj"),
-                          ("Pennsylvania", "pa")]:
+    for state, schema in [("New Jersey", "nj"), ("Pennsylvania", "pa")]:
 
         print(f"Processing {state}")
 
@@ -27,7 +26,9 @@ def hexagon_summary(db: PostgreSQL):
                     )
                 )
         """
-        db.make_geotable_from_query(hex_query, "hexagon_summary", "POLYGON", 26918, schema=schema)
+        db.make_geotable_from_query(
+            hex_query, "hexagon_summary", "POLYGON", 26918, schema=schema
+        )
 
         uid_query = f"""
             SELECT uid FROM {schema}.hexagon_summary
@@ -37,7 +38,9 @@ def hexagon_summary(db: PostgreSQL):
         for uid in tqdm(uid_list, total=len(uid_list)):
             uid = uid[0]
 
-            geom_subquery = f"select geom from {schema}.hexagon_summary where uid = {uid}"
+            geom_subquery = (
+                f"select geom from {schema}.hexagon_summary where uid = {uid}"
+            )
 
             # Get the number of islands
             # -------------------------

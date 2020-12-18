@@ -8,21 +8,22 @@ from .clip_inputs import clip_inputs
 # CLIP SOURCE DATA TO SMALL STUDY AREA
 # ------------------------------------
 
+
 @click.command()
 @click.argument("state")
 @click.option(
-    "--municipality", "-m",
+    "--municipality",
+    "-m",
     help="Clip to a municipality",
     default="",
 )
 @click.option(
-    "--buffer", "-b",
+    "--buffer",
+    "-b",
     help="Buffer distance in meters",
     default="",
 )
-def clip_data(state: str,
-              municipality: str,
-              buffer: str):
+def clip_data(state: str, municipality: str, buffer: str):
     """Clip source data down to a single municipality"""
 
     if municipality == "":
