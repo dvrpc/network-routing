@@ -16,10 +16,12 @@ def analyze_segments(schema: str):
 
 
 @click.command()
-@click.argument("schema")
+@click.option("-s", "--schema")
 def identify_islands(schema: str):
     """ Join intersecting sidewalks to create 'islands' """
 
     db = db_connection()
+
+    print("schema: ", schema)
 
     generate_islands(db, schema)
