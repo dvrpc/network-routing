@@ -30,11 +30,9 @@ def explode_gdf_if_multipart(gdf: GeoDataFrame) -> GeoDataFrame:
 
 
 def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
-    """
-    Copy data from DVRPC's production SQL database to a
-    SQL database on localhost.
+    """Copy data from DVRPC's production SQL database to a SQL database on localhost.
 
-    Note - this connection will only work within the firewall.
+    NOTE: this connection will only work within the firewall.
     """
 
     data_to_download = [
@@ -71,6 +69,7 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
 
 
 def import_data_from_portal_with_wget(db: PostgreSQL):
+    """Download starter data via public ArcGIS API using wget """
     data_to_download = [
         (
             "Transportation",
@@ -95,8 +94,8 @@ def import_data_from_portal_with_wget(db: PostgreSQL):
             commands.append(wget_cmd)
 
     # # Download GeoJSON data from DVRPC's ArcGIS REST portal
-    # for cmd in commands:
-    #     os.system(cmd)
+    for cmd in commands:
+        os.system(cmd)
 
     # Import all of the geojson files into the SQL database
     data_folder = Path(".")
@@ -151,7 +150,8 @@ def load_helper_functions(db: PostgreSQL):
 
 
 def create_new_geodata(db: PostgreSQL):
-    """1) Merge DVRPC municipalities into counties
+    """
+    1) Merge DVRPC municipalities into counties
     2) Filter POIs to those within DVRPC counties
     """
 
@@ -172,20 +172,6 @@ def create_new_geodata(db: PostgreSQL):
     db.make_geotable_from_query(
         regional_counties, "regional_counties", "Polygon", 26918, schema="public"
     )
-
-    # # Clip POIs to those inside DVRPC's region
-    # regional_pois = """
-    #     select * from public.points_of_interest
-    #     where st_intersects(geom, (select st_collect(geom)
-    #                                from public.regional_counties))
-    # """
-    # db.make_geotable_from_query(
-    #     regional_pois,
-    #     "regional_pois",
-    #     "Point",
-    #     26918,
-    #     schema="public"
-    # )
 
 
 def create_project_database(local_db: PostgreSQL):
