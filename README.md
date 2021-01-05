@@ -25,6 +25,7 @@ conda activate network_routing
 ## 2) Build the starter database
 
 ```bash
+python database/initial_setup.py
 sidewalk make-nodes
 transit make-nodes
 ```
