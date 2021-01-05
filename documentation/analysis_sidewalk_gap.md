@@ -45,4 +45,11 @@ All commands related to this project are prefixed with `sidewalk`. To see a list
   - difference between high/low connectivity values
   - length of centerlines that are missing sidewalks
 
-- **_The results of this analytic process are exported to file with (TODO - wire up command)._** These outputs are used in interactive webmaps. The code for these maps are contained within another GitHub repository - https://github.com/dvrpc/sidewalk-data-viz
+- The results of this analytic process are exported to file with:
+
+```bash
+sidewalk export-geojson-for-webmap
+sidewalk make-vector-tiles
+```
+
+- These outputs are used in interactive webmaps. The code for these maps are contained within another GitHub repository - https://github.com/dvrpc/sidewalk-data-viz
