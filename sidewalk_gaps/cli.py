@@ -42,12 +42,8 @@ all_commands = [
     viz_commands.combine_transit_results,
     viz_commands.export_geojson_for_webmap,
     viz_commands.make_vector_tiles,
-    viz_commands.combine_islands,
+    # viz_commands.combine_islands,
 ]
 
 for cmd in all_commands:
     main.add_command(cmd)
-
-
-# main.add_command(viz_commands.summarize_into_hexagons)
-# main.add_command(viz_commands.classify_hexagons)

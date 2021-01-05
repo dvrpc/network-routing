@@ -42,45 +42,45 @@ def combine_centerlines():
     db.make_geotable_from_query(query, "osm_sw_coverage", **kwargs)
 
 
-@click.command()
-def combine_islands():
-    """ Merge the NJ and PA island analyses """
+# @click.command()
+# def combine_islands():
+#     """ Merge the NJ and PA island analyses """
 
-    db = db_connection()
+#     db = db_connection()
 
-    query = """
-        SELECT geom FROM nj.islands
-        UNION
-        SELECT geom FROM pa.islands
-    """
-    kwargs = {"geom_type": "MultiLineString", "epsg": 26918, "schema": "data_viz"}
-    db.make_geotable_from_query(query, "islands", **kwargs)
+#     query = """
+#         SELECT geom FROM nj.islands
+#         UNION
+#         SELECT geom FROM pa.islands
+#     """
+#     kwargs = {"geom_type": "MultiLineString", "epsg": 26918, "schema": "data_viz"}
+#     db.make_geotable_from_query(query, "islands", **kwargs)
 
-    # Add a column for size
-    db.table_add_or_nullify_column("islands", "size_miles", "FLOAT", schema="data_viz")
+#     # Add a column for size
+#     db.table_add_or_nullify_column("islands", "size_miles", "FLOAT", schema="data_viz")
 
-    query = "UPDATE data_viz.islands SET size_miles = ST_LENGTH(geom) * 0.000621371;"
-    db.execute(query)
+#     query = "UPDATE data_viz.islands SET size_miles = ST_LENGTH(geom) * 0.000621371;"
+#     db.execute(query)
 
-    # For each island, make a rgba() string with random values
+#     # For each island, make a rgba() string with random values
 
-    # Add a column for rgba
-    db.table_add_or_nullify_column("islands", "rgba", "TEXT", schema="data_viz")
+#     # Add a column for rgba
+#     db.table_add_or_nullify_column("islands", "rgba", "TEXT", schema="data_viz")
 
-    # Get a count of the rows
-    query = "SELECT uid FROM data_viz.islands"
-    uids = db.query_as_df(query)
-    for idx, row in uids.iterrows():
+#     # Get a count of the rows
+#     query = "SELECT uid FROM data_viz.islands"
+#     uids = db.query_as_df(query)
+#     for idx, row in uids.iterrows():
 
-        r, g, b = randint(0, 255), randint(0, 255), randint(0, 255)
-        rgba = f"rgba({r}, {g}, {b}, 1)"
+#         r, g, b = randint(0, 255), randint(0, 255), randint(0, 255)
+#         rgba = f"rgba({r}, {g}, {b}, 1)"
 
-        query = f"""
-            UPDATE data_viz.islands
-            SET rgba = '{rgba}'
-            WHERE uid = {row.uid}
-        """
-        db.execute(query)
+#         query = f"""
+#             UPDATE data_viz.islands
+#             SET rgba = '{rgba}'
+#             WHERE uid = {row.uid}
+#         """
+#         db.execute(query)
 
 
 @click.command()
