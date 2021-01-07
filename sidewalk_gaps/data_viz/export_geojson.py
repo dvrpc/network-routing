@@ -33,8 +33,10 @@ def export_webmap_data(db: PostgreSQL):
 
     # Centerlines with sidewalk amounts, as a ratio
     query_centerlines = """
-        select hwy_tag, sw_ratio, state, st_transform(geom, 4326) as geom
-        from data_viz.osm_sw_coverage
+        select hwy_tag, sw_ratio, state, st_transform(o.geom, 4326) as geom
+        from data_viz.osm_sw_coverage o
+        inner join regional_counties c
+        on st_within(o.geom, c.geom)
     """
 
     write_query_to_geojson("osm_sw_coverage", query_centerlines, db)
