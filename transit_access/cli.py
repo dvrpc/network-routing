@@ -92,7 +92,30 @@ def export_geojson_for_webmap():
 
 @click.command()
 def make_vector_tiles():
+    """Turn GeoJSON files into .mbtiles format"""
     _make_vector_tiles(FOLDER_DATA_PRODUCTS, "ridescore_analysis")
+
+
+@click.command()
+def export_shps_for_manual_edits():
+    """Export data necessary for manual station edits"""
+
+    db = db_connection()
+
+    output_folder = FOLDER_DATA_PRODUCTS / "manual_edits"
+
+    tables_to_export = [
+        "data_viz.sidewalkscore",
+        "data_viz.ridescore_isos",
+        "rs_osm.osm_results",
+        "rs_sw.sw_results",
+    ]
+
+    for tbl in tables_to_export:
+
+        schema, tablename = tbl.split(".")
+
+        db.export_shapefile(tablename, output_folder, schema=schema)
 
 
 all_commands = [
@@ -103,6 +126,7 @@ all_commands = [
     sidewalkscore,
     export_geojson_for_webmap,
     make_vector_tiles,
+    export_shps_for_manual_edits,
 ]
 
 for cmd in all_commands:
