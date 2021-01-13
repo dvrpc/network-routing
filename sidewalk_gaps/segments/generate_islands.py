@@ -29,10 +29,14 @@ def generate_islands(db: PostgreSQL, schema: str = None):
             ) AS geom
         FROM {full_table_name}
     """
-    db.make_geotable_from_query(query, "islands", "MULTILINESTRING", 26918, schema=output_schema)
+    db.make_geotable_from_query(
+        query, "islands", "MULTILINESTRING", 26918, schema=output_schema
+    )
 
     # Add a column for size
-    db.table_add_or_nullify_column("islands", "size_miles", "FLOAT", schema=output_schema)
+    db.table_add_or_nullify_column(
+        "islands", "size_miles", "FLOAT", schema=output_schema
+    )
 
     query = f"UPDATE {output_schema}.islands SET size_miles = ST_LENGTH(geom) * 0.000621371;"
     db.execute(query)
