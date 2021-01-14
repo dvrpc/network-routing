@@ -109,6 +109,7 @@ def export_shps_for_manual_edits():
         "data_viz.ridescore_isos",
         "rs_osm.osm_results",
         "rs_sw.sw_results",
+        "public.osm_edges_drive",
     ]
 
     for tbl in tables_to_export:
@@ -116,6 +117,15 @@ def export_shps_for_manual_edits():
         schema, tablename = tbl.split(".")
 
         db.export_shapefile(tablename, output_folder, schema=schema)
+
+    # Export the QAQC tables so their names don't clash
+    gdf = db.query_as_geo_df("SELECT * FROM rs_osm.qaqc_node_match")
+    output_path = output_folder / "osm_qaqc.shp"
+    gdf.to_file(output_path)
+
+    gdf = db.query_as_geo_df("SELECT * FROM rs_sw.qaqc_node_match")
+    output_path = output_folder / "sw_qaqc.shp"
+    gdf.to_file(output_path)
 
 
 all_commands = [
