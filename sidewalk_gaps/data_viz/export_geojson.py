@@ -37,6 +37,7 @@ def export_webmap_data(db: PostgreSQL):
         from data_viz.osm_sw_coverage o
         inner join regional_counties c
         on st_within(o.geom, c.geom)
+        where o.highway not like '%%motorway%%'
     """
 
     write_query_to_geojson("osm_sw_coverage", query_centerlines, db)
@@ -78,7 +79,7 @@ def export_webmap_data(db: PostgreSQL):
 
     # Islands of connectivity
     query_islands = """
-        SELECT uid, rgba, st_transform(geom, 4326) as geom
+        SELECT uid, size_miles, muni_names, muni_count, rgba, st_transform(geom, 4326) as geom
         FROM data_viz.islands
     """
     write_query_to_geojson("islands", query_islands, db)
