@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from random import randint
 
 from postgis_helpers import PostgreSQL
@@ -29,33 +30,55 @@ def generate_islands(db: PostgreSQL, schema: str = None):
             ) AS geom
         FROM {full_table_name}
     """
-    db.make_geotable_from_query(
-        query, "islands", "MULTILINESTRING", 26918, schema=output_schema
-    )
+    db.make_geotable_from_query(query, "islands", "MULTILINESTRING", 26918, schema=output_schema)
 
     # Add a column for size
-    db.table_add_or_nullify_column(
-        "islands", "size_miles", "FLOAT", schema=output_schema
-    )
+    db.table_add_or_nullify_column("islands", "size_miles", "FLOAT", schema=output_schema)
 
     query = f"UPDATE {output_schema}.islands SET size_miles = ST_LENGTH(geom) * 0.000621371;"
     db.execute(query)
 
-    # For each island, make a rgba() string with random values
+    # Add columns for rgba and muni names
+    for colname in ["rgba", "muni_names"]:
+        db.table_add_or_nullify_column("islands", colname, "TEXT", schema=output_schema)
 
-    # Add a column for rgba
-    db.table_add_or_nullify_column("islands", "rgba", "TEXT", schema=output_schema)
+    db.table_add_or_nullify_column("islands", "muni_count", "FLOAT", schema=output_schema)
 
-    # Iterate over each feature. Make a random rgb code for each one
+    # Iterate over each feature. Make a random rgb code and find intersecting municipalities
     query = f"SELECT uid FROM {output_schema}.islands"
     uids = db.query_as_df(query)
-    for idx, row in uids.iterrows():
+    for idx, row in tqdm(uids.iterrows(), total=uids.shape[0]):
+        print(row.uid)
 
-        rgba = _random_rgb()
-
+        # Query the intersecting municipalities
         query = f"""
-            UPDATE {output_schema}.islands
-            SET rgba = '{rgba}'
-            WHERE uid = {row.uid}
+            SELECT
+                mun_name,
+                st_length(st_intersection(i.geom, m.geom)) / st_length(i.geom) * 100 as pct_covered
+            FROM
+                municipalboundaries m,
+                data_viz.islands i
+            WHERE
+                    st_intersects(m.geom, i.geom)
+                AND
+                    i.uid = {row.uid}
+            ORDER BY
+                pct_covered DESC
         """
-        db.execute(query)
+        munis = db.query_as_list(query)
+
+        # Record the muni names and the percent covered
+        result = ""
+        for muni_name, pct_covered in munis:
+            result += f"{muni_name}: {round(pct_covered, 1)},"
+
+        update = f"""
+            UPDATE {output_schema}.islands
+            SET
+                muni_names = '{result}',
+                muni_count = {len(munis)},
+                rgba = '{_random_rgb()}'
+            WHERE
+                uid = {row.uid}
+        """
+        db.execute(update)
