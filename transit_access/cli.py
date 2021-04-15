@@ -63,7 +63,7 @@ def make_nodes():
         "uid_col": "node_id",
     }
 
-    edge_table = "osm_edges_drive"
+    edge_table = "osm_edges_all"
 
     print(f"Generating nodes for {edge_table}")
     generate_nodes(db, edge_table, "public", kwargs)

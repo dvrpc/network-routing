@@ -6,13 +6,13 @@ from postgis_helpers import PostgreSQL
 def osm_analysis(db: PostgreSQL):
 
     arguments = {
-        "poi_table_name": "passengerrailstations",
+        "poi_table_name": "ridescore_transit_poi_osm",
         "poi_id_column": "dvrpc_id",
         "output_table_name": "osm",
         "output_schema": "rs_osm",
         "num_pois": 1,
         "poi_match_threshold": 152,  # aka 500'
-        "edge_table_name": "osm_edges_drive",
+        "edge_table_name": "osm_edges_all",
         "node_table_name": "nodes_for_osm",
         "node_id_column": "node_id",
     }
@@ -22,7 +22,7 @@ def osm_analysis(db: PostgreSQL):
 
 def sidewalk_analysis(db: PostgreSQL):
     arguments = {
-        "poi_table_name": "passengerrailstations",
+        "poi_table_name": "ridescore_transit_poi_sw",
         "poi_id_column": "dvrpc_id",
         "output_table_name": "sw",
         "output_schema": "rs_sw",
