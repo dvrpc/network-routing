@@ -7,6 +7,7 @@ import postgis_helpers as pGIS
 from .nodes import generate_nodes
 from .routable_network import RoutableNetwork
 from .generate_vector_tiles import make_vector_tiles
+from .openstreetmap_extraction import import_osm_for_dvrpc_region
 
 load_dotenv(find_dotenv())
 DB_NAME = os.getenv("DB_NAME")

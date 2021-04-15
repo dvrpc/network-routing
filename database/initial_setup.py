@@ -8,6 +8,7 @@ from geopandas import GeoDataFrame
 import postgis_helpers as pGIS
 from postgis_helpers import PostgreSQL
 from philly_transit_data import TransitData
+from helpers import import_osm_for_dvrpc_region
 
 
 def explode_gdf_if_multipart(gdf: GeoDataFrame) -> GeoDataFrame:
@@ -41,8 +42,6 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
             [
                 "pedestriannetwork_lines",
                 "pedestriannetwork_points",
-                "passengerrailstations",
-                "transitparkingfacilities",
             ],
         ),
         ("structure", ["points_of_interest"]),
@@ -76,8 +75,6 @@ def import_data_from_portal_with_wget(db: PostgreSQL):
             [
                 "PedestrianNetwork_lines",
                 "PedestrianNetwork_points",
-                "PassengerRailStations",
-                "TransitParkingFacilities",
             ],
         ),
         ("Boundaries", ["MunicipalBoundaries"]),
@@ -204,7 +201,7 @@ def create_project_database(local_db: PostgreSQL):
     local_db.import_geodataframe(stops, "regional_transit_stops")
 
     # 5) Import OSM data for the entire region
-    os.system("db-import osm")
+    import_osm_for_dvrpc_region(db, network_type="all")
 
 
 if __name__ == "__main__":
