@@ -24,13 +24,12 @@ def cleanup_outputs(
         """
         db.execute(move_schema_query)
 
-    qa_tables = [x for x in db.all_spatial_tables_as_dict() if "poi_" in x]
+    qa_tables = [x for x in db.all_spatial_tables_as_dict() if x[:4] == "poi_"]
 
     if len(qa_tables) >= 2:
 
         qa_subqueries = [
-            f"SELECT {poi_id_column}, geom FROM {analysis_schema}.{x}"
-            for x in qa_tables
+            f"SELECT {poi_id_column}, geom FROM {analysis_schema}.{x}" for x in qa_tables
         ]
 
         query = """
@@ -51,6 +50,4 @@ if __name__ == "__main__":
     from helpers import db_connection
 
     db = db_connection()
-    cleanup_outputs(
-        db, "nj", "src", "transit_gaps", ["all_transit_results", "all_transit_table"]
-    )
+    cleanup_outputs(db, "nj", "src", "transit_gaps", ["all_transit_results", "all_transit_table"])
