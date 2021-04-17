@@ -1,0 +1,103 @@
+from postgis_helpers import PostgreSQL
+from network_routing import FOLDER_DATA_PRODUCTS, db_connection
+
+
+def write_query_to_geojson(filename: str, query: str, db: PostgreSQL):
+    """
+    Write SQL query out to geojson file on disk.
+    """
+
+    # Put into Google Drive, if configured
+    if FOLDER_DATA_PRODUCTS:
+        output_filepath = FOLDER_DATA_PRODUCTS / f"{filename}.geojson"
+
+    # Otherwise just drop it into the active directory
+    else:
+        output_filepath = f"{filename}.geojson"
+
+    # Extract geodataframe from SQL
+    gdf = db.query_as_geo_df(query)
+
+    # Ensure it's in the proper projection
+    gdf = gdf.to_crs("EPSG:4326")
+
+    # Save to file
+    gdf.to_file(output_filepath, driver="GeoJSON")
+
+
+def export_gap_webmap_data(db: PostgreSQL):
+    """
+    Export three geojson files:
+        - centerlines
+        - sw_nodes
+        - transit_stops
+    """
+
+    # Centerlines with sidewalk amounts, as a ratio
+    query_centerlines = """
+        select hwy_tag, sw_ratio, state, st_transform(o.geom, 4326) as geom
+        from data_viz.osm_sw_coverage o
+        inner join regional_counties c
+        on st_within(o.geom, c.geom)
+        where o.highway not like '%%motorway%%'
+    """
+
+    write_query_to_geojson("osm_sw_coverage", query_centerlines, db)
+
+    # Transit accessibility results
+    query_transit_results = """
+        select
+            uid,
+            walk_time,
+            st_transform(geom, 4326) as geom
+        from
+            data_viz.results_transit_access
+    """
+    write_query_to_geojson("sw_nodes", query_transit_results, db)
+
+    # Transit stops
+    query_transit_stops = """
+        select
+            uid,
+            src,
+            case
+                when stop_name is not null then stop_name
+                when station_name is not null then station_name
+                when stopname is not null then stopname
+                when station is not null then station
+                when bsl is not null then bsl
+                when on_street is not null then concat(on_street, ' @ ', at_street)
+            end as stop_name,
+            st_transform(geom, 4326) as geom
+        from
+            regional_transit_stops
+        where
+            st_within(
+                geom,
+                (select st_collect(geom) from regional_counties)
+            )
+    """
+    write_query_to_geojson("transit_stops", query_transit_stops, db)
+
+    # Islands of connectivity
+    query_islands = """
+        SELECT uid, size_miles, muni_names, muni_count, rgba, st_transform(geom, 4326) as geom
+        FROM data_viz.islands
+    """
+    write_query_to_geojson("islands", query_islands, db)
+
+
+def export_ridescore_webmap_data(db: PostgreSQL):
+
+    tables_to_export = ["ridescore_isos", "sidewalkscore"]
+
+    for tbl in tables_to_export:
+        write_query_to_geojson(f"SELECT * FROM data_viz.{tbl}", db)
+
+
+if __name__ == "__main__":
+
+    db = db_connection()
+
+    export_gap_webmap_data(db)
+    export_ridescore_webmap_data(db)
