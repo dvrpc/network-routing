@@ -23,14 +23,12 @@ def import_osm_for_dvrpc_region(db: PostgreSQL, network_type: str = "all"):
 
     # Convert to geodataframes and save to DB
     print("\t -> Converting graph to geodataframes")
-    nodes, edges = ox.graph_to_gdfs(G)
+    _, edges = ox.graph_to_gdfs(G)
 
     db.import_geodataframe(edges, f"osm_edges_{network_type}")
-    db.import_geodataframe(nodes, f"osm_nodes_{network_type}")
 
     # Reproject from 4326 to 26918 to facilitate analysis queries
     db.table_reproject_spatial_data(f"osm_edges_{network_type}", 4326, 26918, "LINESTRING")
-    db.table_reproject_spatial_data(f"osm_nodes_{network_type}", 4326, 26918, "POINT")
 
     # Make a uuid column
     make_id_query = f"""
