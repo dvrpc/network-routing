@@ -7,12 +7,21 @@ from network_routing.database.export_geojson import (
     export_gap_webmap_data,
     export_ridescore_webmap_data,
 )
+from network_routing.database.initial_setup import main as _initial_build
 
 
 @click.group()
 def main():
     """The command 'db' is used to run data import & export processes"""
     pass
+
+
+@click.command()
+def initial_build():
+    """Roll a brand-new database for with the latest-and-greatest data"""
+    db = db_connection()
+
+    _initial_build(db)
 
 
 @click.command()
@@ -99,6 +108,7 @@ def export_shps_for_manual_edits():
 
 
 all_commands = [
+    initial_build,
     make_nodes_for_edges,
     export_geojson,
     make_vector_tiles,

@@ -8,7 +8,7 @@ from geopandas import GeoDataFrame
 import postgis_helpers as pGIS
 from postgis_helpers import PostgreSQL
 from philly_transit_data import TransitData
-from helpers import import_osm_for_dvrpc_region
+from network_routing.database.openstreetmap_extraction import import_osm_for_dvrpc_region
 
 
 def explode_gdf_if_multipart(gdf: GeoDataFrame) -> GeoDataFrame:
@@ -86,7 +86,7 @@ def import_data_from_portal_with_wget(db: PostgreSQL):
 
     for schema, table_list in data_to_download:
         for tbl in table_list:
-            wget_cmd = f'wget -O database/{tbl.lower()}.geojson "https://arcgis.dvrpc.org/portal/services/{schema}/{tbl}/MapServer/WFSServer?request=GetFeature&service=WFS&typename={tbl}&outputformat=GEOJSON&format_options=filename:{tbl.lower()}.geojson"'
+            wget_cmd = f'wget -O {tbl.lower()}.geojson "https://arcgis.dvrpc.org/portal/services/{schema}/{tbl}/MapServer/WFSServer?request=GetFeature&service=WFS&typename={tbl}&outputformat=GEOJSON&format_options=filename:{tbl.lower()}.geojson"'
 
             commands.append(wget_cmd)
 
@@ -171,7 +171,7 @@ def create_new_geodata(db: PostgreSQL):
     )
 
 
-def create_project_database(local_db: PostgreSQL):
+def main(local_db: PostgreSQL):
     """ Batch execute the entire process """
 
     if platform.system() in ["Linux", "Windows"] and "dvrpc.org" in socket.getfqdn():
@@ -206,8 +206,8 @@ def create_project_database(local_db: PostgreSQL):
 
 if __name__ == "__main__":
 
-    from helpers import db_connection
+    from network_routing import db_connection
 
     db = db_connection()
 
-    create_project_database(db)
+    main(db)
