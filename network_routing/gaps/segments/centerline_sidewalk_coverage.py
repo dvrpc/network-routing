@@ -21,12 +21,8 @@ from tqdm import tqdm
 
 from postgis_helpers import PostgreSQL
 
-database_name = "sidewalk_gaps"
 
-
-def classify_centerlines(
-    db: PostgreSQL, schema: str, tbl: str, new_col: str = "sidewalk"
-):
+def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "sidewalk"):
 
     # Get a list of all centerlines we want to iterate over.
     oid_query = f"""
@@ -62,7 +58,7 @@ def classify_centerlines(
                 )
             )
         FROM
-            {schema}.sidewalks sw, {schema}.{tbl} c
+            {schema}.pedestriannetwork_lines sw, {schema}.{tbl} c
         where
             c.uid = OID_PLACEHOLDER
             AND
