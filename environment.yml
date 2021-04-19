@@ -21,11 +21,9 @@ dependencies:
   - python-dotenv
   - seaborn
   - black
+  - rich
   - pip
   - pip:
-      - ward
-      - rich
       - git+https://github.com/aaronfraint/postgis-helpers.git
       - git+https://github.com/aaronfraint/philly-transit-data.git
-      - git+https://github.com/aaronfraint/database-io.git
       - --editable .
