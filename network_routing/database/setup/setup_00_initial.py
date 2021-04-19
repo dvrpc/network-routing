@@ -8,7 +8,7 @@ from geopandas import GeoDataFrame
 import postgis_helpers as pGIS
 from postgis_helpers import PostgreSQL
 from philly_transit_data import TransitData
-from network_routing.database.setup.openstreetmap_extraction import import_osm_for_dvrpc_region
+from network_routing.database.setup.get_osm import import_osm_for_dvrpc_region
 
 
 def explode_gdf_if_multipart(gdf: GeoDataFrame) -> GeoDataFrame:

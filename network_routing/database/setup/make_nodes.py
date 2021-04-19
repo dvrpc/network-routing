@@ -2,9 +2,10 @@ from postgis_helpers import PostgreSQL
 
 
 def generate_nodes(db: PostgreSQL, edge_tbl: str, schema: str, geotable_kwargs: dict):
-
-    # Query out all unique nodes, then save result to database
-    # --------------------------------------------------------
+    """
+    Query out all unique nodes within an edge table
+    Save the result to database
+    """
 
     node_query = f"""
         SELECT st_startpoint(geom) AS geom

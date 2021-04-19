@@ -1,7 +1,7 @@
 import click
 
 from network_routing import db_connection, FOLDER_DATA_PRODUCTS
-from network_routing.database.setup.nodes import generate_nodes
+from network_routing.database.setup.make_nodes import generate_nodes
 from network_routing.database.export.vector_tiles import (
     make_vector_tiles as _make_vector_tiles,
 )
