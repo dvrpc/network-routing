@@ -53,9 +53,8 @@ net = RoutableNetwork(db, "schema_name", **my_kwargs)
 
 `RoutableNetwork()` takes two required positional arguments:
 
-- database:
-  - `db: PostgreSQL` == this is the same thing returned from `network_routing.db_connection()`
-  - `schema: str` == name of the schema where the analysis data can be found
+- `db: PostgreSQL` == this is the same thing returned from `network_routing.db_connection()`
+- `schema: str` == name of the schema where the analysis data can be found
 
 It also requires the following keyword arguments:
 
@@ -77,9 +76,9 @@ It also requires the following keyword arguments:
   - `output_table_name: str` == base tablename for results of analysis (network node geometry + accessibility attribute columns)
   - `output_schema: str` == schema to store output analysis result + QAQC layers
 
-The following arguments are optional, and will use defaults unless overridden
+The following arguments are optional, and will use defaults unless overridden:
 
-- analysis settings
+- general analysis settings
 
   - `walking_mph: float = 2.5` == assumed pedestrian walking speed in miles-per-hour
   - `max_minutes: float = 45` == distance(/time) threshold to the analysis
