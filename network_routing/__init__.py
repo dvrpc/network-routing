@@ -11,10 +11,10 @@ from network_routing.accessibility.routable_network import RoutableNetwork
 load_dotenv(find_dotenv())
 DB_NAME = os.getenv("DB_NAME")
 DB_HOST = os.getenv("DB_HOST")
-GDRIVE_ROOT = os.getenv("GDRIVE_ROOT")
+GDRIVE_ROOT = Path(os.getenv("GDRIVE_ROOT"))
 
-
-FOLDER_DATA_PRODUCTS = Path(GDRIVE_ROOT) / "projects/RideScore/data products"
+FOLDER_DATA_PRODUCTS = GDRIVE_ROOT / "projects/RideScore/data products"
+GDRIVE_SW_GAPS_PROJECT_ROOT = GDRIVE_ROOT / "projects/Sidewalk Gaps"
 
 
 def db_connection():
