@@ -12,7 +12,7 @@ def setup_01_updated_ridescore_inputs():
 
     for filename_part in ["sw", "osm"]:
         filepath = data_folder / f"station_pois_for_{filename_part}.shp"
-        db.import_geodata(f"ridescore_transit_poi_{filename_part}", filepath)
+        db.import_geodata(f"ridescore_transit_poi_{filename_part}", filepath, if_exists="replace")
 
 
 if __name__ == "__main__":
