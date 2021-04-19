@@ -1,8 +1,27 @@
 import click
+from datetime import datetime
 
 from network_routing import db_connection
 
 from .routable_network import RoutableNetwork
+
+
+def _execute_analysis(schema: str, arguments: dict) -> RoutableNetwork:
+    """
+    Print the analysis parameters before running
+    """
+
+    # Print parameters and start time
+    print(f"Executing an accessibility analysis with the following arguments:")
+    print(f"\t -> schema = {schema}")
+    for k, v in arguments.items():
+        print(f"\t -> {k} = {v}")
+
+    print("Beginning at:", datetime.now())
+
+    # Run analysis
+    db = db_connection()
+    return RoutableNetwork(db, schema, **arguments)
 
 
 @click.group()
@@ -16,8 +35,6 @@ def main():
 def sw_default():
     """Run the RoutableNetwork with default settings """
 
-    db = db_connection()
-
     arguments = {
         "edge_table_name": "pedestriannetwork_lines",
         "node_table_name": "nodes_for_sidewalks",
@@ -30,14 +47,12 @@ def sw_default():
         "poi_match_threshold": 152,  # aka 500'
     }
 
-    _ = RoutableNetwork(db, "public", **arguments)
+    _ = _execute_analysis("public", arguments)
 
 
 @click.command()
 def osm_ridescore():
     """Analyze OSM network distance around each rail stop """
-
-    db = db_connection()
 
     arguments = {
         "poi_table_name": "ridescore_transit_poi_osm",
@@ -51,14 +66,12 @@ def osm_ridescore():
         "node_id_column": "node_id",
     }
 
-    _ = RoutableNetwork(db, "public", **arguments)
+    _ = _execute_analysis("public", arguments)
 
 
 @click.command()
 def sw_ridescore():
     """Analyze sidewalk network distance around each rail stop """
-
-    db = db_connection()
 
     arguments = {
         "poi_table_name": "ridescore_transit_poi_sw",
@@ -72,7 +85,7 @@ def sw_ridescore():
         "node_id_column": "sw_node_id",
     }
 
-    _ = RoutableNetwork(db, "public", **arguments)
+    _ = _execute_analysis("public", arguments)
 
 
 all_commands = [
