@@ -2,13 +2,15 @@
 
 The core logic for the accessibility analysis is encapsulated within the `RoutableNetwork` class.
 
-### It takes two required positional arguments:
+## Analysis parameters
+
+`RoutableNetwork()` takes two required positional arguments:
 
 - database:
   - `db: PostgreSQL` == this is the same thing returned from `network_routing.db_connection()`
   - `schema: str` == name of the schema where the analysis data can be found
 
-### It also requires the following keyword arguments:
+It also requires the following keyword arguments:
 
 - information about the edge table
 
@@ -28,7 +30,7 @@ The core logic for the accessibility analysis is encapsulated within the `Routab
   - `output_table_name: str` == base tablename for results of analysis (network node geometry + accessibility attribute columns)
   - `output_schema: str` == schema to store output analysis result + QAQC layers
 
-### The following arguments are optional, and will use defaults unless overridden
+The following arguments are optional, and will use defaults unless overridden
 
 - analysis settings
 
@@ -40,6 +42,37 @@ The core logic for the accessibility analysis is encapsulated within the `Routab
 
 - execution control
   - `run_on_create: bool = True` == flag that controls whether or not the analysis is run when the analysis object is instantiated from the class
+
+## CLI usage
+
+A command-line-interface is provided under the top-level name `access`.
+
+To execute the default analysis, run:
+
+```bash
+> access sw-default
+```
+
+There are a number of configurations, all of which can be found within [`network_routing/accessibility/cli.py`](./cli.py).
+
+You can also see a list of all available configurations by running `access --help`
+
+```bash
+> access --help
+
+Usage: access [OPTIONS] COMMAND [ARGS]...
+
+  The command 'access' is used to run an accessibility analysis against
+  point-of-interest + network edge datasets
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  osm-ridescore  Analyze OSM network distance around each rail stop
+  sw-default     Run the RoutableNetwork with default settings
+  sw-ridescore   Analyze sidewalk network distance around each rail stop
+```
 
 ## Python usage
 
@@ -55,32 +88,4 @@ db = db_connection()
 my_kwargs = {"poi_table_name": "my_table_name", "poi_id_column": "id_colname"}
 
 net = RoutableNetwork(db, "schema_name", **my_kwargs)
-```
-
-## CLI usage
-
-A command-line-interface is provided under the top-level name `access`.
-
-The associated arguments / configuration can be found within `network_routing/accessibility/cli.py`.
-Running
-
-```bash
-> access --help
-```
-
-shows:
-
-```bash
-Usage: access [OPTIONS] COMMAND [ARGS]...
-
-  The command 'access' is used to run an accessibility analysis against
-  point-of-interest + network edge datasets
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  osm-ridescore  Analyze OSM network distance around each rail stop
-  sw-default     Run the RoutableNetwork with default settings
-  sw-ridescore   Analyze sidewalk network distance around each rail stop
 ```
