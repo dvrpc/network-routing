@@ -24,7 +24,7 @@ All of the necessary database processes can be called by the CLI with the comman
 - `db make-nodes-for-edges`
   - Generate topologically-sound node layers for `pedestriannetwork_lines` and `osm_edges_all`
 
-## Export commands
+### Export commands
 
 - `db export-geojson ANALYSIS_NAME`
   - Export a set of geojson files, indicated by `ANALYSIS_NAME`
@@ -34,7 +34,7 @@ All of the necessary database processes can be called by the CLI with the comman
   - Generate a tileset named `FILENAME` from a folder full of geojson files
   - Files are read from `FOLDER_DATA_PRODUCTS`
 
-## Other commands
+### Other commands
 
 - `db export-shps-for-manual-edits`
   - Export a set of shapefiles that others will edit manually
