@@ -32,6 +32,7 @@ def build_initial():
 @click.command()
 @click.argument("patch_number", type=int)
 def build_secondary(patch_number):
+    """Update the db as defined by PATCH NUMBER """
 
     patches = {
         1: setup_01_updated_ridescore_inputs,
