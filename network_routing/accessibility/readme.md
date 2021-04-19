@@ -1,6 +1,6 @@
 # `network_routing.accessibility`
 
-The core logic for the accessibility analysis is encapsulated within the `RoutableNetwork` class.
+The core logic for the accessibility analysis is encapsulated within the [`RoutableNetwork`](./routable_network.py#L10) class.
 
 ## Analysis parameters
 
