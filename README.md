@@ -4,9 +4,9 @@ Python package to create and analyze routable pedestrian networks.
 
 The codebase is broken up into three primary modules, each with its own command-line-interface.
 
-1. [`accessibility`](./accessibility) - where all network routing code can be found
-2. [`database`](./database) - where all data I/O is defined
-3. [`gaps`](./gaps) - where all other analysis / visualization steps are kept
+1. [`accessibility`](./network_routing/accessibility) - where all network routing code can be found
+2. [`database`](./network_routing/database) - where all data I/O is defined
+3. [`gaps`](./network_routing/gaps) - where all other analysis / visualization steps are kept
 
 ## Setup
 
