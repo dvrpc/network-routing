@@ -22,6 +22,12 @@ def generate_islands(db: PostgreSQL, schema: str = None):
     full_table_name = "pedestriannetwork_lines" if not schema else f"{schema}.sidewalks"
     output_schema = "data_viz" if not schema else schema
 
+    db.execute(
+        f"""
+        CREATE SCHEMA IF NOT EXISTS {output_schema};
+    """
+    )
+
     query = f"""
         SELECT
             ST_COLLECTIONEXTRACT(
@@ -48,7 +54,7 @@ def generate_islands(db: PostgreSQL, schema: str = None):
     query = f"SELECT uid FROM {output_schema}.islands"
     uids = db.query_as_df(query)
     for idx, row in tqdm(uids.iterrows(), total=uids.shape[0]):
-        print(row.uid)
+        # print(row.uid)
 
         # Query the intersecting municipalities
         query = f"""
