@@ -1,24 +1,42 @@
-# Sidewalk Gaps
+# `network_routing.gaps`
 
-This module builds and analyzes a routable using DVPRC's sidewalk data.
+All commands within this module can be run with the prefix `gaps`
 
-## Command-Line Interface (CLI)
+## Segment Analyses
 
-All of the important functionality can be called from a terminal with the top-level command ``sidewalk``
-
-Sensible default values are used across the board, and are defined in the ``.env`` or ``__init__.py`` files.
-You can also pass your own parameters directly with the CLI.
-
-### Build the SQL database from DVRPC's source data
-
-Build the analysis database with default settings:
+### Classify OSM centerlines by sidewalk coverage
 
 ```bash
-sidewalk db-setup
+gaps classify-osm-sw-coverage
 ```
 
-Build the analysis database with a custom database name and source folder:
+### Identify islands of connectivity
 
 ```bash
-sidewalk db-setup --database my_db_name --folder /my/folder/path/to/shapefiles
+gaps identify-islands
+```
+
+## Data Visualization
+
+### Generate isochrones of the sidewalk- & OSM-based access analyses
+
+```bash
+gaps isochrones
+```
+
+### Calculate the "sidewalkscore" for the RideScore transit stations
+
+```bash
+gaps sidewalkscore
+```
+
+### Simplify OSM `highway` tags
+
+This process adds a new column named `hwy_tag` to the table `data_viz.osm_sw_coverage`
+
+The column is then populated with a single, clean tag. If multiple tags are present,
+the tag higher in the hierarchy will be used (e.g. `"{trunk, tertiary}" -> "trunk"` ).
+
+```bash
+gaps scrub-osm-tags
 ```
