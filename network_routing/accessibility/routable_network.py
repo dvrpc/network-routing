@@ -1,4 +1,3 @@
-from datetime import datetime
 from sqlalchemy import create_engine
 from postgis_helpers import PostgreSQL
 import pandana as pdna
@@ -51,7 +50,7 @@ class RoutableNetwork:
         self.db.ACTIVE_SCHEMA = schema
 
         if run_on_create:
-            print("Beginning at", datetime.now())
+
             self.setup()
             self.construct_network()
             self.analyze_pois()
