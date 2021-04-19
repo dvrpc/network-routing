@@ -8,7 +8,7 @@ from geopandas import GeoDataFrame
 import postgis_helpers as pGIS
 from postgis_helpers import PostgreSQL
 from philly_transit_data import TransitData
-from network_routing.database.openstreetmap_extraction import import_osm_for_dvrpc_region
+from network_routing.database.setup.openstreetmap_extraction import import_osm_for_dvrpc_region
 
 
 def explode_gdf_if_multipart(gdf: GeoDataFrame) -> GeoDataFrame:
@@ -171,7 +171,7 @@ def create_new_geodata(db: PostgreSQL):
     )
 
 
-def main(local_db: PostgreSQL):
+def setup_00_initial(local_db: PostgreSQL):
     """ Batch execute the entire process """
 
     if platform.system() in ["Linux", "Windows"] and "dvrpc.org" in socket.getfqdn():
@@ -210,4 +210,4 @@ if __name__ == "__main__":
 
     db = db_connection()
 
-    main(db)
+    setup_00_initial(db)

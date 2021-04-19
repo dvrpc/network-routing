@@ -1,15 +1,14 @@
-from helpers import db_connection
-from sidewalk_gaps import GDRIVE_PROJECT_ROOT
+from network_routing import db_connection, GDRIVE_SW_GAPS_PROJECT_ROOT
 
 
-def ridescore():
+def setup_01_updated_ridescore_inputs():
     """
     Import the updated ridescore inputs showing access points to transit stations
     """
 
     db = db_connection()
 
-    data_folder = GDRIVE_PROJECT_ROOT / "data-to-import"
+    data_folder = GDRIVE_SW_GAPS_PROJECT_ROOT / "data-to-import"
 
     for filename_part in ["sw", "osm"]:
         filepath = data_folder / f"station_pois_for_{filename_part}.shp"
@@ -17,4 +16,4 @@ def ridescore():
 
 
 if __name__ == "__main__":
-    ridescore()
+    setup_01_updated_ridescore_inputs()

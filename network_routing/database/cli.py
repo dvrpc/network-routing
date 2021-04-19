@@ -1,13 +1,18 @@
 import click
 
 from network_routing import db_connection, FOLDER_DATA_PRODUCTS
-from network_routing.database.nodes import generate_nodes
-from network_routing.database.generate_vector_tiles import make_vector_tiles as _make_vector_tiles
-from network_routing.database.export_geojson import (
+from network_routing.database.setup.nodes import generate_nodes
+from network_routing.database.export.vector_tiles import (
+    make_vector_tiles as _make_vector_tiles,
+)
+from network_routing.database.export.geojson import (
     export_gap_webmap_data,
     export_ridescore_webmap_data,
 )
-from network_routing.database.initial_setup import main as _initial_build
+from network_routing.database.setup.setup_00_initial import setup_00_initial
+from network_routing.database.setup.setup_01_updated_ridescore_inputs import (
+    setup_01_updated_ridescore_inputs,
+)
 
 
 @click.group()
@@ -17,11 +22,28 @@ def main():
 
 
 @click.command()
-def initial_build():
+def build_initial():
     """Roll a brand-new database for with the latest-and-greatest data"""
     db = db_connection()
 
-    _initial_build(db)
+    setup_00_initial(db)
+
+
+@click.command()
+@click.argument("patch_number", type=int)
+def build_secondary(patch_number):
+
+    patches = {
+        1: setup_01_updated_ridescore_inputs,
+    }
+
+    if patch_number not in patches:
+        print(f"Patch #{patch_number} does not exist")
+
+    else:
+        print(f"Running patch #{patch_number}")
+        patch = patches[patch_number]
+        patch()
 
 
 @click.command()
@@ -108,7 +130,8 @@ def export_shps_for_manual_edits():
 
 
 all_commands = [
-    initial_build,
+    build_initial,
+    build_secondary,
     make_nodes_for_edges,
     export_geojson,
     make_vector_tiles,
