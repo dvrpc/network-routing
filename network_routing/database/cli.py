@@ -13,6 +13,10 @@ from network_routing.database.setup.setup_00_initial import setup_00_initial
 from network_routing.database.setup.setup_01_updated_ridescore_inputs import (
     setup_01_updated_ridescore_inputs,
 )
+from network_routing.database.export.shapefile import (
+    export_shapefiles_for_editing,
+    export_shapefiles_for_downstream_ridescore,
+)
 
 
 @click.group()
@@ -99,35 +103,23 @@ def make_vector_tiles(filename):
 
 
 @click.command()
-def export_shps_for_manual_edits():
+@click.argument("export_name")
+def export_shapefiles(export_name):
     """Export data necessary for manual station edits"""
 
-    db = db_connection()
+    exporters = {
+        "manual_edits": export_shapefiles_for_editing,
+        "ridescore_downstream_analysis": export_shapefiles_for_downstream_ridescore,
+    }
 
-    output_folder = FOLDER_DATA_PRODUCTS / "manual_edits"
+    if export_name not in exporters:
+        print(f"Export process named '{export_name}' does not exist. Options include:")
+        for k in exporters.keys():
+            print(f"\t -> {k}")
 
-    tables_to_export = [
-        "data_viz.sidewalkscore",
-        "data_viz.ridescore_isos",
-        "rs_osm.osm_results",
-        "rs_sw.sw_results",
-        "public.osm_edges_drive",
-    ]
-
-    for tbl in tables_to_export:
-
-        schema, tablename = tbl.split(".")
-
-        db.export_shapefile(tablename, output_folder, schema=schema)
-
-    # Export the QAQC tables so their names don't clash
-    gdf = db.query_as_geo_df("SELECT * FROM rs_osm.qaqc_node_match")
-    output_path = output_folder / "osm_qaqc.shp"
-    gdf.to_file(output_path)
-
-    gdf = db.query_as_geo_df("SELECT * FROM rs_sw.qaqc_node_match")
-    output_path = output_folder / "sw_qaqc.shp"
-    gdf.to_file(output_path)
+    else:
+        func = exporters[export_name]
+        func()
 
 
 all_commands = [
@@ -136,7 +128,7 @@ all_commands = [
     make_nodes_for_edges,
     export_geojson,
     make_vector_tiles,
-    export_shps_for_manual_edits,
+    export_shapefiles,
 ]
 
 for cmd in all_commands:
