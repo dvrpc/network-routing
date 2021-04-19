@@ -24,9 +24,38 @@ from postgis_helpers import PostgreSQL
 
 def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "sidewalk"):
 
+    # Add a column to filter out features we don't want to classify
+    if "analyze_sw" not in db.table_columns_as_list(tbl, schema=schema):
+
+        db.table_add_or_nullify_column(tbl, "analyze_sw", "INT", schema=schema)
+
+        db.execute(
+            f"""
+            UPDATE {schema}.{tbl}
+            SET analyze_sw = 1;
+        """
+        )
+        db.execute(
+            f"""
+            UPDATE {schema}.{tbl}
+            SET analyze_sw = 0
+            WHERE highway LIKE '%%bridleway%%' 
+                OR highway LIKE '%%bus_guideway%%' 
+                OR highway LIKE '%%bus_stop%%' 
+                OR highway LIKE '%%busway%%' 
+                OR highway LIKE '%%cycleway%%' 
+                OR highway LIKE '%%footway%%' 
+                OR highway LIKE '%%path%%' 
+                OR highway LIKE '%%pedestrian%%' 
+                OR highway LIKE '%%service%%' 
+                OR highway LIKE '%%track%%' 
+                OR highway LIKE '%%steps%%';
+        """
+        )
+
     # Get a list of all centerlines we want to iterate over.
     oid_query = f"""
-        SELECT uid FROM {schema}.{tbl}
+        SELECT uid FROM {schema}.{tbl} WHERE analyze_sw = 1
     """
 
     # But first...  check if the new_col exists
@@ -38,7 +67,7 @@ def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "
     if column_already_existed:
         print("Picking up where last left off...")
         oid_query += f"""
-            WHERE {new_col} IS NULL
+            AND {new_col} IS NULL
         """
     else:
         print("Analyzing for the first time...")
