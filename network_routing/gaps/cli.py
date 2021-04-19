@@ -20,7 +20,7 @@ def main():
 
 
 @click.command()
-@click.argument("schema")
+@click.argument("schema", default="public")
 def classify_osm_sw_coverage(schema: str):
     """ Classify OSM w/ length of parallel sidewalks """
 
