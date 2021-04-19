@@ -81,7 +81,7 @@ def make_nodes_for_edges():
 @click.command()
 @click.argument("data_group_name")
 def export_geojson(data_group_name):
-    """Save RIDESCORE .geojson files to be tiled for webmaps"""
+    """Save a group of .geojson files to be tiled for webmaps"""
 
     db = db_connection()
 
@@ -105,7 +105,7 @@ def make_vector_tiles(filename):
 @click.command()
 @click.argument("export_name")
 def export_shapefiles(export_name):
-    """Export data necessary for manual station edits"""
+    """Export a set of shapefiles identified by EXPORT_NAME"""
 
     exporters = {
         "manual_edits": export_shapefiles_for_editing,

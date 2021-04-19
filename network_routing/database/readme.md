@@ -36,8 +36,9 @@ All of the necessary database processes can be called by the CLI with the comman
 
 ### Other commands
 
-- `db export-shps-for-manual-edits`
+- `db export-shapefiles EXPORT_NAME`
   - Export a set of shapefiles that others will edit manually
+  - Options include: `manual_edits` and `ridescore_downstream_analysis`
 
 ## `db --help`
 
@@ -54,10 +55,10 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  build-initial                 Roll a brand-new database for with the...
-  build-secondary               Update the db as defined by PATCH NUMBER
-  export-geojson                Save RIDESCORE .geojson files to be tiled...
-  export-shps-for-manual-edits  Export data necessary for manual station...
-  make-nodes-for-edges          Generate topologically-sound nodes for the...
-  make-vector-tiles             Turn GeoJSON files into .mbtiles format
+  build-initial         Roll a brand-new database for with the...
+  build-secondary       Update the db as defined by PATCH NUMBER
+  export-geojson        Save a group of .geojson files to be tiled for...
+  export-shapefiles     Export a set of shapefiles identified by EXPORT_NAME
+  make-nodes-for-edges  Generate topologically-sound nodes for the...
+  make-vector-tiles     Turn GeoJSON files into .mbtiles format
 ```
