@@ -35,25 +35,29 @@ def export_gap_webmap_data(db: PostgreSQL):
 
     # Centerlines with sidewalk amounts, as a ratio
     query_centerlines = """
-        select hwy_tag, sw_ratio, state, st_transform(o.geom, 4326) as geom
-        from data_viz.osm_sw_coverage o
+        select hwy_tag, sidewalk / st_length(o.geom) / 2 as sw_ratio, st_transform(o.geom, 4326) as geom
+        from public.osm_edges_all o
         inner join regional_counties c
         on st_within(o.geom, c.geom)
         where o.highway not like '%%motorway%%'
+        and o.analyze_sw = 1
     """
 
     write_query_to_geojson("osm_sw_coverage", query_centerlines, db)
 
     # Transit accessibility results
-    query_transit_results = """
-        select
-            uid,
-            walk_time,
-            st_transform(geom, 4326) as geom
-        from
-            data_viz.results_transit_access
-    """
-    write_query_to_geojson("sw_nodes", query_transit_results, db)
+    gdf_sample = db.query_as_geo_df(
+        f"SELECT * FROM sw_defaults.regional_transit_stops_results LIMIT 1"
+    )
+
+    # Make a list of all columns that have 'n_1_' in their name
+    cols_to_query = [col for col in gdf_sample.columns if "n_1_" in col]
+
+    # Build a dynamic SQL query, getting the LEAST of the n_1_* columns
+    query_base_results = "SELECT geom, LEAST(" + ", ".join(cols_to_query)
+    query_base_results += f") as walk_time FROM sw_defaults.regional_transit_stops_results"
+
+    write_query_to_geojson("sw_nodes", query_base_results, db)
 
     # Transit stops
     query_transit_stops = """
@@ -92,7 +96,8 @@ def export_ridescore_webmap_data(db: PostgreSQL):
     tables_to_export = ["ridescore_isos", "sidewalkscore"]
 
     for tbl in tables_to_export:
-        write_query_to_geojson(f"SELECT * FROM data_viz.{tbl}", db)
+        query = f"SELECT * FROM data_viz.{tbl}"
+        write_query_to_geojson(tbl, query, db)
 
 
 if __name__ == "__main__":
