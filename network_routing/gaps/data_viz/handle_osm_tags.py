@@ -14,6 +14,8 @@ def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None):
     hierarchy.
     """
 
+    edge_table = "osm_edges_drive"
+
     if custom_hierarchy:
         hierarchy = custom_hierarchy
 
@@ -36,9 +38,9 @@ def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None):
             "escape",
         ]
 
-    query = """
+    query = f"""
         select distinct highway
-        from public.osm_edges_all
+        from public.{edge_table}
         where analyze_sw = 1
     """
 
@@ -71,14 +73,14 @@ def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None):
 
         results.append((tag_tuple[0], hierarchy[lowest_index_number]))
 
-    db.table_add_or_nullify_column("osm_edges_all", "hwy_tag", "TEXT", schema="public")
+    db.table_add_or_nullify_column(edge_table, "hwy_tag", "TEXT", schema="public")
 
     for original_tag, simple_tag in results:
 
         print(f"Updating {original_tag} as {simple_tag}")
 
         update_query = f"""
-            UPDATE public.osm_edges_all
+            UPDATE public.{edge_table}
             SET hwy_tag = '{simple_tag}'
             WHERE highway = '{original_tag}';
         """
