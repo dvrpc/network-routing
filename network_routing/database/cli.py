@@ -13,6 +13,7 @@ from network_routing.database.setup.setup_00_initial import setup_00_initial
 from network_routing.database.setup.setup_01_updated_ridescore_inputs import (
     setup_01_updated_ridescore_inputs,
 )
+from network_routing.database.setup.setup_02_osm_drive import setup_02_import_osm_drive_network
 from network_routing.database.export.shapefile import (
     export_shapefiles_for_editing,
     export_shapefiles_for_downstream_ridescore,
@@ -40,6 +41,7 @@ def build_secondary(patch_number):
 
     patches = {
         1: setup_01_updated_ridescore_inputs,
+        2: setup_02_import_osm_drive_network,
     }
 
     if patch_number not in patches:
@@ -85,14 +87,19 @@ def export_geojson(data_group_name):
 
     db = db_connection()
 
-    if data_group_name == "ridescore":
-        export_ridescore_webmap_data(db)
+    exporters = {
+        "ridescore": export_ridescore_webmap_data,
+        "gaps": export_gap_webmap_data,
+    }
 
-    elif data_group_name == "gaps":
-        export_gap_webmap_data(db)
+    if data_group_name not in exporters:
+        print(f"GeoJSON export process named '{data_group_name}' does not exist. Options include:")
+        for k in exporters.keys():
+            print(f"\t -> {k}")
 
     else:
-        print(f"Group named: '{data_group_name}' does not exist")
+        func = exporters[data_group_name]
+        func(db)
 
 
 @click.command()
