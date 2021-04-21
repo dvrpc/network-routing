@@ -1,88 +1,112 @@
 # network-routing
 
-Python package to create and analyze routable pedestrian networks
+Python package to create and analyze routable pedestrian networks.
 
-Each step in the process is described in detail on its own page:
+The codebase is broken up into three primary modules, each with its own command-line-interface.
 
-1. [Set up the development environment](documentation/dev_environment.md)
-2. [Build the analysis database](documentation/database_setup.md)
-3. [Execute the analysis for the RideScore project](documentation/analysis_ridescore.md)
-4. [Execute the analysis for the Sidewalk Gaps project](documentation/analysis_sidewalk_gap.md)
+1. [`accessibility`](./network_routing/accessibility) - where all network routing code can be found
+2. [`database`](./network_routing/database) - where all data I/O is defined
+3. [`gaps`](./network_routing/gaps) - where all other analysis / visualization steps are kept
 
-To summarize the process:
+## Setup
 
-## 1) Setup the dev environment
+1. Clone the repo
+2. `cd` into the new folder
+3. Build the Python environment with `conda`
 
 ```bash
 git clone https://github.com/dvrpc/network-routing.git
-cd network_routing
-conda env create -f env.yml
+cd network-routing
+conda env create -f environment.yml
+```
+
+4. Create a `.env` file wherever you intend to run the analysis from. It should look like this:
+
+```
+DB_NAME=my_database_name
+DB_HOST=localhost
+GDRIVE_ROOT=/Volumes/GoogleDrive/My Drive
+```
+
+5. In order to run any of the commands listed below, you'll need to activate the `conda` environment:
+
+```bash
 conda activate network_routing
 ```
 
-... then create your `.env` file ...
+## Database creation
 
-## 2) Build the starter database
-
-```bash
-python database/initial_setup.py
-sidewalk make-nodes
-transit make-nodes
-```
-
-## 3) Run the `SidewalkScore` analysis
+All database interactions are handled by the command `db`. The full set of docs can be found [here](./network_routing/database). To get up and running:
 
 ```bash
-transit calculate-sidewalk
-transit calculate-osm
-transit isochrones
-transit sidewalkscore
+db build-initial
+db build-secondary 1
+db make-nodes-for-edges
 ```
 
-## 4) Run the `Sidewalk Gaps` analysis
+## Gap analyses
 
-Analyze NJ:
+Classify OSM centerlines by sidewalk coverage
 
 ```bash
-sidewalk clip-data NJ
-sidewalk analyze-segments nj
-sideawlk analyze-network nj
+gaps classify-osm-sw-coverage
 ```
 
-Analyze PA:
+Generate a layer of connected sidewalk islands
 
 ```bash
-sidewalk clip-data PA --buffer 2
-sidewalk analyze-segments pa
-sidewalk analyze-network pa
+gaps identify-islands
 ```
 
-Analyze islands across the entire region:
+## Base accessibility analysis
+
+Identify accessibility along the sidewalk network to the closest transit stop of every mode
 
 ```bash
-sidewalk identify-islands
+access sw-default
 ```
 
-Prepare the final products:
+## Ridescore accessibility analysis
+
+Identify accessibility to each rail station using both the OSM and sidewalk networks
 
 ```bash
-sidewalk combine-centerlines
-sidewalk scrub-osm-tags
-sidewalk combine-transit-results
+access osm-ridescore
+access sw-ridescore
 ```
 
-## 5) Generate vector tiles for the final webmap
-
-Export the "sidewalk" and "transit" analyses via:
+Process the results of the two analyses into a set of 1-mile isochrones
 
 ```bash
-sidewalk export-geojson-for-webmap
-sidewalk make-vector-tiles
-
-transit export-geojson-for-webmap
-transit make-vector-tiles
+gaps isochrones
 ```
 
-## TODO:
+Generate a "sidewalkscore" for each of the input station points
 
-- Final hexagon summary
+```bash
+gaps sidewalkscore
+```
+
+## Export data for webmap
+
+Export geojson and associated tileset for the "base" + "gap" analyses
+
+```bash
+db export-geojson gaps
+db make-vector-tiles sidewalk_gap_analysis
+```
+
+Export geojson and associated tileset for the "ridescore" analysis
+
+```bash
+db export-geojson ridescore
+db make-vector-tiles ridescore_analysis
+```
+
+## Export shapefiles
+
+A few shapefile export processes are defined, and available via:
+
+```bash
+db export-shapefiles EXPORT_NAME
+```
