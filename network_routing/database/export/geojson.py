@@ -36,7 +36,7 @@ def export_gap_webmap_data(db: PostgreSQL):
     # Centerlines with sidewalk amounts, as a ratio
     query_centerlines = """
         select hwy_tag, sidewalk / st_length(o.geom) / 2 as sw_ratio, st_transform(o.geom, 4326) as geom
-        from public.osm_edges_all o
+        from public.osm_edges_drive o
         inner join regional_counties c
         on st_within(o.geom, c.geom)
         where o.highway not like '%%motorway%%'

@@ -26,7 +26,7 @@ def classify_osm_sw_coverage(schema: str):
 
     db = db_connection()
 
-    classify_centerlines(db, schema, "osm_edges_all")
+    classify_centerlines(db, schema, "osm_edges_drive")
 
 
 @click.command()
