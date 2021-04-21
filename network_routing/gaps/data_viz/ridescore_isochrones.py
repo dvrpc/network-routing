@@ -71,7 +71,13 @@ def generate_isochrones(db: PostgreSQL):
 
 
 def calculate_sidewalkscore(db: PostgreSQL):
-    gdf = db.query_as_geo_df("SELECT * FROM passengerrailstations")
+    query = """
+        select st_centroid(st_collect(geom)) as geom, type, line, station, operator, dvrpc_id 
+        from ridescore_pois
+        group by type, line, station, operator, dvrpc_id 
+        order by dvrpc_id
+    """
+    gdf = db.query_as_geo_df(query)
 
     gdf["rs_osm"] = 0.0
     gdf["rs_sw"] = 0.0
