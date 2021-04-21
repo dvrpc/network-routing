@@ -92,12 +92,25 @@ def export_gap_webmap_data(db: PostgreSQL):
 
 
 def export_ridescore_webmap_data(db: PostgreSQL):
+    """
+    Export data for the ridescore analysis
+    - isochrones
+    - single-point "sidewalkscore" for each station
+    - multi-point access inputs (multiple points per station)
+    """
 
-    tables_to_export = ["ridescore_isos", "sidewalkscore"]
+    tables_to_export = [
+        "data_viz.ridescore_isos",
+        "data_viz.sidewalkscore",
+        "public.ridescore_pois",
+    ]
 
     for tbl in tables_to_export:
-        query = f"SELECT * FROM data_viz.{tbl}"
-        write_query_to_geojson(tbl, query, db)
+        query = f"SELECT * FROM {tbl}"
+
+        schema, tablename = tbl.split(".")
+
+        write_query_to_geojson(tablename, query, db)
 
 
 if __name__ == "__main__":
