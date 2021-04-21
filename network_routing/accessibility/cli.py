@@ -55,7 +55,7 @@ def osm_ridescore():
     """Analyze OSM network distance around each rail stop """
 
     arguments = {
-        "poi_table_name": "ridescore_transit_poi_osm",
+        "poi_table_name": "ridescore_pois",
         "poi_id_column": "dvrpc_id",
         "output_table_name": "osm",
         "output_schema": "rs_osm",
@@ -74,7 +74,7 @@ def sw_ridescore():
     """Analyze sidewalk network distance around each rail stop """
 
     arguments = {
-        "poi_table_name": "ridescore_transit_poi_sw",
+        "poi_table_name": "ridescore_pois",
         "poi_id_column": "dvrpc_id",
         "output_table_name": "sw",
         "output_schema": "rs_sw",
