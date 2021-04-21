@@ -89,30 +89,9 @@ def generate_islands(db: PostgreSQL, schema: str = None):
         """
         db.execute(update)
 
-    # Generate a set of concave hulls around the islands
-    _generate_island_hulls(db)
-
-
-def _generate_island_hulls(db: PostgreSQL):
-    """
-    Turn the linear island layer into a polygon-shaped concave hull layer
-    """
-    query = f"""
-        select
-            uid as island_id,
-            size_miles,
-            rgba,
-            muni_names,
-            muni_count,
-            st_concavehull(st_buffer(geom, 7.5), 0.8) as geom
-	    from
-            data_viz.islands
-    """
-    db.make_geotable_from_query(query, "island_hulls", "POLYGON", 26918, schema="data_viz")
-
 
 if __name__ == "__main__":
     from network_routing import db_connection
 
     db = db_connection()
-    _generate_island_hulls(db)
+    generate_islands(db)
