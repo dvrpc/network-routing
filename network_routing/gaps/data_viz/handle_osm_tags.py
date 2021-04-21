@@ -26,6 +26,7 @@ def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None):
             "tertiary",
             "unclassified",
             "road",
+            "corridor",
             "bus_guideway",
             "residential",
             "living_street",
@@ -37,7 +38,8 @@ def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None):
 
     query = """
         select distinct highway
-        from data_viz.osm_sw_coverage
+        from public.osm_edges_all
+        where analyze_sw = 1
     """
 
     tag_list = db.query_as_list(query)
@@ -69,14 +71,14 @@ def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None):
 
         results.append((tag_tuple[0], hierarchy[lowest_index_number]))
 
-    db.table_add_or_nullify_column("osm_sw_coverage", "hwy_tag", "TEXT", schema="data_viz")
+    db.table_add_or_nullify_column("osm_edges_all", "hwy_tag", "TEXT", schema="public")
 
     for original_tag, simple_tag in results:
 
         print(f"Updating {original_tag} as {simple_tag}")
 
         update_query = f"""
-            UPDATE data_viz.osm_sw_coverage
+            UPDATE public.osm_edges_all
             SET hwy_tag = '{simple_tag}'
             WHERE highway = '{original_tag}';
         """
