@@ -81,8 +81,8 @@ def make_nodes_for_edges():
 
     for tablename, kwargs in tables_to_make_nodes_from.items():
         print(f"Generating nodes for: {tablename}")
-        geotable_kwargs = kwargs.update(_shared_kwargs)
-        generate_nodes(db, tablename, "public", geotable_kwargs)
+        kwargs.update(_shared_kwargs)
+        generate_nodes(db, tablename, "public", kwargs)
 
 
 @click.command()
