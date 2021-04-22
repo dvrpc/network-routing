@@ -16,12 +16,13 @@ dependencies:
   - xlrd
   - xlsxwriter
   - jupyterlab
-  - sphinx
-  - sphinx_rtd_theme
   - python-dotenv
   - seaborn
   - black
   - rich
+  - mkdocs-material
+  - mkdocstrings
+  - markdown-include
   - pip
   - pip:
       - git+https://github.com/aaronfraint/postgis-helpers.git
