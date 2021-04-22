@@ -19,3 +19,29 @@ theme:
         name: Switch to light mode
 repo_url: https://github.com/dvrpc/network-routing
 repo_name: dvrpc/network-routing
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            show_root_toc_entry: false
+            show_if_no_docstring: true
+            group_by_category: false
+
+markdown_extensions:
+  - pymdownx.tabbed
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - markdown_include.include:
+      base_path: docs
+
+nav:
+  - Quickstart: index.md
+  - installation.md
+  - setup.md
+  - database.md
+  - accessibility.md
+  - gaps.md
+  - analysis_runs.md
+  - Reference: reference.md
