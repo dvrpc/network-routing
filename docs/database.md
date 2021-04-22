@@ -3,12 +3,14 @@
 The Python interface to the PostgreSQL/PostGIS datastore is managed by `PostgreSQL` class defined within
 [`postgis_helpers`](https://github.com/aaronfraint/postgis-helpers), and a method to connect to the database is provided with a top-level import.
 
-To use this module within Python, import the `db_connection` object from `network_routing` and instantiate it once:
+To use this module within Python, import the `db_connection` function from `network_routing` and instantiate it:
 
-```python
+```Python
 >>> from network_routing import db_connection
 >>> db = db_connection()
 ```
+
+---
 
 ## Quickstart
 
@@ -24,7 +26,28 @@ db build-secondary 2
 db make-nodes-for-edges
 ```
 
+---
+
 ## CLI documentation
+
+To see all available commands, run `db --help`
+
+```
+Usage: db [OPTIONS] COMMAND [ARGS]...
+
+  The command 'db' is used to run data import & export processes
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  build-initial         Roll a brand-new database for with the...
+  build-secondary       Update the db as defined by PATCH NUMBER
+  export-geojson        Save a group of .geojson files to be tiled for...
+  export-shapefiles     Export a set of shapefiles identified by EXPORT_NAME
+  make-nodes-for-edges  Generate topologically-sound nodes for the...
+  make-vector-tiles     Turn GeoJSON files into .mbtiles format
+```
 
 ### Setup commands
 
@@ -60,26 +83,3 @@ db make-nodes-for-edges
 
 - Export a set of shapefiles that others will edit manually
 - Options include: `manual_edits` and `ridescore_downstream_analysis`
-
-## `db --help`
-
-To see all available commands, run `db --help`
-
-```bash
-> db --help
-
-Usage: db [OPTIONS] COMMAND [ARGS]...
-
-  The command 'db' is used to run data import & export processes
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  build-initial         Roll a brand-new database for with the...
-  build-secondary       Update the db as defined by PATCH NUMBER
-  export-geojson        Save a group of .geojson files to be tiled for...
-  export-shapefiles     Export a set of shapefiles identified by EXPORT_NAME
-  make-nodes-for-edges  Generate topologically-sound nodes for the...
-  make-vector-tiles     Turn GeoJSON files into .mbtiles format
-```
