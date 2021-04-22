@@ -8,6 +8,38 @@ from geoalchemy2 import Geometry, WKTElement
 
 
 class RoutableNetwork:
+    """
+    Build a routable network using `pandana` and analyze network-based
+    distance to the N-nearest POI(s) by group.
+
+    This requires three input tables:
+
+    1. Edges: linear features with valid topology
+    2. Nodes: point features, one for each topological connection
+    3. Points of Interest (POIs): point features showing locations to route people from. Must have an ID column to distinguish between the points.
+
+    Attributes:
+        db (PostgreSQL): database, the same thing returned from `network_routing.db_connection()`
+        schema (str): name of the schema where the analysis data can be found
+        edge_table_name (str): name of the sidewalk, OSM, or other edge layer being analyzed
+        node_table_name (str): name of nodes that correspond to the edge table
+        node_id_column (str): name of unique ID column in the node table
+        poi_table_name (str): name of POI table to analyze
+        poi_id_column (str): name of ID column in the POI table, can be one or many features per ID. More than one feature for a given ID will get treated as a group.
+        output_table_name (str): base tablename for results of analysis (network node geometry + accessibility attribute columns)
+        output_schema (str): schema to store output analysis result + QAQC layers
+        walking_mph (float): assumed pedestrian walking speed in miles-per-hour, defaults to `2.5`
+        max_minutes (float): distance(/time) threshold to the analysis, defaults to `45`
+        epsg (int): spatial data projection, defaults to `26918`
+        num_pois (int): number of POIs to analyze when provided with groups (i.e. multiple features per ID), defaults to `3`
+        poi_match_threshold (int): maximum allowable snapping distance between POI and node layers, defaults to `45`
+        run_on_create (bool): flag that controls whether or not the analysis is run when the analysis object is instantiated from the class, defaults to `True`
+
+
+    Returns:
+        RoutableNetwork: network model
+    """
+
     def __init__(
         self,
         db: PostgreSQL,
@@ -49,11 +81,17 @@ class RoutableNetwork:
         # Set the SQL database schema to the active schema
         self.db.ACTIVE_SCHEMA = schema
 
+        # Placeholders for network and geodataframes
+        self.network = None
+        self.edge_gdf = None
+        self.node_gdf = None
+        self.poi_gdf = None
+
         if run_on_create:
 
-            self.setup()
-            self.construct_network()
-            self.analyze_pois()
+            self._setup()
+            self._construct_network()
+            self._analyze_pois()
 
     def _get_themes(self):
         """
@@ -63,8 +101,8 @@ class RoutableNetwork:
 
         Key is the raw text from SQL, value is the santinized table name
 
-            ```{"Food/Drink": "fooddrink",
-                "Library"   : "library",}```
+            {"Food/Drink": "fooddrink",
+             "Library"   : "library",}
 
         """
         theme_query = f"""
@@ -90,7 +128,7 @@ class RoutableNetwork:
     # PREPARE THE NETWORK FOR ANALYSIS
     # --------------------------------
 
-    def setup(self):
+    def _setup(self):
         """
         Set up the analysis by:
             1) assigning node ids to the edge network
@@ -104,12 +142,12 @@ class RoutableNetwork:
         )
 
         if "start_id" not in edge_columns:
-            self.assign_node_ids_to_network()
+            self._assign_node_ids_to_network()
 
         if "minutes" not in edge_columns:
-            self.add_travel_time_weights()
+            self._add_travel_time_weights()
 
-    def assign_node_ids_to_network(self):
+    def _assign_node_ids_to_network(self):
         """
         Using the newly-created node table, we now
         need to assign two node_id values to each
@@ -138,7 +176,7 @@ class RoutableNetwork:
         end_id_query = start_id_query.replace("start", "end")
         self.db.execute(end_id_query)
 
-    def add_travel_time_weights(self):
+    def _add_travel_time_weights(self):
         """
         Add impedence columns to the edges.
 
@@ -172,7 +210,7 @@ class RoutableNetwork:
     # TURN THE POSTGIS DATA INTO A PANDANA NETWORK
     # --------------------------------------------
 
-    def construct_network(self):
+    def _construct_network(self):
 
         # Get all edges
         query = f"""
@@ -231,7 +269,7 @@ class RoutableNetwork:
     # ANALYZE POINTS OF INTEREST (/transit stops!)
     # --------------------------------------------
 
-    def analyze_pois(self):
+    def _analyze_pois(self):
         """
         For each theme in the POI table:
             1) Run ``calculate_single_poi()``
@@ -240,10 +278,10 @@ class RoutableNetwork:
         all_results = []
         for theme in self.themes:
             print("\t->", theme)
-            poi_gdf, access_results = self.calculate_single_poi(theme)
+            poi_gdf, access_results = self._calculate_single_poi(theme)
 
             if access_results is not None:
-                self.qaqc_poi_assignment(theme, poi_gdf)
+                self._qaqc_poi_assignment(theme, poi_gdf)
                 all_results.append(access_results)
 
         df_all_access_results = pd.concat(all_results, axis=1, sort=False)
@@ -269,11 +307,9 @@ class RoutableNetwork:
             f"{self.output_table_name}_table",
             f"{self.output_table_name}_results",
         ]
-        cleanup_outputs(
-            self.db, self.schema, self.poi_id_column, self.output_schema, tables_to_move
-        )
+        self._cleanup_outputs(tables_to_move)
 
-    def calculate_single_poi(self, this_theme: str):
+    def _calculate_single_poi(self, this_theme: str):
         """
         1) Add all POIs for a given theme to the network.
         2) Calculate the minutes away for the 5 nearest POIs of this theme.
@@ -335,7 +371,7 @@ class RoutableNetwork:
 
         return poi_gdf, result_matrix
 
-    def qaqc_poi_assignment(self, theme: str, poi_gdf: gpd.GeoDataFrame):
+    def _qaqc_poi_assignment(self, theme: str, poi_gdf: gpd.GeoDataFrame):
         """
         For a given poi geodataframe:
             1) Get the ID of the nearest node for each POI
@@ -381,47 +417,43 @@ class RoutableNetwork:
 
         self.poi_gdf = poi_gdf
 
+    def _cleanup_outputs(
+        self,
+        tables_to_move: list,
+    ):
+        """ Move results to new schema and merge all tables prefixed with 'poi_' """
 
-def cleanup_outputs(
-    db: PostgreSQL,
-    analysis_schema: str,
-    poi_id_column: str,
-    new_schema: str,
-    tables_to_move: list,
-):
-    """ Move results to new schema and merge all tables prefixed with 'poi_' """
-
-    schema_query = f"""
-        DROP SCHEMA IF EXISTS {new_schema} CASCADE;
-        CREATE SCHEMA {new_schema};
-    """
-
-    db.execute(schema_query)
-
-    for table in tables_to_move:
-        move_schema_query = f"""
-            ALTER TABLE {analysis_schema}.{table}
-            SET SCHEMA {new_schema};
+        schema_query = f"""
+            DROP SCHEMA IF EXISTS {self.output_schema} CASCADE;
+            CREATE SCHEMA {self.output_schema};
         """
-        db.execute(move_schema_query)
 
-    qa_tables = [x for x in db.all_spatial_tables_as_dict() if x[:4] == "poi_"]
+        self.db.execute(schema_query)
 
-    if len(qa_tables) >= 2:
+        for table in tables_to_move:
+            move_schema_query = f"""
+                ALTER TABLE {self.schema}.{table}
+                SET SCHEMA {self.output_schema};
+            """
+            self.db.execute(move_schema_query)
 
-        qa_subqueries = [
-            f"SELECT {poi_id_column}, geom FROM {analysis_schema}.{x}" for x in qa_tables
-        ]
+        qa_tables = [x for x in self.db.all_spatial_tables_as_dict() if x[:4] == "poi_"]
 
-        query = """
-            UNION
-        """.join(
-            qa_subqueries
-        )
+        if len(qa_tables) >= 2:
 
-        db.make_geotable_from_query(
-            query, "qaqc_node_match", "LINESTRING", 26918, schema=new_schema
-        )
+            qa_subqueries = [
+                f"SELECT {self.poi_id_column}, geom FROM {self.schema}.{x}" for x in qa_tables
+            ]
 
-    for qa_table in qa_tables:
-        db.table_delete(qa_table, schema=analysis_schema)
+            query = """
+                UNION
+            """.join(
+                qa_subqueries
+            )
+
+            self.db.make_geotable_from_query(
+                query, "qaqc_node_match", "LINESTRING", 26918, schema=self.output_schema
+            )
+
+        for qa_table in qa_tables:
+            self.db.table_delete(qa_table, schema=self.output_schema)

@@ -1,3 +1,20 @@
+"""
+This module contains the command-line-interface for the `network_routing.accessibility`
+
+Examples:
+    See all available commands:
+
+    ```
+    > access --help
+    ```
+
+    Run the default analysis
+
+    ```
+    > access sw-default
+    ```
+
+"""
 import click
 from datetime import datetime
 
@@ -62,7 +79,7 @@ def osm_ridescore():
         "num_pois": 1,
         "poi_match_threshold": 152,  # aka 500'
         "edge_table_name": "osm_edges_all",
-        "node_table_name": "nodes_for_osm",
+        "node_table_name": "nodes_for_osm_all",
         "node_id_column": "node_id",
     }
 
@@ -88,13 +105,13 @@ def sw_ridescore():
     _ = _execute_analysis("public", arguments)
 
 
-all_commands = [
+_all_commands = [
     sw_default,
     osm_ridescore,
     sw_ridescore,
 ]
 
-for cmd in all_commands:
+for cmd in _all_commands:
     main.add_command(cmd)
 
 
