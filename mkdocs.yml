@@ -1,0 +1,21 @@
+site_name: network-routing
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - header.autohide
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - scheme: default
+      primary: deep purple
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      primary: lime
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+repo_url: https://github.com/dvrpc/network-routing
+repo_name: dvrpc/network-routing

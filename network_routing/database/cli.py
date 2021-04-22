@@ -59,25 +59,30 @@ def make_nodes_for_edges():
 
     db = db_connection()
 
-    print("Generating OSM nodes")
-    edge_table = "osm_edges_all"
-    geotable_kwargs = {
-        "new_table_name": "nodes_for_osm",
+    _shared_kwargs = {
         "geom_type": "Point",
         "epsg": 26918,
-        "uid_col": "node_id",
     }
-    generate_nodes(db, edge_table, "public", geotable_kwargs)
 
-    print("Generating SIDEWALK nodes")
-    edge_table = "pedestriannetwork_lines"
-    geotable_kwargs = {
-        "new_table_name": "nodes_for_sidewalks",
-        "geom_type": "Point",
-        "epsg": 26918,
-        "uid_col": "sw_node_id",
+    tables_to_make_nodes_from = {
+        "osm_edges_all": {
+            "new_table_name": "nodes_for_osm_all",
+            "uid_col": "node_id",
+        },
+        "osm_edges_drive": {
+            "new_table_name": "nodes_for_osm_drive",
+            "uid_col": "node_id",
+        },
+        "pedestriannetwork_lines": {
+            "new_table_name": "nodes_for_sidewalks",
+            "uid_col": "sw_node_id",
+        },
     }
-    generate_nodes(db, edge_table, "public", geotable_kwargs)
+
+    for tablename, kwargs in tables_to_make_nodes_from.items():
+        print(f"Generating nodes for: {tablename}")
+        geotable_kwargs = kwargs.update(_shared_kwargs)
+        generate_nodes(db, tablename, "public", geotable_kwargs)
 
 
 @click.command()
