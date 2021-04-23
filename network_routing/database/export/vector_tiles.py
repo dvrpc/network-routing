@@ -12,7 +12,7 @@ def make_vector_tiles(folder: Path, joined_tileset_name: str):
     The output file will be named:
         folder / joined_tileset_name.mbtiles
 
-    THIS REQUIRES 'tippecanoe' AND WILL NOT WORK IF
+    THIS REQUIRES `tippecanoe` AND WILL NOT WORK IF
     THE COMMAND DOES NOT WORK FROM YOUR TERMINAL.
 
     On MacOS, install via 'brew install tippecanoe'

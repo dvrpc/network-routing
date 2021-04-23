@@ -1,17 +1,45 @@
 """
-This module contains the command-line-interface for the `network_routing.accessibility`
+`access`
+--------
+
+
+`access` is the command-line-interface for the `network_routing.accessibility` module.
+
+A number of configurations pre-defined, all of which can be found within [`network_routing/accessibility/cli.py`](https://github.com/dvrpc/network-routing/blob/master/network_routing/accessibility/cli.py).
+
 
 Examples:
-    See all available commands:
+    Run the default analysis:
 
-    ```
-    > access --help
-    ```
-
-    Run the default analysis
-
-    ```
+    ```shell
     > access sw-default
+    ```
+
+    Run the Ridescore analysis:
+
+    ```shell
+    > access sw-ridescore
+    > access osm-ridescore
+    ```
+
+
+    You can also see a list of all available configurations by running `access --help`
+
+    ```shell
+    > access --help
+
+    Usage: access [OPTIONS] COMMAND [ARGS]...
+
+    The command 'access' is used to run an accessibility analysis against
+    point-of-interest + network edge datasets
+
+    Options:
+    --help  Show this message and exit.
+
+    Commands:
+    osm-ridescore  Analyze OSM network distance around each rail stop
+    sw-default     Run the RoutableNetwork with default settings
+    sw-ridescore   Analyze sidewalk network distance around each rail stop
     ```
 
 """

@@ -1,19 +1,4 @@
 """
-Summary of ``centerline_sidewalk_coverage.py``
-----------------------------------------------
-
-This script evaluates a centerline dataset against
-a sidewalk dataset.
-
-Using a search distance of 25 meters, it identifies
-the sum of the lengths of all sidewalk segments that
-    - 1) is line_type=1
-    - 2) intersection is more than 25 meters or the segment itself is less than 25 meters
-
-
-Another approach compared the angle of the centerline against
-the angle of each sidewalk geometry. This worked really well in
-grid-shaped areas, but didn't fare as well with curved/irregular features.
 
 """
 
@@ -23,6 +8,22 @@ from postgis_helpers import PostgreSQL
 
 
 def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "sidewalk"):
+    """
+    `classify_centerlines()` evaluates a centerline dataset against a sidewalk dataset.
+
+    Using a search distance of 25 meters, it identifies the sum of the lengths of all sidewalk segments that:
+
+    1. is `line_type=1`
+    2. intersection is more than 25 meters or the segment itself is less than 25 meters
+
+    As it runs, it creates `new_col` within `schema`.`tbl` and updates the table in-place.
+
+    Args:
+        db (PostgreSQL): analysis database
+        schema (str): schema where source data can be found
+        tbl (str): name of the centerline table to analyze
+        new_col (str): name of the new `FLOAT` column where data will be stored.
+    """
 
     # Add a column to filter out features we don't want to classify
     if "analyze_sw" not in db.table_columns_as_list(tbl, schema=schema):

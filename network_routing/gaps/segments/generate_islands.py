@@ -4,23 +4,34 @@ from random import randint
 from postgis_helpers import PostgreSQL
 
 
-def _random_rgb(a: float = 1.0) -> str:
-    """Generate a random RGB value, with an option for transparency
+def random_rgb(a: float = 1.0) -> str:
+    """
+    Generate a random RGB value, with an option for transparency
 
-    Output is something like: 'rgba(5, 167, 230, 1.0)'
+    Args:
+        a (float): transparency value
+
+    Returns:
+        something like `'rgba(5, 167, 230, 1.0)'`
+
     """
     r, g, b = randint(0, 255), randint(0, 255), randint(0, 255)
     return f"rgba({r}, {g}, {b}, {a})"
 
 
-def generate_islands(db: PostgreSQL, schema: str = None):
-    """Use the sidewalk layer to merge intersecting geometries.
-    The output is a layer with one feature per 'island'
-    It also has a column for size of island and a randomly-generated RGB value.
+def generate_islands(db: PostgreSQL, tbl: str = "pedestriannetwork_lines"):
+    """
+    Merge intersecting sidewalk geometries to create "islands" of connectivity.
+
+    The output is a layer with one feature per 'island', and has a column for size of island and a randomly-generated RGB value.
+
+    Args:
+        db (PostgreSQL): analysis database
+        tbl (str): name of the table to analyze
+
     """
 
-    full_table_name = "pedestriannetwork_lines" if not schema else f"{schema}.sidewalks"
-    output_schema = "data_viz" if not schema else schema
+    output_schema = "data_viz"
 
     db.execute(
         f"""
@@ -34,7 +45,7 @@ def generate_islands(db: PostgreSQL, schema: str = None):
                 UNNEST(ST_CLUSTERINTERSECTING(geom)),
                 2
             ) AS geom
-        FROM {full_table_name}
+        FROM {tbl}
     """
     db.make_geotable_from_query(query, "islands", "MULTILINESTRING", 26918, schema=output_schema)
 
@@ -83,7 +94,7 @@ def generate_islands(db: PostgreSQL, schema: str = None):
             SET
                 muni_names = '{result}',
                 muni_count = {len(munis)},
-                rgba = '{_random_rgb()}'
+                rgba = '{random_rgb()}'
             WHERE
                 uid = {row.uid}
         """
