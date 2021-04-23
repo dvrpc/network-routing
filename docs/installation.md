@@ -1,12 +1,4 @@
-# Installation
-
-## Required Software
-
-You should have the following software installed on your computer:
-
-- Python
-- PostgreSQL & PostGIS
-- `git`
+# :material-language-python: Installation
 
 ## Option 1: Use `pip` to install into an existing environment
 

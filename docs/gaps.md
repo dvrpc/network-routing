@@ -1,4 +1,4 @@
-# Gaps
+# :material-blur-off: Gaps
 
 All commands within this module can be run with the prefix `gaps`
 

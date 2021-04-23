@@ -1,8 +1,17 @@
-# Setup
+# :material-weight-lifter: Setup
 
-## Create the `.env` file
+## Create configuration files
 
-This file contains configuration values including the database name, host, and Google Drive folder path.
+Two different configuration files are required for this analysis:
+
+- `.env`
+- `database_connections.cfg`
+
+---
+
+### `.env`
+
+The `.env` file contains configuration values including the database name, host, and Google Drive folder path.
 
 You can place this file wherever you intend to run the analysis from. It should look like this:
 
@@ -12,7 +21,9 @@ DB_HOST=localhost
 GDRIVE_ROOT=/Volumes/GoogleDrive/My Drive
 ```
 
-## Create a database configuration file
+---
+
+### `database_connections.cfg`
 
 The `postgis_helpers` module requires a configuration file that defines basic and superuser credentials for a PostgreSQL database.
 
@@ -20,11 +31,11 @@ If you've used the module before, the file should already exist at:
 
 `/USER HOME/sql_data_io/database_connections.cfg`
 
-If you don't have this file yet, run the following commands within the virtual environment:
+If you don't have this file yet, run the following commands from a python session within the virtual environment:
 
 ```Python
-from postgis_helpers import configurations
-configurations()
+>>> from postgis_helpers import configurations
+>>> configurations()
 ```
 
 The new file will look like the example below. Update usernames, passwords, etc as needed.
@@ -44,6 +55,8 @@ pw = passwordless-setup
 ```
 
 The title inside square brackets (i.e. `[localhost]`) should match the `DB_HOST` value in the `.env` file.
+
+---
 
 ## Activate the virtual environment
 

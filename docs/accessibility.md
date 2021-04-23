@@ -1,4 +1,4 @@
-# Accessibility
+# :material-walk: Accessibility
 
 The core logic for the accessibility analysis is encapsulated within the [`RoutableNetwork`](https://github.com/dvrpc/network-routing/blob/master/network_routing/accessibility/routable_network.py#L10) class.
 

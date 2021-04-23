@@ -1,4 +1,4 @@
-# Database
+# :material-database: Database
 
 The Python interface to the PostgreSQL/PostGIS datastore is managed by `PostgreSQL` class defined within
 [`postgis_helpers`](https://github.com/aaronfraint/postgis-helpers), and a method to connect to the database is provided with a top-level import.
@@ -83,3 +83,9 @@ Commands:
 
 - Export a set of shapefiles that others will edit manually
 - Options include: `manual_edits` and `ridescore_downstream_analysis`
+
+---
+
+### Code reference
+
+::: network_routing.database
