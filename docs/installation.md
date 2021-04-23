@@ -8,6 +8,8 @@ If you already have a python virtual environment, you can install this library w
 pip install git+https://github.com/dvrpc/network-routing.git
 ```
 
+---
+
 ## Option 2: Clone the `git` repo and build with local files
 
 Clone the repo, `cd` into the new folder, and build the Python environment with `conda`.
