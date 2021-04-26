@@ -1,0 +1,12 @@
+geopandas
+psycopg2
+geoalchemy2
+osmnx
+pandana
+tqdm
+python-dotenv
+mkdocs-material
+mkdocstrings
+markdown-include
+git+https://github.com/aaronfraint/postgis-helpers.git
+git+https://github.com/aaronfraint/philly-transit-data.git
