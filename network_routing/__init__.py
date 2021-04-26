@@ -9,11 +9,14 @@ from network_routing.accessibility.routable_network import RoutableNetwork
 load_dotenv(find_dotenv())
 DB_NAME = os.getenv("DB_NAME")
 DB_HOST = os.getenv("DB_HOST")
-GDRIVE_ROOT = Path(os.getenv("GDRIVE_ROOT"))
 
 # Define downstream folder paths
-FOLDER_DATA_PRODUCTS = GDRIVE_ROOT / "projects/RideScore/data products"
-GDRIVE_SW_GAPS_PROJECT_ROOT = GDRIVE_ROOT / "projects/Sidewalk Gaps"
+GDRIVE_ROOT = Path(os.getenv("GDRIVE_ROOT"))
+if GDRIVE_ROOT:
+    FOLDER_DATA_PRODUCTS = GDRIVE_ROOT / "projects/RideScore/data products"
+    GDRIVE_SW_GAPS_PROJECT_ROOT = GDRIVE_ROOT / "projects/Sidewalk Gaps"
+else:
+    FOLDER_DATA_PRODUCTS, GDRIVE_SW_GAPS_PROJECT_ROOT = None, None
 
 
 def db_connection(database_name: str = DB_NAME, host: str = DB_HOST) -> pGIS.PostgreSQL:
