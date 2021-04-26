@@ -4,7 +4,7 @@ theme:
   name: material
   features:
     - navigation.instant
-    - navigation.tabs
+    # - navigation.tabs
     - header.autohide
   icon:
     logo: material/map-marker-path
@@ -50,4 +50,5 @@ nav:
   - Accessibility: accessibility.md
   - Gaps: gaps.md
   - Analysis Runs: analysis_runs.md
-  - CLI Reference: reference.md
+  - CLI Reference: reference_cli.md
+  - Python Reference: reference_python.md
