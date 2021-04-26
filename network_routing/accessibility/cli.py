@@ -5,7 +5,7 @@
 
 `access` is the command-line-interface for the `network_routing.accessibility` module.
 
-A number of configurations pre-defined, all of which can be found within [`network_routing/accessibility/cli.py`](https://github.com/dvrpc/network-routing/blob/master/network_routing/accessibility/cli.py).
+A number of configurations are pre-defined, all of which can be found within [`network_routing/accessibility/cli.py`](https://github.com/dvrpc/network-routing/blob/master/network_routing/accessibility/cli.py).
 
 
 Examples:

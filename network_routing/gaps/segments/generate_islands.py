@@ -6,7 +6,8 @@ from postgis_helpers import PostgreSQL
 
 def random_rgb(a: float = 1.0) -> str:
     """
-    Generate a random RGB value, with an option for transparency
+    - Generate a random RGB value, with an option for transparency. This is used to
+    assign a unique RGB value to each island.
 
     Args:
         a (float): transparency value

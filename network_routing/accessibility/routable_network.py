@@ -9,14 +9,14 @@ from geoalchemy2 import Geometry, WKTElement
 
 class RoutableNetwork:
     """
-    Build a routable network using `pandana` and analyze network-based
+    - Build a routable network using `pandana` and analyze network-based
     distance to the N-nearest POI(s) by group.
 
-    This requires three input tables:
+    - This requires three input tables:
 
-    1. Edges: linear features with valid topology
-    2. Nodes: point features, one for each topological connection
-    3. Points of Interest (POIs): point features showing locations to route people from. Must have an ID column to distinguish between the points.
+        1. Edges: linear features with valid topology
+        2. Nodes: point features, one for each topological connection
+        3. Points of Interest (POIs): point features showing locations to route people from. Must have an ID column to distinguish between the points.
 
     Attributes:
         db (PostgreSQL): database, the same thing returned from `network_routing.db_connection()`

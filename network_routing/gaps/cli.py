@@ -1,3 +1,38 @@
+"""
+`gaps`
+------
+
+`gaps` is the command-line-interface for the `network_routing.gaps` module.
+
+Examples:
+    Classify the OSM centerlines by sidewalk coverage
+
+    ```shell
+    > gaps classify-osm-sw-coverage
+    ```
+
+    You can also see a list of all available configurations by running `gaps --help`
+
+    ```shell
+    > gaps --help
+
+    Usage: gaps [OPTIONS] COMMAND [ARGS]...
+
+    The command 'gaps' is used for segment-specific gap analyses
+
+    Options:
+    --help  Show this message and exit.
+
+    Commands:
+    classify-osm-sw-coverage  Classify OSM w/ length of parallel sidewalks
+    identify-islands          Join intersecting sidewalks to create 'islands'
+    isochrones                Turn access results into isochrone polygons
+    scrub-osm-tags            Clean 'highway' tags in the OSM data
+    sidewalkscore             Calculate the SidewalkScore for each rail stop
+    ```
+
+"""
+
 import click
 
 from network_routing import db_connection
@@ -15,7 +50,7 @@ from network_routing.gaps.data_viz.ridescore_isochrones import (
 
 @click.group()
 def main():
-    "The command 'gaps' is used for the Sidewalk Gap Analysis project."
+    "The command 'gaps' is used for segment-specific gap analyses"
     pass
 
 
@@ -68,7 +103,7 @@ def scrub_osm_tags():
     _scrub_osm_tags(db)
 
 
-all_commands = [
+_all_commands = [
     classify_osm_sw_coverage,
     identify_islands,
     scrub_osm_tags,
@@ -76,5 +111,5 @@ all_commands = [
     sidewalkscore,
 ]
 
-for cmd in all_commands:
+for cmd in _all_commands:
     main.add_command(cmd)

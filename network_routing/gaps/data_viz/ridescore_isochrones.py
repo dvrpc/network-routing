@@ -4,7 +4,18 @@ from tqdm import tqdm
 from postgis_helpers import PostgreSQL
 
 
-def generate_isochrones(db: PostgreSQL):
+def generate_isochrones(db: PostgreSQL) -> None:
+    """
+    - Using the results of the OSM and Sidewalk ridescore analyses,
+    generate two isochrones for each station (one OSM, one sidewalk).
+
+    Args:
+        db (PostgreSQL): analysis database
+
+    Returns:
+        New SQL table is created named `data_viz.ridescore_isos`
+
+    """
 
     # Make a schema for data viz products
     sql_query = "CREATE SCHEMA IF NOT EXISTS data_viz;"
@@ -70,7 +81,25 @@ def generate_isochrones(db: PostgreSQL):
     db.import_geodataframe(merged_gdf, "ridescore_isos", schema="data_viz")
 
 
-def calculate_sidewalkscore(db: PostgreSQL):
+def calculate_sidewalkscore(db: PostgreSQL) -> None:
+    """
+    - Using `data_viz.ridescore_pois`, generate a layer with a single point for each transit stop.
+
+    - Update this layer with a columns `rs_sw` and `rs_osm` to hold attributes on how large
+    the sidewalk and OSM isochrones are for the station.
+
+    - Add another column, named `sidewalkscore`. This contains a ratio of the sidewalk walkshed
+    size to the OSM walkshed size. This attribute is used for symbology on the webmap.
+
+    Args:
+        db (PostgreSQL): analysis database
+
+
+    Returns:
+        New SQL table is created named `data_viz.sidewalkscore`
+
+    """
+
     query = """
         select st_centroid(st_collect(geom)) as geom, type, line, station, operator, dvrpc_id 
         from ridescore_pois
