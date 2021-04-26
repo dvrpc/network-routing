@@ -11,8 +11,9 @@ DB_NAME = os.getenv("DB_NAME")
 DB_HOST = os.getenv("DB_HOST")
 
 # Define downstream folder paths
-GDRIVE_ROOT = Path(os.getenv("GDRIVE_ROOT"))
+GDRIVE_ROOT = os.getenv("GDRIVE_ROOT")
 if GDRIVE_ROOT:
+    GDRIVE_ROOT = Path(GDRIVE_ROOT)
     FOLDER_DATA_PRODUCTS = GDRIVE_ROOT / "projects/RideScore/data products"
     GDRIVE_SW_GAPS_PROJECT_ROOT = GDRIVE_ROOT / "projects/Sidewalk Gaps"
 else:
