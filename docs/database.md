@@ -31,35 +31,37 @@ To use this module within Python, import the `db_connection` function from `netw
 
 ## Setup commands
 
-`db build-initial`
+`> db build-initial`
 
 - Create a brand new database
 - If behind DVRPC's firewall it will connect directly to the source data's SQL database
 - If run outside the firewall it will attempt to use `wget` to download the data via DVRPC's ArcGIS Portal
 
-`db build-secondary NUMBER`
+`> db build-secondary NUMBER`
 
 - Run a secondary data import process identified with an integer
 - For an example, see [`setup_01_updated_ridescore_inputs.py`](https://github.com/dvrpc/network-routing/blob/master/network_routing/database/setup/setup_01_updated_ridescore_inputs.py)
 
-`db make-nodes-for-edges`
+`> db make-nodes-for-edges`
 
 - Generate topologically-sound node layers for `pedestriannetwork_lines`, `osm_edges_all`, and `osm_edges_drive`
 
+---
+
 ## Export commands
 
-`db export-geojson ANALYSIS_NAME`
+`> db export-geojson ANALYSIS_NAME`
 
 - Export a set of geojson files, indicated by `ANALYSIS_NAME`
 - Options include: `ridescore` and `gaps`
 - Output folder is `FOLDER_DATA_PRODUCTS`
 
-`db make-vector-tiles FILENAME`
+`> db make-vector-tiles FILENAME`
 
 - Generate a tileset named `FILENAME` from a folder full of geojson files
 - Files are read from `FOLDER_DATA_PRODUCTS`
 
-`db export-shapefiles EXPORT_NAME`
+`> db export-shapefiles EXPORT_NAME`
 
 - Export a set of shapefiles that others will edit manually
 - Options include: `manual_edits` and `ridescore_downstream_analysis`
