@@ -1,17 +1,20 @@
 from postgis_helpers import PostgreSQL
 
 
-def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None):
+def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None) -> None:
     """
-    Some streets have multiple OSM 'highway' tags.
+    - Some streets have multiple OSM 'highway' tags, like `'{trunk,motorway}'` or `'{residential,trunk_link}'`
 
-    Like this: '{trunk,motorway}'
-           or: '{residential,trunk_link}'
+    - This function finds the 'worst' attribute, following the pre-defined `hierarchy`,
+    which is ordered from 'worst' to 'best'. It can be overridden by providing a `custom_hierarchy`.
 
-    We're using the 'worst' attribute, and
-    the hierarchy list is ordered from 'worst'
-    to 'best'. It can be overridden with a custom
-    hierarchy.
+
+    Args:
+        db (PostgreSQL): analysis database
+        custom_hierarchy (list): custom list of OSM tag hierarchy, ordered worst to best.
+
+    Returns:
+        Updates `public.osm_edges_drive` in-place
     """
 
     edge_table = "osm_edges_drive"

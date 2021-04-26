@@ -1,3 +1,48 @@
+"""
+`access`
+--------
+
+
+`access` is the command-line-interface for the `network_routing.accessibility` module.
+
+A number of configurations are pre-defined, all of which can be found within [`network_routing/accessibility/cli.py`](https://github.com/dvrpc/network-routing/blob/master/network_routing/accessibility/cli.py).
+
+
+Examples:
+    Run the default analysis:
+
+    ```shell
+    > access sw-default
+    ```
+
+    Run the Ridescore analysis:
+
+    ```shell
+    > access sw-ridescore
+    > access osm-ridescore
+    ```
+
+
+    You can also see a list of all available configurations by running `access --help`
+
+    ```shell
+    > access --help
+
+    Usage: access [OPTIONS] COMMAND [ARGS]...
+
+    The command 'access' is used to run an accessibility analysis against
+    point-of-interest + network edge datasets
+
+    Options:
+    --help  Show this message and exit.
+
+    Commands:
+    osm-ridescore  Analyze OSM network distance around each rail stop
+    sw-default     Run the RoutableNetwork with default settings
+    sw-ridescore   Analyze sidewalk network distance around each rail stop
+    ```
+
+"""
 import click
 from datetime import datetime
 
@@ -62,7 +107,7 @@ def osm_ridescore():
         "num_pois": 1,
         "poi_match_threshold": 152,  # aka 500'
         "edge_table_name": "osm_edges_all",
-        "node_table_name": "nodes_for_osm",
+        "node_table_name": "nodes_for_osm_all",
         "node_id_column": "node_id",
     }
 
@@ -88,13 +133,13 @@ def sw_ridescore():
     _ = _execute_analysis("public", arguments)
 
 
-all_commands = [
+_all_commands = [
     sw_default,
     osm_ridescore,
     sw_ridescore,
 ]
 
-for cmd in all_commands:
+for cmd in _all_commands:
     main.add_command(cmd)
 
 

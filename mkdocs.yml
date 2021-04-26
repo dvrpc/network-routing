@@ -1,21 +1,54 @@
 site_name: network-routing
 theme:
+theme:
   name: material
   features:
     - navigation.instant
+    # - navigation.tabs
     - header.autohide
   icon:
+    logo: material/map-marker-path
     repo: fontawesome/brands/github
   palette:
     - scheme: default
       primary: deep purple
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/weather-night
         name: Switch to dark mode
     - scheme: slate
       primary: lime
       toggle:
-        icon: material/toggle-switch
+        icon: material/weather-sunny
         name: Switch to light mode
 repo_url: https://github.com/dvrpc/network-routing
 repo_name: dvrpc/network-routing
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            show_root_toc_entry: false
+            show_if_no_docstring: true
+            group_by_category: false
+
+markdown_extensions:
+  - pymdownx.tabbed
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - markdown_include.include:
+      base_path: docs
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+nav:
+  - Quickstart: index.md
+  - Installation: installation.md
+  - Setup: setup.md
+  - Database: database.md
+  - Accessibility: accessibility.md
+  - Gaps: gaps.md
+  - Analysis Runs: analysis_runs.md
+  - CLI Reference: reference_cli.md
+  - Python Reference: reference_python.md

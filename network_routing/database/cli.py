@@ -1,3 +1,41 @@
+"""
+`db`
+----
+
+`db` is the command-line-interface for the `network_routing.database` module.
+
+Examples:
+
+    Create the database, load secondary layers, and generate new features:
+    ```shell
+    > db build-initial
+    > db build-secondary 1
+    > db build-secondary 2
+    > db make-nodes-for-edges
+    ```
+
+    To see all available commands, run `db --help`
+
+    ```shell
+    > db --help
+
+    Usage: db [OPTIONS] COMMAND [ARGS]...
+
+    The command 'db' is used to run data import & export processes
+
+    Options:
+    --help  Show this message and exit.
+
+    Commands:
+    build-initial         Roll a brand-new database for with the...
+    build-secondary       Update the db as defined by PATCH NUMBER
+    export-geojson        Save a group of .geojson files to be tiled for...
+    export-shapefiles     Export a set of shapefiles identified by EXPORT_NAME
+    make-nodes-for-edges  Generate topologically-sound nodes for the...
+    make-vector-tiles     Turn GeoJSON files into .mbtiles format
+    ```
+"""
+
 import click
 
 from network_routing import db_connection, FOLDER_DATA_PRODUCTS
@@ -81,8 +119,8 @@ def make_nodes_for_edges():
 
     for tablename, kwargs in tables_to_make_nodes_from.items():
         print(f"Generating nodes for: {tablename}")
-        geotable_kwargs = kwargs.update(_shared_kwargs)
-        generate_nodes(db, tablename, "public", geotable_kwargs)
+        kwargs.update(_shared_kwargs)
+        generate_nodes(db, tablename, "public", kwargs)
 
 
 @click.command()
@@ -134,7 +172,7 @@ def export_shapefiles(export_name):
         func()
 
 
-all_commands = [
+_all_commands = [
     build_initial,
     build_secondary,
     make_nodes_for_edges,
@@ -143,7 +181,7 @@ all_commands = [
     export_shapefiles,
 ]
 
-for cmd in all_commands:
+for cmd in _all_commands:
     main.add_command(cmd)
 
 
