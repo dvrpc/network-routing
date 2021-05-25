@@ -456,4 +456,4 @@ class RoutableNetwork:
             )
 
         for qa_table in qa_tables:
-            self.db.table_delete(qa_table, schema=self.output_schema)
+            self.db.table_delete(qa_table, schema=self.schema)
