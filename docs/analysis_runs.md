@@ -14,6 +14,7 @@
 > db build-initial
 > db build-secondary 1
 > db build-secondary 2
+> db build-secondary 3
 > db make-nodes-for-edges
 
 # Run base analysis
@@ -41,7 +42,14 @@
 
 ## MCPC
 
-... to do ...
+- Analyze sidewalk accessibility to the 3-nearest POIs of each type from the
+  [Equity Through Access dataset](https://dvrpcgis.maps.arcgis.com/apps/MapSeries/index.html?appid=06eab792a06044f89b5b7fadeef660ba)
+
+```bash
+> access sw-eta
+```
+
+- To do: find/score gaps closest to schools
 
 ---
 
