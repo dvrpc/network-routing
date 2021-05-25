@@ -52,6 +52,7 @@ from network_routing.database.setup.setup_01_updated_ridescore_inputs import (
     setup_01_updated_ridescore_inputs,
 )
 from network_routing.database.setup.setup_02_osm_drive import setup_02_import_osm_drive_network
+from network_routing.database.setup.step_03_more_inputs import setup_03_import_mode_data
 from network_routing.database.export.shapefile import (
     export_shapefiles_for_editing,
     export_shapefiles_for_downstream_ridescore,
@@ -80,6 +81,7 @@ def build_secondary(patch_number):
     patches = {
         1: setup_01_updated_ridescore_inputs,
         2: setup_02_import_osm_drive_network,
+        3: setup_03_import_mode_data,
     }
 
     if patch_number not in patches:

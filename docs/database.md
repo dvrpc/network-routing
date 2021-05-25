@@ -10,6 +10,7 @@ To get up and running with this project, execute the following commands from you
 > db build-initial
 > db build-secondary 1
 > db build-secondary 2
+> db build-secondary 3
 > db make-nodes-for-edges
 ```
 

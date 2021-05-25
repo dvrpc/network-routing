@@ -133,11 +133,26 @@ def sw_ridescore():
     _ = _execute_analysis("public", arguments)
 
 
-_all_commands = [
-    sw_default,
-    osm_ridescore,
-    sw_ridescore,
-]
+@click.command()
+def sw_eta():
+    """Analyze sidewalk network distance for each 'type' of ETA point """
+
+    arguments = {
+        "poi_table_name": "eta_points",
+        "poi_id_column": "uid",
+        "output_table_name": "sw_eta",
+        "output_schema": "sw_eta",
+        "num_pois": 1,
+        "poi_match_threshold": 152,  # aka 500'
+        "edge_table_name": "pedestriannetwork_lines",
+        "node_table_name": "nodes_for_sidewalks",
+        "node_id_column": "sw_node_id",
+    }
+
+    _ = _execute_analysis("public", arguments)
+
+
+_all_commands = [sw_default, osm_ridescore, sw_ridescore, sw_eta]
 
 for cmd in _all_commands:
     main.add_command(cmd)
