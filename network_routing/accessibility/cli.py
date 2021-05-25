@@ -147,6 +147,7 @@ def sw_eta():
         "edge_table_name": "pedestriannetwork_lines",
         "node_table_name": "nodes_for_sidewalks",
         "node_id_column": "sw_node_id",
+        "max_minutes": 180,
     }
 
     _ = _execute_analysis("public", arguments)
