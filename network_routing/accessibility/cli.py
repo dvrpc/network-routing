@@ -139,10 +139,10 @@ def sw_eta():
 
     arguments = {
         "poi_table_name": "eta_points",
-        "poi_id_column": "uid",
+        "poi_id_column": "type",
         "output_table_name": "sw_eta",
         "output_schema": "sw_eta",
-        "num_pois": 1,
+        "num_pois": 3,
         "poi_match_threshold": 152,  # aka 500'
         "edge_table_name": "pedestriannetwork_lines",
         "node_table_name": "nodes_for_sidewalks",
