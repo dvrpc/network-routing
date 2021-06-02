@@ -9,12 +9,23 @@ side of the street centerline.
 """
 import pandas as pd
 from tqdm import tqdm
-from postgis_helpers.PgSQL import PostgreSQL
+import sqlalchemy
+from geoalchemy2 import Geometry, WKTElement
 
-from network_routing import db_connection
+import warnings
 
 
-def generate_missing_network(db: PostgreSQL) -> None:
+# from postgis_helpers.PgSQL import PostgreSQL
+
+# from network_routing import db_connection
+
+from pg_data_etl import Database
+from network_routing import pg_db_connection
+
+warnings.filterwarnings("ignore")
+
+
+def generate_missing_network(db: Database) -> None:
     """
     Find OSM centerlines that have NO sidewalk (sidewalk = 0), and
     draw a parallel on each side.
@@ -35,39 +46,44 @@ def generate_missing_network(db: PostgreSQL) -> None:
         select s.uid
         from public.osm_edges_drive s, regional_bounds rb
         where
-            s.sidewalk = 0
+            s.sidewalk < (st_length(s.geom) * 2)
         and s.analyze_sw = 1
         and st_intersects(s.geom, rb.geom)
     """
-    segments_that_need_both_sidewalks = db.query_as_list(id_query)
 
-    all_gdfs = []
-    counter = 0
+    if "data_viz.all_possible_improvements" in db.tables(schema="data_viz"):
+        already_processed_uids_query = """
+            select distinct osm_src_uid from data_viz.all_possible_improvements;
+        """
+        ids_to_skip = db.query_as_list_of_singletons(already_processed_uids_query)
+        ids_sql_format = str(tuple(ids_to_skip))
 
-    for segment_uid in tqdm(
-        segments_that_need_both_sidewalks, total=len(segments_that_need_both_sidewalks)
-    ):
-        uid = segment_uid[0]
-        counter += 1
+        id_query += f"""
+            and uid not in {ids_sql_format}
+        """
+
+    uids_to_analyze = db.query_as_list_of_singletons(id_query)
+
+    for uid in tqdm(uids_to_analyze, total=len(uids_to_analyze)):
 
         query = f"""
             with segment as (
                 select
                     uid,
-                    geom		
+                    geom
                 from public.osm_edges_drive
                 where uid = {uid}
             ),
             left_side as (
                 select
-                    uid as osm_src_uid, 
+                    uid as osm_src_uid,
                     st_offsetcurve(geom, 10) as geom,
                     'left' as side
                 from segment
             ),
             right_side as (
                 select
-                    uid as osm_src_uid, 
+                    uid as osm_src_uid,
                     st_offsetcurve(geom, -10) as geom,
                     'right' as side
                 from segment
@@ -77,15 +93,27 @@ def generate_missing_network(db: PostgreSQL) -> None:
             select * from right_side
         """
 
-        gdf = db.query_as_geo_df(query)
+        gdf = db.gdf(query)
 
-        all_gdfs.append(gdf)
+        # Ensure it's exploded to singlepart
+        gdf = gdf.explode()
+        gdf["explode"] = gdf.index
+        gdf.reset_index(inplace=True)
 
-    # Save the full table at the end of the run
-    db.import_geodataframe(pd.concat(all_gdfs), "improvement_concepts_final", schema="data_viz")
+        gdf["geom"] = gdf["geom"].apply(lambda x: WKTElement(x.wkt, srid=26918))
+
+        engine = sqlalchemy.create_engine(db.uri())
+        gdf.to_sql(
+            "all_possible_improvements",
+            engine,
+            schema="data_viz",
+            dtype={"geom": Geometry("LINESTRING", srid=26918)},
+            if_exists="append",
+        )
+        engine.dispose()
 
 
 if __name__ == "__main__":
 
-    db = db_connection()
+    db = pg_db_connection()
     generate_missing_network(db)
