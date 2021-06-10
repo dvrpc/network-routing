@@ -107,6 +107,9 @@ def generate_missing_network(db: Database) -> None:
         )
         engine.dispose()
 
+        db.table_add_uid_column("data_viz.all_possible_improvements")
+        db.gis_table_add_spatial_index("data_viz.all_possible_improvements")
+
 
 if __name__ == "__main__":
 
