@@ -153,7 +153,27 @@ def sw_eta():
     _ = _execute_analysis("public", arguments)
 
 
-_all_commands = [sw_default, osm_ridescore, sw_ridescore, sw_eta]
+@click.command()
+def osm_eta():
+    """Analyze OSM network distance for each 'type' of ETA point """
+
+    arguments = {
+        "poi_table_name": "eta_points",
+        "poi_id_column": "type",
+        "output_table_name": "osm_eta",
+        "output_schema": "osm_eta",
+        "num_pois": 3,
+        "poi_match_threshold": 152,  # aka 500'
+        "edge_table_name": "osm_edges_all",
+        "node_table_name": "nodes_for_osm_all",
+        "node_id_column": "node_id",
+        "max_minutes": 180,
+    }
+
+    _ = _execute_analysis("public", arguments)
+
+
+_all_commands = [sw_default, osm_ridescore, sw_ridescore, sw_eta, osm_eta]
 
 for cmd in _all_commands:
     main.add_command(cmd)
