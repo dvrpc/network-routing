@@ -14,11 +14,6 @@ from geoalchemy2 import Geometry, WKTElement
 
 import warnings
 
-
-# from postgis_helpers.PgSQL import PostgreSQL
-
-# from network_routing import db_connection
-
 from pg_data_etl import Database
 from network_routing import pg_db_connection
 
@@ -27,11 +22,11 @@ warnings.filterwarnings("ignore")
 
 def generate_missing_network(db: Database) -> None:
     """
-    Find OSM centerlines that have NO sidewalk (sidewalk = 0), and
-    draw a parallel on each side.
+    Find OSM centerlines that don't have sidewalks on
+    both sides, and draw a parallel on each side.
 
     This generates a table named:
-        data_viz.improvement_concepts
+        data_viz.all_possible_improvements
 
     NOTE!
     This code builds upon the output from:
@@ -102,7 +97,7 @@ def generate_missing_network(db: Database) -> None:
 
         gdf["geom"] = gdf["geom"].apply(lambda x: WKTElement(x.wkt, srid=26918))
 
-        engine = sqlalchemy.create_engine(db.uri())
+        engine = sqlalchemy.create_engine(db.uri)
         gdf.to_sql(
             "all_possible_improvements",
             engine,
