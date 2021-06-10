@@ -9,5 +9,6 @@ mkdocs-material
 mkdocstrings
 markdown-include
 rich
+pg-data-etl
 git+https://github.com/aaronfraint/postgis-helpers.git
 git+https://github.com/aaronfraint/philly-transit-data.git

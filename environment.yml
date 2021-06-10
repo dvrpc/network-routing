@@ -25,6 +25,7 @@ dependencies:
   - markdown-include
   - pip
   - pip:
+      - pg-data-etl
       - git+https://github.com/aaronfraint/postgis-helpers.git
       - git+https://github.com/aaronfraint/philly-transit-data.git
       - --editable .

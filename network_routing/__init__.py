@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
 import postgis_helpers as pGIS
+import pg_data_etl as pg
 
 from network_routing.accessibility.routable_network import RoutableNetwork
 
@@ -26,4 +27,9 @@ def db_connection(database_name: str = DB_NAME, host: str = DB_HOST) -> pGIS.Pos
 
     db = pGIS.PostgreSQL(database_name, verbosity="minimal", **CREDENTIALS[host])
 
+    return db
+
+
+def pg_db_connection(database_name: str = DB_NAME, host: str = DB_HOST) -> pg.Database:
+    db = pg.Database.from_config(database_name, host)
     return db
