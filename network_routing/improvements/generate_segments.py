@@ -20,18 +20,24 @@ from network_routing import pg_db_connection
 warnings.filterwarnings("ignore")
 
 
-def generate_missing_network(db: Database) -> None:
+def generate_missing_network(
+    db: Database, output_table: str = "improvements.all_possible_projects"
+) -> None:
     """
     Find OSM centerlines that don't have sidewalks on
     both sides, and draw a parallel on each side.
 
     This generates a table named:
-        data_viz.all_possible_improvements
+        improvements.all_possible_projects
 
     NOTE!
     This code builds upon the output from:
         > gaps classify-osm-sw-coverage
     """
+
+    schema, tablename = output_table.split(".")
+
+    db.execute(f"CREATE SCHEMA IF NOT EXISTS {schema};")
 
     id_query = """
         with regional_bounds as (
@@ -46,9 +52,9 @@ def generate_missing_network(db: Database) -> None:
         and st_intersects(s.geom, rb.geom)
     """
 
-    if "data_viz.all_possible_improvements" in db.tables(schema="data_viz"):
-        already_processed_uids_query = """
-            select distinct osm_src_uid from data_viz.all_possible_improvements;
+    if output_table in db.tables(schema=schema):
+        already_processed_uids_query = f"""
+            select distinct osm_src_uid from {output_table};
         """
         ids_to_skip = db.query_as_list_of_singletons(already_processed_uids_query)
         ids_sql_format = str(tuple(ids_to_skip))
@@ -99,16 +105,16 @@ def generate_missing_network(db: Database) -> None:
 
         engine = sqlalchemy.create_engine(db.uri)
         gdf.to_sql(
-            "all_possible_improvements",
+            tablename,
             engine,
-            schema="data_viz",
+            schema=schema,
             dtype={"geom": Geometry("LINESTRING", srid=26918)},
             if_exists="append",
         )
         engine.dispose()
 
-        db.table_add_uid_column("data_viz.all_possible_improvements")
-        db.gis_table_add_spatial_index("data_viz.all_possible_improvements")
+        db.table_add_uid_column(output_table)
+        db.gis_table_add_spatial_index(output_table)
 
 
 if __name__ == "__main__":
