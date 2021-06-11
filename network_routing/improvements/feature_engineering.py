@@ -109,13 +109,17 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_pro
             elif counter > 2:
                 merged_gdf = pd.concat([merged_gdf, gdf])
 
-        # After iterating, write a single table with all of the results to PostGIS
-        db.import_geodataframe(
-            merged_gdf,
-            "improvements.cleaned",
-            explode=True,
-            gpd_kwargs={"if_exists": "append"},
-        )
+
+        print("Writing shapefile")
+        merged_gdf.to_file("./montco_cleaned.shp")
+
+        # # After iterating, write a single table with all of the results to PostGIS
+        # db.import_geodataframe(
+        #     merged_gdf,
+        #     "improvements.cleaned",
+        #     explode=True,
+        #     gpd_kwargs={"if_exists": "append"},
+        # )
 
 
 if __name__ == "__main__":
