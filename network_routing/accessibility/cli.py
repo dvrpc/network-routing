@@ -173,7 +173,55 @@ def osm_eta():
     _ = _execute_analysis("public", arguments)
 
 
-_all_commands = [sw_default, osm_ridescore, sw_ridescore, sw_eta, osm_eta]
+@click.command()
+def sw_eta_individual():
+    """Analyze sidewalk network distance for each individual ETA point """
+
+    arguments = {
+        "poi_table_name": "eta_points",
+        "poi_id_column": "uid",
+        "output_table_name": "sw_eta",
+        "output_schema": "sw_eta",
+        "num_pois": 1,
+        "poi_match_threshold": 152,  # aka 500'
+        "edge_table_name": "pedestriannetwork_lines",
+        "node_table_name": "nodes_for_sidewalks",
+        "node_id_column": "sw_node_id",
+        "max_minutes": 180,
+    }
+
+    _ = _execute_analysis("public", arguments)
+
+
+@click.command()
+def osm_eta_individual():
+    """Analyze OSM network distance for each individual ETA point """
+
+    arguments = {
+        "poi_table_name": "eta_points",
+        "poi_id_column": "uid",
+        "output_table_name": "osm_eta",
+        "output_schema": "osm_eta",
+        "num_pois": 1,
+        "poi_match_threshold": 152,  # aka 500'
+        "edge_table_name": "osm_edges_all",
+        "node_table_name": "nodes_for_osm_all",
+        "node_id_column": "node_id",
+        "max_minutes": 45,
+    }
+
+    _ = _execute_analysis("public", arguments)
+
+
+_all_commands = [
+    sw_default,
+    osm_ridescore,
+    sw_ridescore,
+    sw_eta,
+    osm_eta,
+    sw_eta_individual,
+    osm_eta_individual,
+]
 
 for cmd in _all_commands:
     main.add_command(cmd)
