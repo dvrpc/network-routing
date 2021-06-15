@@ -21,7 +21,9 @@ warnings.filterwarnings("ignore")
 
 
 def generate_missing_network(
-    db: Database, output_table: str = "improvements.all_possible_projects"
+    db: Database,
+    output_table: str = "improvements.all_possible_geoms",
+    county_name: str = "Montgomery",
 ) -> None:
     """
     Find OSM centerlines that don't have sidewalks on
@@ -37,31 +39,35 @@ def generate_missing_network(
 
     schema, tablename = output_table.split(".")
 
+    output_table += "_" + county_name.lower()
+
     db.execute(f"CREATE SCHEMA IF NOT EXISTS {schema};")
 
-    id_query = """
+    id_query = f"""
         with regional_bounds as (
-            select st_union(geom) as geom
+            select geom
             from public.regional_counties
+            where co_name = '{county_name}'
         )
         select s.uid
         from public.osm_edges_drive s, regional_bounds rb
         where
             s.sidewalk < (st_length(s.geom) * 2)
         and s.analyze_sw = 1
+        and hwy_tag != 'motorway'
         and st_intersects(s.geom, rb.geom)
     """
 
-    if output_table in db.tables(schema=schema):
-        already_processed_uids_query = f"""
-            select distinct osm_src_uid from {output_table};
-        """
-        ids_to_skip = db.query_as_list_of_singletons(already_processed_uids_query)
-        ids_sql_format = str(tuple(ids_to_skip))
+    # if output_table in db.tables(schema=schema):
+    #     already_processed_uids_query = f"""
+    #         select distinct osm_src_uid from {output_table};
+    #     """
+    #     ids_to_skip = db.query_as_list_of_singletons(already_processed_uids_query)
+    #     ids_sql_format = str(tuple(ids_to_skip))
 
-        id_query += f"""
-            and uid not in {ids_sql_format}
-        """
+    #     id_query += f"""
+    #         and uid not in {ids_sql_format}
+    #     """
 
     uids_to_analyze = db.query_as_list_of_singletons(id_query)
 
@@ -96,25 +102,12 @@ def generate_missing_network(
 
         gdf = db.gdf(query)
 
-        # Ensure it's exploded to singlepart
-        gdf = gdf.explode()
-        gdf["explode"] = gdf.index
-        gdf.reset_index(inplace=True)
-
-        gdf["geom"] = gdf["geom"].apply(lambda x: WKTElement(x.wkt, srid=26918))
-
-        engine = sqlalchemy.create_engine(db.uri)
-        gdf.to_sql(
-            tablename,
-            engine,
-            schema=schema,
-            dtype={"geom": Geometry("LINESTRING", srid=26918)},
-            if_exists="append",
+        db.import_geodataframe(
+            gdf,
+            output_table,
+            explode=True,
+            gpd_kwargs={"if_exists": "append"},
         )
-        engine.dispose()
-
-        db.table_add_uid_column(output_table)
-        db.gis_table_add_spatial_index(output_table)
 
 
 if __name__ == "__main__":
