@@ -167,7 +167,7 @@ def osm_eta():
         "edge_table_name": "osm_edges_all",
         "node_table_name": "nodes_for_osm_all",
         "node_id_column": "node_id",
-        "max_minutes": 180,
+        "max_minutes": 45,
     }
 
     _ = _execute_analysis("public", arguments)
