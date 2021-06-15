@@ -8,21 +8,29 @@ def generate_isochrones(
     db: PostgreSQL,
     sidewalk_result_table: str = "rs_sw.sw_results",
     osm_result_table: str = "rs_osm.osm_results",
+    output_tablename: str = "data_viz.ridescore_results",
 ) -> None:
     """
     - Using the results of the OSM and Sidewalk ridescore analyses,
     generate two isochrones for each station (one OSM, one sidewalk).
 
+    To use this process, you need to analyze the POIs by unique ID
+    instead of by categories.
+
     Args:
         db (PostgreSQL): analysis database
+        sidewalk_result_table (str): table with sidewalk network results
+        osm_result_table (str): table with OpenStreetMap results
+        output_tablename (str): name of the output table, with schema
 
     Returns:
-        New SQL table is created named `data_viz.ridescore_isos`
-
+        New SQL table is created named `output_tablename`
     """
 
-    # Make a schema for data viz products
-    sql_query = "CREATE SCHEMA IF NOT EXISTS data_viz;"
+    output_schema, new_tablename = output_tablename.split(".")
+
+    # Make sure that the output schema exists
+    sql_query = f"CREATE SCHEMA IF NOT EXISTS {output_schema};"
     db.execute(sql_query)
 
     # Convert 1 mile to minutes
@@ -42,14 +50,14 @@ def generate_isochrones(
 
         result_cols = db.table_columns_as_list(result_table, schema=schema)
 
-        station_ids = [x[4:] for x in result_cols if "n_1_" in x]
+        all_ids = [x[4:] for x in result_cols if "n_1_" in x]
 
-        for dvrpc_id in tqdm(station_ids, total=len(station_ids)):
+        for poi_uid in tqdm(all_ids, total=len(all_ids)):
             # Figure out if there's results
             node_count_query = f"""
                 SELECT COUNT(node_id)
                 FROM {schema}.{result_table}
-                WHERE n_1_{dvrpc_id} <= {time_cutoff}
+                WHERE n_1_{poi_uid} <= {time_cutoff}
             """
             node_count = db.query_as_single_item(node_count_query)
 
@@ -72,12 +80,12 @@ def generate_isochrones(
                                     {geom_idx}),
                                 45) as geom
                     from {schema}.{result_table}
-                    where n_1_{dvrpc_id} <= {time_cutoff}
+                    where n_1_{poi_uid} <= {time_cutoff}
                 """
                 gdf = db.query_as_geo_df(query)
 
                 gdf["schema"] = schema
-                gdf["dvrpc_id"] = dvrpc_id
+                gdf["poi_uid"] = poi_uid
 
                 gdf = gdf.rename(columns={"geom": "geometry"}).set_geometry("geometry")
 
@@ -85,7 +93,7 @@ def generate_isochrones(
 
     merged_gdf = pd.concat(all_results)
 
-    db.import_geodataframe(merged_gdf, "ridescore_isos", schema="data_viz")
+    db.import_geodataframe(merged_gdf, new_tablename, schema=output_schema)
 
 
 def calculate_sidewalkscore(db: PostgreSQL) -> None:
