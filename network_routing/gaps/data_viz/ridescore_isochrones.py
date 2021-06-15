@@ -4,7 +4,7 @@ from tqdm import tqdm
 from postgis_helpers import PostgreSQL
 
 
-def generate_isochrones(db: PostgreSQL) -> None:
+def generate_isochrones(db: PostgreSQL, sidewalk_result_table: str = "rs_sw.sw_results") -> None:
     """
     - Using the results of the OSM and Sidewalk ridescore analyses,
     generate two isochrones for each station (one OSM, one sidewalk).

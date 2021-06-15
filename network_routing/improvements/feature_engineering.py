@@ -109,7 +109,6 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_pro
             elif counter > 2:
                 merged_gdf = pd.concat([merged_gdf, gdf])
 
-
         print("Writing shapefile")
         merged_gdf.to_file("./montco_cleaned.shp")
 
