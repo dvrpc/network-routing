@@ -1,4 +1,48 @@
-from network_routing import db_connection, FOLDER_DATA_PRODUCTS
+from network_routing import db_connection, FOLDER_DATA_PRODUCTS, pg_db_connection
+
+
+def export_data_for_single_muni(muni_name: str) -> None:
+    """
+    Export a shapefile with the centerline classification
+    results for a single municipality. Uses a 1-mile buffer to
+    over-select for cartographic purposes (1 mile = 1609.34 meters)
+    """
+    db = pg_db_connection()
+
+    output_folder = FOLDER_DATA_PRODUCTS / muni_name
+
+    # Make sure the folder exists
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    all_queries = {
+        "centerline_coverage": f"""
+            select
+                osmid, name, highway, oneway, hwy_tag,
+                sidewalk, st_length(geom) as shape_len,
+                (sidewalk / 2 / st_length(geom)) as sw_ratio,
+                CASE WHEN (sidewalk / 2 / st_length(geom)) <= 0.45
+                        THEN 'red'
+                    WHEN (sidewalk / 2 / st_length(geom)) < 0.82
+                        THEN 'orange'
+                    ELSE 'green' END AS color,
+                geom
+            from osm_edges_drive
+            where st_dwithin(geom, 
+                (select geom from municipalboundaries m 
+                where mun_name LIKE '%%{muni_name}%%'),
+                1609.34
+            )
+            and hwy_tag != 'motorway'
+            """,
+    }
+
+    for output_type in all_queries:
+
+        query = all_queries[output_type]
+
+        output_path = output_folder / f"{muni_name.replace(' ', '_')}_{output_type}.shp"
+
+        db.export_gis(table_or_sql=query, filepath=output_path, filetype="shp")
 
 
 def export_shapefiles_for_downstream_ridescore():

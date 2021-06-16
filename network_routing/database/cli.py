@@ -56,6 +56,7 @@ from network_routing.database.setup.step_03_more_inputs import setup_03_import_m
 from network_routing.database.export.shapefile import (
     export_shapefiles_for_editing,
     export_shapefiles_for_downstream_ridescore,
+    export_data_for_single_muni,
 )
 
 
@@ -174,6 +175,16 @@ def export_shapefiles(export_name):
         func()
 
 
+@click.command()
+@click.argument("muni_name")
+def export_muni_shapefiles(muni_name):
+    """
+    Export shapefile(s) clipped to a single municipality
+    """
+
+    export_data_for_single_muni(muni_name)
+
+
 _all_commands = [
     build_initial,
     build_secondary,
@@ -181,6 +192,7 @@ _all_commands = [
     export_geojson,
     make_vector_tiles,
     export_shapefiles,
+    export_muni_shapefiles,
 ]
 
 for cmd in _all_commands:
