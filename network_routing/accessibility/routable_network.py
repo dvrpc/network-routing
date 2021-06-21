@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from sqlalchemy import create_engine
 from postgis_helpers import PostgreSQL
 import pandana as pdna
@@ -76,7 +77,7 @@ class RoutableNetwork:
         self.poi_match_threshold = poi_match_threshold
 
         # Get a list of POI themes within the schema
-        self.themes = self._get_themes()
+        self.poi_ids = self._get_poi_ids()
 
         # Set the SQL database schema to the active schema
         self.db.ACTIVE_SCHEMA = schema
@@ -93,11 +94,10 @@ class RoutableNetwork:
             self._construct_network()
             self._analyze_pois()
 
-    def _get_themes(self):
+    def _get_poi_ids(self) -> dict:
         """
-        Return a dictionary with each unique POI 'theme' within the schema.
-
-        In this case, a 'theme' is any kind of unique identifier.
+        Return a dictionary with each unique POI identifier. These
+        could be text values or numeric.
 
         Key is the raw text from SQL, value is the santinized table name
 
@@ -271,17 +271,17 @@ class RoutableNetwork:
 
     def _analyze_pois(self):
         """
-        For each theme in the POI table:
+        For each ID in the POI table:
             1) Run ``calculate_single_poi()``
             2) Add a QAQC table showing the POI->Node assignment
         """
         all_results = []
-        for theme in self.themes:
-            print("\t->", theme)
-            poi_gdf, access_results = self._calculate_single_poi(theme)
+        for poi_id in tqdm(self.poi_ids, total=len(self.poi_ids)):
+            print("\t->", poi_id)
+            poi_gdf, access_results = self._calculate_single_poi(poi_id)
 
             if access_results is not None:
-                self._qaqc_poi_assignment(theme, poi_gdf)
+                self._qaqc_poi_assignment(poi_id, poi_gdf)
                 all_results.append(access_results)
 
         df_all_access_results = pd.concat(all_results, axis=1, sort=False)
@@ -309,7 +309,7 @@ class RoutableNetwork:
         ]
         self._cleanup_outputs(tables_to_move)
 
-    def _calculate_single_poi(self, this_theme: str):
+    def _calculate_single_poi(self, this_id: str):
         """
         1) Add all POIs for a given theme to the network.
         2) Calculate the minutes away for the 5 nearest POIs of this theme.
@@ -322,7 +322,7 @@ class RoutableNetwork:
             has the time to walk to the N-nearest POI.
         """
 
-        nice_theme = self.themes[this_theme]
+        nice_theme = self.poi_ids[this_id]
 
         # Get all POIs by theme
         # that are within 45 meters of a sidewalk (aka 150 feet)
@@ -331,7 +331,7 @@ class RoutableNetwork:
                 ST_X(st_transform(geom, 4326)) as x,
                 ST_Y(st_transform(geom, 4326)) as y
             FROM {self.schema}.{self.poi_table_name}
-            WHERE {self.poi_id_column} = '{this_theme}'
+            WHERE {self.poi_id_column} = '{this_id}'
             AND ST_DWITHIN(
                 geom,
                 (SELECT ST_COLLECT(geom) FROM {self.schema}.{self.edge_table_name}),
@@ -358,9 +358,6 @@ class RoutableNetwork:
         result_matrix = self.network.nearest_pois(
             distance=self.max_minutes, category=nice_theme, num_pois=self.num_pois
         )
-
-        # # Make sure 'food/drink' turns into 'food_drink'
-        # theme_name_for_postgres = this_theme.replace(r"/", "_")
 
         new_colnames = {}
         for column in result_matrix.columns:
@@ -407,7 +404,7 @@ class RoutableNetwork:
 
         engine = create_engine(self.db.uri())
         poi_node_pairs.to_sql(
-            f"poi_{self.themes[theme]}_qa",
+            f"poi_{self.poi_ids[theme]}_qa",
             engine,
             schema=self.schema,
             if_exists="replace",
