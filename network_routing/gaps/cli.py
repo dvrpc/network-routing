@@ -91,7 +91,16 @@ def sidewalkscore():
 
     db = db_connection()
 
-    calculate_sidewalkscore(db)
+    query = """
+        select
+            st_centroid(st_collect(geom)) as geom,
+            type, line, station, operator, dvrpc_id as poi_uid
+        from ridescore_pois
+        group by type, line, station, operator, dvrpc_id 
+        order by dvrpc_id
+    """
+
+    calculate_sidewalkscore(db, query)
 
 
 @click.command()
