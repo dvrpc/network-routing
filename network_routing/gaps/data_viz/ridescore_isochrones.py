@@ -96,7 +96,15 @@ def generate_isochrones(
     db.import_geodataframe(merged_gdf, new_tablename, schema=output_schema)
 
 
-def calculate_sidewalkscore(db: PostgreSQL) -> None:
+def calculate_sidewalkscore(
+    db: PostgreSQL,
+    poi_query: str,
+    uid_col: str = "poi_uid",
+    osm_schema: str = "rs_osm",
+    sw_schema: str = "rs_sw",
+    iso_table: str = "data_viz.ridescore_isos",
+    output_tablename: str = "data_viz.ridescore",
+) -> None:
     """
     - Using `data_viz.ridescore_pois`, generate a layer with a single point for each transit stop.
 
@@ -108,31 +116,30 @@ def calculate_sidewalkscore(db: PostgreSQL) -> None:
 
     Args:
         db (PostgreSQL): analysis database
-
+        poi_query (str): SQL query that provides the geom and uid of the source points
+        uid_col (str): name of the ID column in the query, defaults to 'poi_uid'
+        osm_schema (str): name of the OSM schema, defaults to 'rs_osm'
+        sw_schema (str): name of the sidewalk schema, defaults to 'rs_sw'
+        iso_table (str): name of the table with the isocrhone results, defaults to 'data_viz.ridescore_isos'
+        output_tablename (str): name of the new point table that will be created, defaults to 'data_viz.ridescore'
 
     Returns:
-        New SQL table is created named `data_viz.sidewalkscore`
+        New SQL table is created named `output_tablename`
 
     """
 
-    query = """
-        select st_centroid(st_collect(geom)) as geom, type, line, station, operator, dvrpc_id 
-        from ridescore_pois
-        group by type, line, station, operator, dvrpc_id 
-        order by dvrpc_id
-    """
-    gdf = db.query_as_geo_df(query)
+    gdf = db.query_as_geo_df(poi_query)
 
-    gdf["rs_osm"] = 0.0
-    gdf["rs_sw"] = 0.0
+    gdf[osm_schema] = 0.0
+    gdf[sw_schema] = 0.0
 
     for idx, row in tqdm(gdf.iterrows(), total=gdf.shape[0]):
 
         # Find all isochrones for this station
         query = f"""
             select schema, st_area(geom) as area
-            from data_viz.ridescore_isos
-            where dvrpc_id = '{row.dvrpc_id}'
+            from {iso_table}
+            where {uid_col} = '{row.poi_uid}'
         """
 
         result = db.query_as_list(query)
@@ -143,6 +150,7 @@ def calculate_sidewalkscore(db: PostgreSQL) -> None:
 
     print(gdf)
 
-    gdf["sidewalkscore"] = gdf["rs_sw"] / gdf["rs_osm"]
+    gdf["sidewalkscore"] = gdf[sw_schema] / gdf[osm_schema]
 
-    db.import_geodataframe(gdf, "sidewalkscore", schema="data_viz")
+    output_schema, new_tablename = output_tablename.split(".")
+    db.import_geodataframe(gdf, new_tablename, schema=output_schema)
