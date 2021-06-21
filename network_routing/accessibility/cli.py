@@ -174,14 +174,17 @@ def osm_eta():
 
 
 @click.command()
-def sw_eta_individual():
+@click.argument("county")
+def sw_eta_individual(county):
     """Analyze sidewalk network distance for each individual ETA point """
 
+    county = county.lower()
+
     arguments = {
-        "poi_table_name": "eta_points",
-        "poi_id_column": "uid",
-        "output_table_name": "sw_eta",
-        "output_schema": "sw_eta",
+        "poi_table_name": f"eta_{county}",
+        "poi_id_column": "eta_uid",
+        "output_table_name": f"sw_eta_{county}",
+        "output_schema": f"sw_eta_{county}",
         "num_pois": 1,
         "poi_match_threshold": 152,  # aka 500'
         "edge_table_name": "pedestriannetwork_lines",
@@ -194,14 +197,17 @@ def sw_eta_individual():
 
 
 @click.command()
-def osm_eta_individual():
+@click.argument("county")
+def osm_eta_individual(county):
     """Analyze OSM network distance for each individual ETA point """
 
+    county = county.lower()
+
     arguments = {
-        "poi_table_name": "eta_points",
-        "poi_id_column": "uid",
-        "output_table_name": "osm_eta",
-        "output_schema": "osm_eta",
+        "poi_table_name": f"eta_{county}",
+        "poi_id_column": "eta_uid",
+        "output_table_name": f"osm_eta_{county}",
+        "output_schema": f"osm_eta_{county}",
         "num_pois": 1,
         "poi_match_threshold": 152,  # aka 500'
         "edge_table_name": "osm_edges_all",
