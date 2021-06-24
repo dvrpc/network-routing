@@ -77,7 +77,7 @@ def analyze_single_poi(
     # Check that output table doesn't exist yet if writing to CSV
     # If it exists, alert the user and do not compute this POI!
     if write_to_csv:
-        output_path = Path(f"./data/{edge_table_name}_{clean_id}.csv")
+        output_path = Path("./data") / f"{edge_table_name}_{clean_id}.csv"
         if output_path.exists():
             print(f"{output_path=} already exists! Skipping...")
 
@@ -119,6 +119,7 @@ def analyze_single_poi(
     # Clean up the column names into something distinct
     # i.e. '1' turns into 'n_1_ID' for a given ID, etc.
     new_colnames = {}
+    n1 = None
     for column in df.columns:
 
         # CSV output does not need the ID as a column name suffix
@@ -131,11 +132,14 @@ def analyze_single_poi(
 
         new_colnames[column] = new_name
 
+        if int(column) == 1:
+            n1 = new_name
+
     df = df.rename(index=str, columns=new_colnames)
 
     # Filter results to values below max threshold
     # defaults to the closest (n = 1)
-    df = df[df[f"n_1_{clean_id}"] < max_minutes]
+    df = df[df[n1] < max_minutes]
 
     if write_to_csv:
         df.to_csv(output_path)
