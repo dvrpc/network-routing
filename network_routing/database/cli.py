@@ -46,6 +46,7 @@ from network_routing.database.export.vector_tiles import (
 from network_routing.database.export.geojson import (
     export_gap_webmap_data,
     export_ridescore_webmap_data,
+    export_county_specific_data,
 )
 from network_routing.database.setup.setup_00_initial import setup_00_initial
 from network_routing.database.setup.setup_01_updated_ridescore_inputs import (
@@ -136,6 +137,7 @@ def export_geojson(data_group_name):
     exporters = {
         "ridescore": export_ridescore_webmap_data,
         "gaps": export_gap_webmap_data,
+        "mcpc": export_county_specific_data,
     }
 
     if data_group_name not in exporters:
@@ -149,10 +151,12 @@ def export_geojson(data_group_name):
 
 
 @click.command()
+@click.argument("folder")
 @click.argument("filename")
-def make_vector_tiles(filename):
+def make_vector_tiles(folder, filename):
     """Turn GeoJSON files into .mbtiles format"""
-    _make_vector_tiles(FOLDER_DATA_PRODUCTS, filename)
+    folder_path = FOLDER_DATA_PRODUCTS / folder
+    _make_vector_tiles(folder_path, filename)
 
 
 @click.command()
