@@ -120,7 +120,15 @@ def analyze_single_poi(
     # i.e. '1' turns into 'n_1_ID' for a given ID, etc.
     new_colnames = {}
     for column in df.columns:
-        new_name = f"n_{column}_{clean_id}"
+
+        # CSV output does not need the ID as a column name suffix
+        if write_to_csv:
+            new_name = f"n_{column}"
+
+        # If merging with other results, we need the POI ID in the column name
+        else:
+            new_name = f"n_{column}_{clean_id}"
+
         new_colnames[column] = new_name
 
     df = df.rename(index=str, columns=new_colnames)
