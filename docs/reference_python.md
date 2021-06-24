@@ -8,6 +8,8 @@ The page below shows the Python documentation and source code for the core aspec
 
 ::: network_routing.accessibility.routable_network
 
+::: network_routing.accessibility.compare_networks
+
 ---
 
 ## `network_routing.gaps.segments`
