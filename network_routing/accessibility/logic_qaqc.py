@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from sqlalchemy import create_engine
 import pandas as pd
 import geopandas as gpd
 import pandana as pdna
@@ -7,7 +8,6 @@ from shapely.geometry import LineString
 from geoalchemy2 import Geometry, WKTElement
 
 from pg_data_etl import Database
-import sqlalchemy
 
 
 def qaqc_poi_assignment(
@@ -58,10 +58,17 @@ def qaqc_poi_assignment(
     for col in ["flow", "geom_from", "geom_to"]:
         poi_node_pairs.drop(col, inplace=True, axis=1)
 
-    poi_node_pairs.set_geometry("geom", inplace=True)
+    sql_tablename = f"qa_{poi_uid_cleaned}"
 
-    sql_tablename = f"qaqc.qa_{poi_uid_cleaned}"
-    db.import_geodataframe(poi_node_pairs, sql_tablename, gpd_kwargs={"if_exists": "replace"})
+    engine = create_engine(db.uri)
+    poi_node_pairs.to_sql(
+        sql_tablename,
+        engine,
+        schema="qaqc",
+        if_exists="replace",
+        dtype={"geom": Geometry("LineString", srid=epsg)},
+    )
+    engine.dispose()
 
     return None
 
