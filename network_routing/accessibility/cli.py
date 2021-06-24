@@ -195,6 +195,7 @@ def eta_individual(county):
             "poi_table_name": f"eta_{county}",
             "poi_id_column": "eta_uid",
             "max_minutes": 45,
+            "num_pois": 1,
             "poi_match_threshold": 152,  # aka 500'
         },
         network_a_args={
