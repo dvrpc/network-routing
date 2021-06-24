@@ -2,18 +2,18 @@ from postgis_helpers import PostgreSQL
 from network_routing import FOLDER_DATA_PRODUCTS, db_connection
 
 
-def write_query_to_geojson(filename: str, query: str, db: PostgreSQL):
+def write_query_to_geojson(filename: str, query: str, db: PostgreSQL, folder: str):
     """
     Write SQL query out to geojson file on disk.
     """
 
     # Put into Google Drive, if configured
     if FOLDER_DATA_PRODUCTS:
-        output_filepath = FOLDER_DATA_PRODUCTS / f"{filename}.geojson"
+        output_filepath = FOLDER_DATA_PRODUCTS / folder / f"{filename}.geojson"
 
     # Otherwise just drop it into the active directory
     else:
-        output_filepath = f"{filename}.geojson"
+        output_filepath = f"./{folder}/{filename}.geojson"
 
     # Extract geodataframe from SQL
     gdf = db.query_as_geo_df(query)
@@ -43,7 +43,7 @@ def export_gap_webmap_data(db: PostgreSQL):
         and o.analyze_sw = 1
     """
 
-    write_query_to_geojson("osm_sw_coverage", query_centerlines, db)
+    write_query_to_geojson("osm_sw_coverage", query_centerlines, db, "gaps")
 
     # Transit accessibility results
     gdf_sample = db.query_as_geo_df(
@@ -57,7 +57,7 @@ def export_gap_webmap_data(db: PostgreSQL):
     query_base_results = "SELECT geom, LEAST(" + ", ".join(cols_to_query)
     query_base_results += f") as walk_time FROM sw_defaults.regional_transit_stops_results"
 
-    write_query_to_geojson("sw_nodes", query_base_results, db)
+    write_query_to_geojson("sw_nodes", query_base_results, db, "gaps")
 
     # Transit stops
     query_transit_stops = """
@@ -81,14 +81,14 @@ def export_gap_webmap_data(db: PostgreSQL):
                 (select st_collect(geom) from regional_counties)
             )
     """
-    write_query_to_geojson("transit_stops", query_transit_stops, db)
+    write_query_to_geojson("transit_stops", query_transit_stops, db, "gaps")
 
     # Islands of connectivity
     query_islands = """
         SELECT uid, size_miles, muni_names, muni_count, rgba, st_transform(geom, 4326) as geom
         FROM data_viz.islands
     """
-    write_query_to_geojson("islands", query_islands, db)
+    write_query_to_geojson("islands", query_islands, db, "gaps")
 
 
 def export_ridescore_webmap_data(db: PostgreSQL):
@@ -110,12 +110,50 @@ def export_ridescore_webmap_data(db: PostgreSQL):
 
         schema, tablename = tbl.split(".")
 
-        write_query_to_geojson(tablename, query, db)
+        write_query_to_geojson(tablename, query, db, "ridescore")
+
+
+def export_county_specific_data(db: PostgreSQL):
+    """
+    Export data for the MCPC-specific visualization:
+
+    - ETA points with county name as text
+    - Isochrones for all montco ETA points TODO
+    - 'missing sidewalks' with priority results? TODO
+    """
+
+    eta_points = """
+        select
+            p.name,
+            p.type,
+            p.geom,
+            p.uid as eta_uid,
+            c.co_name 
+        from
+            eta_points p
+        left join
+            regional_counties c
+            on
+                st_within(
+                    p.geom,
+                    c.geom
+                )
+    """
+
+    queries = {
+        "eta_points": eta_points,
+    }
+
+    for filename, query in queries.items():
+        print(filename, query)
+
+        write_query_to_geojson(filename, query, db, "mcpc")
 
 
 if __name__ == "__main__":
 
     db = db_connection()
 
-    export_gap_webmap_data(db)
-    export_ridescore_webmap_data(db)
+    # export_gap_webmap_data(db)
+    # export_ridescore_webmap_data(db)
+    export_county_specific_data(db)
