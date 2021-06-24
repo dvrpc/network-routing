@@ -1,4 +1,3 @@
-from tqdm import tqdm
 from sqlalchemy import create_engine
 from postgis_helpers import PostgreSQL
 import pandana as pdna
@@ -276,8 +275,12 @@ class RoutableNetwork:
             2) Add a QAQC table showing the POI->Node assignment
         """
         all_results = []
-        for poi_id in tqdm(self.poi_ids, total=len(self.poi_ids)):
-            print("\t->", poi_id)
+        total = len(self.poi_ids)
+        counter = 0.0
+        for poi_id in self.poi_ids:
+            counter += 1
+
+            print("\t-> Working on", poi_id, "- pct complete:", round(counter / total * 100, 2))
             poi_gdf, access_results = self._calculate_single_poi(poi_id)
 
             if access_results is not None:
