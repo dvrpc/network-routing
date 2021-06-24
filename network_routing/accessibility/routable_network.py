@@ -163,10 +163,13 @@ class RoutableNetwork:
         if not self.network:
             self.build_network()
 
-        all_results = []
+        # Make sure the 'qaqc' schema exists
+        self.db.schema_add("qaqc")
 
+        # Get a list of all IDs and prepare to iterate over them
         poi_ids = get_unique_ids(self.db, self.poi_table_name, self.poi_id_column)
 
+        all_results = []
         total = len(poi_ids)
         counter = 0.0
 
