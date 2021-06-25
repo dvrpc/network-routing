@@ -34,22 +34,8 @@
 ```bash
 > access osm-ridescore
 > access sw-ridescore
-> gaps isochrones
-> gaps sidewalkscore
+> gaps isochrones-accessscore
 ```
-
----
-
-## MCPC
-
-- Analyze sidewalk accessibility to the 3-nearest POIs of each type from the
-  [Equity Through Access dataset](https://dvrpcgis.maps.arcgis.com/apps/MapSeries/index.html?appid=06eab792a06044f89b5b7fadeef660ba)
-
-```bash
-> access sw-eta
-```
-
-- To do: find/score gaps closest to schools
 
 ---
 
@@ -63,3 +49,19 @@
 > db export-geojson gaps
 > db make-vector-tiles sidewalk_gap_analysis
 ```
+
+---
+
+## MCPC
+
+- Analyze sidewalk accessibility to the 3-nearest POIs of each type from the
+  [Equity Through Access dataset](https://dvrpcgis.maps.arcgis.com/apps/MapSeries/index.html?appid=06eab792a06044f89b5b7fadeef660ba)
+
+```bash
+> access eta-individual montgomery
+> gaps isochrones-eta montgomery
+> db export-geojson mcpc
+> db make-vector-tiles mcpc mcpc_v1
+```
+
+- To do: score gaps closest to each POI type
