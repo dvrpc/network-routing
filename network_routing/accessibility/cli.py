@@ -46,27 +46,29 @@ Examples:
 import click
 from datetime import datetime
 
-from network_routing import db_connection
+from network_routing import pg_db_connection
 
-from .routable_network import RoutableNetwork
+from .routable_network import RoutableNetwork, DoubleNetwork
 
 
-def _execute_analysis(schema: str, arguments: dict) -> RoutableNetwork:
+def _execute_analysis_into_one_output(arguments: dict) -> RoutableNetwork:
     """
     Print the analysis parameters before running
     """
 
     # Print parameters and start time
     print(f"Executing an accessibility analysis with the following arguments:")
-    print(f"\t -> schema = {schema}")
     for k, v in arguments.items():
         print(f"\t -> {k} = {v}")
 
     print("Beginning at:", datetime.now())
 
     # Run analysis
-    db = db_connection()
-    return RoutableNetwork(db, schema, **arguments)
+    db = pg_db_connection()
+    net = RoutableNetwork(db, **arguments)
+    net.compute_every_poi_into_one_postgres_table()
+
+    return net
 
 
 @click.group()
@@ -92,7 +94,7 @@ def sw_default():
         "poi_match_threshold": 152,  # aka 500'
     }
 
-    _ = _execute_analysis("public", arguments)
+    _ = _execute_analysis_into_one_output(arguments)
 
 
 @click.command()
@@ -111,7 +113,7 @@ def osm_ridescore():
         "node_id_column": "node_id",
     }
 
-    _ = _execute_analysis("public", arguments)
+    _ = _execute_analysis_into_one_output(arguments)
 
 
 @click.command()
@@ -130,7 +132,7 @@ def sw_ridescore():
         "node_id_column": "sw_node_id",
     }
 
-    _ = _execute_analysis("public", arguments)
+    _ = _execute_analysis_into_one_output(arguments)
 
 
 @click.command()
@@ -150,7 +152,7 @@ def sw_eta():
         "max_minutes": 180,
     }
 
-    _ = _execute_analysis("public", arguments)
+    _ = _execute_analysis_into_one_output(arguments)
 
 
 @click.command()
@@ -170,53 +172,45 @@ def osm_eta():
         "max_minutes": 45,
     }
 
-    _ = _execute_analysis("public", arguments)
+    _ = _execute_analysis_into_one_output(arguments)
 
 
 @click.command()
 @click.argument("county")
-def sw_eta_individual(county):
-    """Analyze sidewalk network distance for each individual ETA point """
+def eta_individual(county):
+    """
+    Analyze network distance for each individual ETA point within the 'county`,
+    using both the OSM and sidewalk network.
+
+    Results are written to CSV files on disk.
+    """
 
     county = county.lower()
 
-    arguments = {
-        "poi_table_name": f"eta_{county}",
-        "poi_id_column": "eta_uid",
-        "output_table_name": f"sw_eta_{county}",
-        "output_schema": f"sw_eta_{county}",
-        "num_pois": 1,
-        "poi_match_threshold": 152,  # aka 500'
-        "edge_table_name": "pedestriannetwork_lines",
-        "node_table_name": "nodes_for_sidewalks",
-        "node_id_column": "sw_node_id",
-        "max_minutes": 180,
-    }
+    db = pg_db_connection()
 
-    _ = _execute_analysis("public", arguments)
+    dn = DoubleNetwork(
+        db,
+        shared_args={
+            "poi_table_name": f"eta_{county}",
+            "poi_id_column": "eta_uid",
+            "max_minutes": 45,
+            "num_pois": 1,
+            "poi_match_threshold": 152,  # aka 500'
+        },
+        network_a_args={
+            "edge_table_name": "osm_edges_all",
+            "node_table_name": "nodes_for_osm_all",
+            "node_id_column": "node_id",
+        },
+        network_b_args={
+            "edge_table_name": "pedestriannetwork_lines",
+            "node_table_name": "nodes_for_sidewalks",
+            "node_id_column": "sw_node_id",
+        },
+    )
 
-
-@click.command()
-@click.argument("county")
-def osm_eta_individual(county):
-    """Analyze OSM network distance for each individual ETA point """
-
-    county = county.lower()
-
-    arguments = {
-        "poi_table_name": f"eta_{county}",
-        "poi_id_column": "eta_uid",
-        "output_table_name": f"osm_eta_{county}",
-        "output_schema": f"osm_eta_{county}",
-        "num_pois": 1,
-        "poi_match_threshold": 152,  # aka 500'
-        "edge_table_name": "osm_edges_all",
-        "node_table_name": "nodes_for_osm_all",
-        "node_id_column": "node_id",
-        "max_minutes": 45,
-    }
-
-    _ = _execute_analysis("public", arguments)
+    dn.compute()
 
 
 _all_commands = [
@@ -225,8 +219,7 @@ _all_commands = [
     sw_ridescore,
     sw_eta,
     osm_eta,
-    sw_eta_individual,
-    osm_eta_individual,
+    eta_individual,
 ]
 
 for cmd in _all_commands:

@@ -1,3 +1,4 @@
+from pathlib import Path
 from postgis_helpers import PostgreSQL
 from network_routing import FOLDER_DATA_PRODUCTS, db_connection
 
@@ -9,11 +10,17 @@ def write_query_to_geojson(filename: str, query: str, db: PostgreSQL, folder: st
 
     # Put into Google Drive, if configured
     if FOLDER_DATA_PRODUCTS:
-        output_filepath = FOLDER_DATA_PRODUCTS / folder / f"{filename}.geojson"
+        output_folder = FOLDER_DATA_PRODUCTS / folder
 
     # Otherwise just drop it into the active directory
     else:
-        output_filepath = f"./{folder}/{filename}.geojson"
+        output_folder = Path(f"./{folder}")
+
+    # Make sure the output folder exists
+    output_folder.mkdir(exist_ok=True)
+
+    # Define path to the file we're about to make
+    output_filepath = output_folder / f"{filename}.geojson"
 
     # Extract geodataframe from SQL
     gdf = db.query_as_geo_df(query)
@@ -123,25 +130,15 @@ def export_county_specific_data(db: PostgreSQL):
     """
 
     eta_points = """
-        select
-            p.name,
-            p.type,
-            p.geom,
-            p.uid as eta_uid,
-            c.co_name 
-        from
-            eta_points p
-        left join
-            regional_counties c
-            on
-                st_within(
-                    p.geom,
-                    c.geom
-                )
+        select * from data_viz.ab_ratio_eta_montgomery
+    """
+    eta_isos = """
+        select * from data_viz.isochrones_eta_montgomery
     """
 
     queries = {
         "eta_points": eta_points,
+        "eta_isos": eta_isos,
     }
 
     for filename, query in queries.items():

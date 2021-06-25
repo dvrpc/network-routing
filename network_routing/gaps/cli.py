@@ -35,9 +35,8 @@ Examples:
 
 import click
 
-from network_routing import db_connection
+from network_routing import db_connection, pg_db_connection
 
-from network_routing import db_connection
 from network_routing.gaps.segments.centerline_sidewalk_coverage import classify_centerlines
 from network_routing.gaps.segments.generate_islands import generate_islands
 
@@ -46,6 +45,7 @@ from network_routing.gaps.data_viz.ridescore_isochrones import (
     generate_isochrones,
     calculate_sidewalkscore,
 )
+from network_routing.gaps.data_viz.eta_isochrones import IsochroneGenerator
 
 
 @click.group()
@@ -77,19 +77,14 @@ def identify_islands(schema: str):
 
 
 @click.command()
-def isochrones():
-    """Turn access results into isochrone polygons"""
+def isochrones_accessscore():
+    """
+    Make 'Access Score' isos & POIs with stats
+    """
 
     db = db_connection()
 
     generate_isochrones(db)
-
-
-@click.command()
-def sidewalkscore():
-    """Calculate the SidewalkScore for each rail stop"""
-
-    db = db_connection()
 
     query = """
         select
@@ -101,6 +96,35 @@ def sidewalkscore():
     """
 
     calculate_sidewalkscore(db, query)
+
+
+@click.command()
+@click.argument("county", default="montgomery")
+def isochrones_eta(county: str):
+    """
+    Make 'ETA' isos & POIs with stats
+
+    """
+    db = pg_db_connection()
+
+    county = county.lower()
+
+    args = {
+        "db": db,
+        "poi_table": f"eta_{county}",
+        "poi_col": "eta_uid",
+        "network_a_edges": "pedestriannetwork_lines",
+        "network_a_nodes": "nodes_for_sidewalks",
+        "network_a_node_id_col": "sw_node_id",
+        "network_b_edges": "osm_edges_all",
+        "network_b_nodes": "nodes_for_osm_all",
+        "network_b_node_id_col": "node_id",
+        "data_dir": "./data",
+    }
+
+    i = IsochroneGenerator(**args)
+    i.save_isos_to_db()
+    i.save_pois_with_iso_stats_to_db()
 
 
 @click.command()
@@ -116,8 +140,8 @@ _all_commands = [
     classify_osm_sw_coverage,
     identify_islands,
     scrub_osm_tags,
-    isochrones,
-    sidewalkscore,
+    isochrones_accessscore,
+    isochrones_eta,
 ]
 
 for cmd in _all_commands:
