@@ -211,7 +211,7 @@ class IsochroneGenerator:
 
         return gdf
 
-    def save(self) -> None:
+    def save_isos_to_db(self) -> None:
         """
         - Save the full isochrone set to PostgreSQL
 
@@ -227,6 +227,58 @@ class IsochroneGenerator:
 
         self.db.import_geodataframe(
             gdf, f"data_viz.isochrones_{poi_tablename}", gpd_kwargs={"if_exists": "replace"}
+        )
+
+    def save_pois_with_iso_stats_to_db(self) -> None:
+        """
+        - Value of -2 == no matches on either network
+        - Value of -1 == A network matched but B did not
+        - Value of 0 == B network matched but A did not
+        - Value >0 == A and B matched, value is the actual ratio
+        """
+        poi_info = self.data_names["poi"]
+        tablename = poi_info["table"]
+        id_col = poi_info["id_col"]
+
+        poi_gdf = self.db.gdf(f"select * from {tablename}")
+        poi_gdf["ab_ratio"] = -2.0
+
+        for idx, poi in poi_gdf.iterrows():
+            this_id = poi[id_col]
+
+            query = f"""
+                select src_network, st_area(geom) as area
+                from data_viz.isochrones_{tablename}
+                where eta_uid = '{this_id}'
+            """
+
+            shape_info = self.db.query_as_list_of_lists(query)
+
+            if len(shape_info) == 0:
+                print("WARNING! No results for ID #", this_id)
+            else:
+
+                values = {
+                    self.data_names["a"]["edges"]: 0,
+                    self.data_names["b"]["edges"]: 0,
+                }
+
+                for result in shape_info:
+                    edge_table, area = result
+                    values[edge_table] = area
+
+                a = values[self.data_names["a"]["edges"]]
+                b = values[self.data_names["b"]["edges"]]
+
+                if b == 0:
+                    ratio = -1
+                else:
+                    ratio = a / b
+
+                poi_gdf.at[idx, "ab_ratio"] = ratio
+
+        self.db.import_geodataframe(
+            poi_gdf, f"data_viz.ab_ratio_{tablename}", gpd_kwargs={"if_exists": "replace"}
         )
 
 
@@ -248,4 +300,5 @@ if __name__ == "__main__":
 
     i = IsochroneGenerator(**args)
 
-    i.save()
+    # i.save_isos_to_db()
+    i.save_pois_with_iso_stats_to_db()
