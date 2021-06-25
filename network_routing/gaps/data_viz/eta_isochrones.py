@@ -12,6 +12,29 @@ from network_routing.accessibility.logic_analyze import get_unique_ids
 
 
 class IsochroneGenerator:
+    """
+    - This class consumes the ouputs from `access eta-individual COUNTY`
+    - It takes the node-level access analysis results and generates isochrones
+    around each POI for both networks, sized to the specified distance threshold
+    and walking speed
+
+    Attributes:
+        db (pg.Database): analysis database
+        poi_table (str): name of the POI table
+        poi_col (str): name of the unique ID column in the POI table
+        network_a_edges (str): name of network 'A's edge table
+        network_a_nodes (str): name of network 'A's node table
+        network_a_node_id_col (str): name of ID column in network 'A's node table
+        network_b_edges (str): name of network 'B's edge table
+        network_b_nodes (str): name of network 'B's node table
+        network_b_node_id_col (str): name of ID column in network 'B's node table
+        distance_threshold_miles (float): distance to use for isochrones. Defaults to 1.0
+        walking_speed_mph (float): Assumned walking speed of pedestrians, defaults to 2.5 mph
+        data_dir (str): folder where outputs from earlier process were stored. Defaults to "./data"
+
+
+    """
+
     def __init__(
         self,
         db: pg.Database,
@@ -87,10 +110,16 @@ class IsochroneGenerator:
             tuple: if filepath is not None, read CSV with pandas and return a list of node IDs that meet the `minutes_cutoff`
         """
         if filepath:
+            # Read CSV
             df = pd.read_csv(filepath)
+
+            # Filter to only include rows that are at or below the
+            # defined cutoff time in minutes
             df = df[df["n_1"] <= self.minutes_cutoff]
 
+            # Get a list of the remaining node id values as a tuple
             nodes_as_tuple = tuple(df["node_id"].unique())
+
             return nodes_as_tuple
 
         else:
@@ -98,13 +127,13 @@ class IsochroneGenerator:
 
     def make_concave_hull(self, eta_uid: str) -> gpd.GeoDataFrame | None:
         """
-        - Generate concave hulls for a single UID, using networks A and B
+        - Generate a set of concave hulls for a single UID, using networks A and B
 
         Arguments:
             eta_uid (str): ID of the POI
 
         Returns:
-            gpd.GeoDataFrame: polygons for
+            gpd.GeoDataFrame: polygons for both networks, if there are results
         """
 
         # Only load node lists that exist. Skip 'None' values
@@ -161,8 +190,14 @@ class IsochroneGenerator:
             return pd.concat(gdfs)
 
     def isochrones(self) -> gpd.GeoDataFrame:
+        """
+        - Generate an isochrone set for every POI UID
 
-        print("Generating all isocrhones")
+        Returns:
+            gpd.GeoDataFrame: a single gdf with all results merged together
+        """
+
+        print("Generating all isochrones")
 
         all_gdfs = []
 
@@ -177,6 +212,12 @@ class IsochroneGenerator:
         return gdf
 
     def save(self) -> None:
+        """
+        - Save the full isochrone set to PostgreSQL
+
+        Returns:
+            None: but creates a new table named `f"data_viz.isochrones_{poi_tablename}"`
+        """
 
         gdf = self.isochrones()
 
