@@ -196,7 +196,7 @@ class RoutableNetwork:
         self.db.import_dataframe(
             df_all_access_results,
             f"{self.output_schema}.{self.output_table_name}_table",
-            df_import_kwargs={"if_exists": "replace"},
+            df_import_kwargs={"if_exists": "replace", "index_label": "node_id"},
         )
 
         # Generate geospatial version of results using node geometries
