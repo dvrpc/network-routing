@@ -98,7 +98,13 @@ def clean_up_qaqc_tables(db: Database, output_schema: str, poi_id_column: str):
         )
 
     # Write combined QAQC tables to output schema as one unified table
-    db.make_geotable_from_query(query, "qaqc_node_match", "LINESTRING", 26918, schema=output_schema)
+    output_tablename = f"{output_schema}.qaqc_node_match"
+    db.gis_make_geotable_from_query(
+        query,
+        output_tablename,
+        "LINESTRING",
+        26918,
+    )
 
     # Delete the original tables under the 'qaqc' schema
     for qa_table in qa_tables:
