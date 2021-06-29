@@ -17,7 +17,7 @@ def qaqc_poi_assignment(
     poi_gdf: gpd.GeoDataFrame,
     node_gdf: gpd.GeoDataFrame,
     epsg: int = 26918,
-):
+) -> None:
     """
     For a given poi geodataframe:
         1) Get the ID of the nearest node for each POI
@@ -73,7 +73,7 @@ def qaqc_poi_assignment(
     return None
 
 
-def clean_up_qaqc_tables(db: Database, output_schema: str, poi_id_column: str):
+def clean_up_qaqc_tables(db: Database, output_schema: str, poi_id_column: str) -> None:
 
     # Make sure the output_schema exists
     schema_query = f"""
@@ -105,6 +105,15 @@ def clean_up_qaqc_tables(db: Database, output_schema: str, poi_id_column: str):
         "LINESTRING",
         26918,
     )
+
+    # Delete all of the tables from the 'qaqc' schema
+    delete_all_qaqc_tables(db)
+
+
+def delete_all_qaqc_tables(db: Database, schema: str = "qaqc") -> None:
+
+    # Get a list of all tables in the schema
+    qa_tables = db.tables(schema=schema)
 
     # Delete the original tables under the 'qaqc' schema
     for qa_table in qa_tables:
