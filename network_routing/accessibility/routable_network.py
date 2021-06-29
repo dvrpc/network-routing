@@ -11,7 +11,7 @@ from .logic_prep import (
 )
 from .logic_analyze import analyze_single_poi, get_unique_ids
 
-from .logic_qaqc import clean_up_qaqc_tables, qaqc_poi_assignment
+from .logic_qaqc import clean_up_qaqc_tables, qaqc_poi_assignment, delete_all_qaqc_tables
 
 
 class RoutableNetwork:
@@ -97,6 +97,9 @@ class RoutableNetwork:
         self.edge_gdf = None
         self.node_gdf = None
         self.poi_gdf = None
+
+        # Clean out any old qaqc tables that may exist from before
+        delete_all_qaqc_tables(self.db)
 
     def build_network(self):
         """
