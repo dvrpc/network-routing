@@ -138,3 +138,10 @@ dmypy.json
 **/.idea/
 
 /data*/
+
+# Shapefiles
+*.shp
+*.cpg
+*.dbf
+*.prj
+*.shx
