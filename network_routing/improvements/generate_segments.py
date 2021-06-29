@@ -7,6 +7,7 @@ generate two new 'improvement concept' geometries, one for each
 side of the street centerline.
 
 """
+import geopandas as gpd
 import pandas as pd
 from tqdm import tqdm
 import sqlalchemy
@@ -58,20 +59,14 @@ def generate_missing_network(
         and st_intersects(s.geom, rb.geom)
     """
 
-    # if output_table in db.tables(schema=schema):
-    #     already_processed_uids_query = f"""
-    #         select distinct osm_src_uid from {output_table};
-    #     """
-    #     ids_to_skip = db.query_as_list_of_singletons(already_processed_uids_query)
-    #     ids_sql_format = str(tuple(ids_to_skip))
-
-    #     id_query += f"""
-    #         and uid not in {ids_sql_format}
-    #     """
-
     uids_to_analyze = db.query_as_list_of_singletons(id_query)
 
+    counter = 0
+    first_two_gdfs = []
+
     for uid in tqdm(uids_to_analyze, total=len(uids_to_analyze)):
+
+        counter += 1
 
         query = f"""
             with segment as (
@@ -102,12 +97,26 @@ def generate_missing_network(
 
         gdf = db.gdf(query)
 
-        db.import_geodataframe(
-            gdf,
-            output_table,
-            explode=True,
-            gpd_kwargs={"if_exists": "append"},
-        )
+        if counter <= 2:
+            first_two_gdfs.append(gdf)
+
+        if counter == 2:
+            merged_gdf = pd.concat(first_two_gdfs)
+
+        elif counter > 2:
+            merged_gdf = pd.concat([merged_gdf, gdf])
+
+    print("Writing to shapefile")
+    shp_path = f"./{output_table.replace('.', '_')}.shp"
+    merged_gdf.to_file(shp_path)
+
+    print("Writing to postgis")
+    db.import_gis(
+        filepath=shp_path,
+        sql_tablename=output_table,
+        explode=True,
+        gpd_kwargs={"if_exists": "replace"},
+    )
 
 
 if __name__ == "__main__":
