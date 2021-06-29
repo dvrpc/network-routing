@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def erase_features(db: Database, tablename: str = "improvements.all_possible_projects") -> None:
+def erase_features(db: Database, tablename: str = "improvements.all_possible_geoms") -> None:
     """
     Iterate over all features in the 'all_possible_improvements' table.
 
@@ -25,11 +25,14 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_pro
 
     # Operate one county at a time, writing/appending results before moving to the next one
     for county_name in counties:
+
+        src_table = tablename + "_" + county_name.lower()
+
         print(f"Processing county: {county_name}")
 
         uids = db.query_as_list_of_singletons(
             f"""
-            select uid from {tablename}
+            select uid from {src_table}
             where st_within(
                 st_centroid(geom),
                 (select geom from regional_counties where co_name = '{county_name}')
@@ -47,9 +50,9 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_pro
             q = f"""
             with seg as (
                 -- filter new segments to a single new geometry
-                
-                select geom 
-                from {tablename} 
+
+                select geom
+                from {src_table}
                 where uid = {uid}
             ),
             sw_buff as (
@@ -62,7 +65,7 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_pro
             ),
             diff as (
                 -- find the line geometry that does not intersect the poly
-                
+
                 select st_difference(s.geom, b.geom) as geom
                 from seg s, sw_buff b
             )
@@ -81,7 +84,7 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_pro
 
                 gdf = db.gdf(
                     f"""
-                    select geom from {tablename} where uid = {uid}
+                    select geom from {src_table} where uid = {uid}
                 """
                 )
                 gdf["src_uid"] = uid
@@ -110,17 +113,83 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_pro
                 merged_gdf = pd.concat([merged_gdf, gdf])
 
         print("Writing shapefile")
-        merged_gdf.to_file("./montco_cleaned.shp")
+        shp_path = f"./cleaned_{county_name.lower()}.shp"
+        merged_gdf.to_file(shp_path)
 
-        # # After iterating, write a single table with all of the results to PostGIS
-        # db.import_geodataframe(
-        #     merged_gdf,
-        #     "improvements.cleaned",
-        #     explode=True,
-        #     gpd_kwargs={"if_exists": "append"},
-        # )
+        # After iterating, write a single table with all of the results to PostGIS
+        print("Writing to postgis")
+        db.import_gis(
+            filepath=shp_path,
+            sql_tablename=f"improvements.cleaned_{county_name.lower()}",
+            explode=True,
+            gpd_kwargs={"if_exists": "replace"},
+        )
+
+
+def split_features(db: Database, src_table: str = "improvements.cleaned_montgomery") -> None:
+    """
+    - In order to maintain network topology, we have to split every new line
+    wherever it intersects another new line
+
+    Arguments:
+        src_table (str): name of the source geometry table
+
+    Returns:
+        None: but creates a new PostGIS table named 'improvements.montgomery_split'
+    """
+
+    all_gdfs = []
+
+    query_template = """
+        with source_line as (
+            select uid, geom from improvements.cleaned_montgomery
+            where uid = UID_PLACEHOLDER
+        ),
+        intersecting_lines as (
+            select st_collect(c.geom) as geom
+            from improvements.cleaned_montgomery c, source_line sl
+            where st_intersects(
+                c.geom, sl.geom
+            )
+            and c.uid != sl.uid
+            and not c.geom = sl.geom
+        )
+        select 
+            sl.uid as src_uid,
+            (st_dump(
+                st_split(
+                    sl.geom,
+                    il.geom
+                )
+            )).geom
+        from source_line sl, intersecting_lines il
+    """
+
+    uids = db.query_as_list_of_singletons(f"select uid from {src_table}")
+
+    for uid in tqdm(uids, total=len(uids)):
+
+        query = query_template.replace("UID_PLACEHOLDER", str(uid))
+
+        gdf = db.gdf(query)
+
+        # If there's no result then this line didn't intersect anything
+        # In this case we want to grab the original geometry
+        if gdf.shape[0] == 0:
+            new_query = f"""
+                select uid, geom from {src_table}
+                where uid = {uid}
+            """
+            gdf = db.gdf(new_query)
+
+        all_gdfs.append(gdf)
+
+    merged_gdf = pd.concat(all_gdfs)
+
+    db.import_geodataframe(merged_gdf, "improvements.montgomery_split")
 
 
 if __name__ == "__main__":
     db = pg_db_connection()
-    erase_features(db)
+    # erase_features(db)
+    split_features(db)
