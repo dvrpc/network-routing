@@ -38,7 +38,7 @@ Examples:
 
 import click
 
-from network_routing import db_connection, FOLDER_DATA_PRODUCTS
+from network_routing import pg_db_connection, db_connection, FOLDER_DATA_PRODUCTS
 from network_routing.database.setup.make_nodes import generate_nodes
 from network_routing.database.export.vector_tiles import (
     make_vector_tiles as _make_vector_tiles,
@@ -96,17 +96,18 @@ def build_secondary(patch_number):
 
 
 @click.command()
-def make_nodes_for_edges():
-    """ Generate topologically-sound nodes for the OPENSTREETMAP centerlines & SIDEWALK lines """
+@click.argument("edge_tablename")
+def make_nodes_for_edges(edge_tablename):
+    """ Generate topologically-sound nodes for edge tables """
 
-    db = db_connection()
+    db = pg_db_connection()
 
     _shared_kwargs = {
         "geom_type": "Point",
         "epsg": 26918,
     }
 
-    tables_to_make_nodes_from = {
+    table_config = {
         "osm_edges_all": {
             "new_table_name": "nodes_for_osm_all",
             "uid_col": "node_id",
@@ -119,12 +120,23 @@ def make_nodes_for_edges():
             "new_table_name": "nodes_for_sidewalks",
             "uid_col": "sw_node_id",
         },
+        "improvements.montgomery_split": {
+            "new_table_name": "improvements.montco_new_nodes",
+            "uid_col": "node_id",
+        },
     }
 
-    for tablename, kwargs in tables_to_make_nodes_from.items():
-        print(f"Generating nodes for: {tablename}")
-        kwargs.update(_shared_kwargs)
-        generate_nodes(db, tablename, "public", kwargs)
+    if edge_tablename not in table_config:
+        print(f"{edge_tablename=} is not a valid option.")
+        print(f"Choices include: {table_config.keys()}")
+        return None
+
+    print(f"Generating nodes for: {edge_tablename}")
+
+    kwargs = table_config[edge_tablename]
+    kwargs.update(_shared_kwargs)
+
+    generate_nodes(db, edge_tablename, kwargs)
 
 
 @click.command()
