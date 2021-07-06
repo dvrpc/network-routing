@@ -201,7 +201,7 @@ def setup_00_initial(local_db: PostgreSQL):
     local_db.import_geodataframe(stops, "regional_transit_stops")
 
     # 5) Import OSM data for the entire region
-    import_osm_for_dvrpc_region(db, network_type="all")
+    import_osm_for_dvrpc_region(local_db, network_type="all")
 
 
 if __name__ == "__main__":
