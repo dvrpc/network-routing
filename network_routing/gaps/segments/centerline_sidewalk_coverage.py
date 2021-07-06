@@ -1,9 +1,9 @@
 from tqdm import tqdm
 
-from postgis_helpers import PostgreSQL
+from pg_data_etl import Database
 
 
-def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "sidewalk") -> None:
+def classify_centerlines(db: Database, tbl: str, new_col: str = "sidewalk") -> None:
     """
     - Evaluate a centerline dataset against a sidewalk dataset.
 
@@ -14,8 +14,7 @@ def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "
 
 
     Args:
-        db (PostgreSQL): analysis database
-        schema (str): schema where source data can be found
+        db (Database): analysis database
         tbl (str): name of the centerline table to analyze
         new_col (str): name of the new `FLOAT` column where data will be stored.
 
@@ -24,19 +23,24 @@ def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "
     """
 
     # Add a column to filter out features we don't want to classify
-    if "analyze_sw" not in db.table_columns_as_list(tbl, schema=schema):
-
-        db.table_add_or_nullify_column(tbl, "analyze_sw", "INT", schema=schema)
+    if "analyze_sw" not in db.columns(tbl):
 
         db.execute(
             f"""
-            UPDATE {schema}.{tbl}
+            ALTER TABLE {tbl}
+            ADD COLUMN IF NOT EXISTS analyze_sw INT;
+        """
+        )
+
+        db.execute(
+            f"""
+            UPDATE {tbl}
             SET analyze_sw = 1;
         """
         )
         db.execute(
             f"""
-            UPDATE {schema}.{tbl}
+            UPDATE {tbl}
             SET analyze_sw = 0
             WHERE highway LIKE '%%bridleway%%' 
                 OR highway LIKE '%%bus_guideway%%' 
@@ -48,20 +52,21 @@ def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "
                 OR highway LIKE '%%pedestrian%%' 
                 OR highway LIKE '%%service%%' 
                 OR highway LIKE '%%track%%' 
-                OR highway LIKE '%%steps%%';
+                OR highway LIKE '%%steps%%'
+                OR highway LIKE '%%motorway%%';
         """
         )
 
     # Get a list of all centerlines we want to iterate over.
     oid_query = f"""
-        SELECT uid FROM {schema}.{tbl} WHERE analyze_sw = 1
+        SELECT uid FROM {tbl} WHERE analyze_sw = 1
     """
 
     # But first...  check if the new_col exists
     # If so, iterate over null features
     # Otherwise, make the column and operate on the entire dataset
 
-    column_already_existed = new_col in db.table_columns_as_list(tbl, schema=schema)
+    column_already_existed = new_col in db.columns(tbl)
 
     if column_already_existed:
         print("Picking up where last left off...")
@@ -70,13 +75,15 @@ def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "
         """
     else:
         print("Analyzing for the first time...")
-        db.table_add_or_nullify_column(tbl, new_col, "FLOAT", schema=schema)
+        db.execute(
+            f"""
+            ALTER TABLE {tbl}
+            ADD COLUMN IF NOT EXISTS {new_col} FLOAT;
+        """
+        )
 
     # Hit the database
-    oid_list = db.query_as_list(oid_query)
-
-    # pop the results out of tuples into a simple list
-    oid_list = [x[0] for x in oid_list]
+    oid_list = db.query_as_list_of_singletons(oid_query)
 
     query_template = f"""
         SELECT
@@ -86,7 +93,7 @@ def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "
                 )
             )
         FROM
-            {schema}.pedestriannetwork_lines sw, {schema}.{tbl} c
+            pedestriannetwork_lines sw, {tbl} c
         where
             c.uid = OID_PLACEHOLDER
             AND
@@ -104,13 +111,13 @@ def classify_centerlines(db: PostgreSQL, schema: str, tbl: str, new_col: str = "
     for oid in tqdm(oid_list, total=len(oid_list)):
         oid_query = query_template.replace("OID_PLACEHOLDER", str(oid))
 
-        sidwalk_length_in_meters = db.query_as_single_item(oid_query)
+        sidwalk_length_in_meters = db.query_as_singleton(oid_query)
 
         if not sidwalk_length_in_meters:
             sidwalk_length_in_meters = 0
 
         update_query = f"""
-            UPDATE {schema}.{tbl} c
+            UPDATE {tbl} c
             SET {new_col} = {sidwalk_length_in_meters}
             WHERE uid = {oid}
         """

@@ -55,13 +55,12 @@ def main():
 
 
 @click.command()
-@click.argument("schema", default="public")
-def classify_osm_sw_coverage(schema: str):
+def classify_osm_sw_coverage():
     """ Classify OSM w/ length of parallel sidewalks """
 
-    db = db_connection()
+    db = pg_db_connection()
 
-    classify_centerlines(db, schema, "osm_edges_drive")
+    classify_centerlines(db, "osm_edges_drive")
 
 
 @click.command()
