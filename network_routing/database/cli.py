@@ -53,7 +53,10 @@ from network_routing.database.setup.setup_01_updated_ridescore_inputs import (
     setup_01_updated_ridescore_inputs,
 )
 from network_routing.database.setup.setup_02_osm_drive import setup_02_import_osm_drive_network
-from network_routing.database.setup.step_03_more_inputs import setup_03_import_mode_data
+from network_routing.database.setup.setup_03_more_inputs import setup_03_import_mode_data
+from network_routing.database.setup.setup_04_osm_without_motorway import (
+    setup_04_remove_motorways_from_osm,
+)
 from network_routing.database.export.shapefile import (
     export_shapefiles_for_editing,
     export_shapefiles_for_downstream_ridescore,
@@ -84,6 +87,7 @@ def build_secondary(patch_number):
         1: setup_01_updated_ridescore_inputs,
         2: setup_02_import_osm_drive_network,
         3: setup_03_import_mode_data,
+        4: setup_04_remove_motorways_from_osm,
     }
 
     if patch_number not in patches:
@@ -108,11 +112,11 @@ def make_nodes_for_edges(edge_tablename):
     }
 
     table_config = {
-        "osm_edges_all": {
+        "osm_edges_all_no_motorway": {
             "new_table_name": "nodes_for_osm_all",
             "uid_col": "node_id",
         },
-        "osm_edges_drive": {
+        "osm_edges_drive_no_motorway": {
             "new_table_name": "nodes_for_osm_drive",
             "uid_col": "node_id",
         },
