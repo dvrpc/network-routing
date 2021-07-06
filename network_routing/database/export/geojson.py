@@ -135,10 +135,14 @@ def export_county_specific_data(db: PostgreSQL):
     eta_isos = """
         select * from data_viz.isochrones_eta_montgomery
     """
+    montco_missing_sidewalks = """
+        select * from improvements.montgomery_split
+    """
 
     queries = {
         "eta_points": eta_points,
         "eta_isos": eta_isos,
+        "montco_missing_sidewalks": montco_missing_sidewalks,
     }
 
     for filename, query in queries.items():
