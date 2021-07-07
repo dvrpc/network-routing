@@ -108,7 +108,7 @@ def osm_ridescore():
         "output_schema": "rs_osm",
         "num_pois": 1,
         "poi_match_threshold": 152,  # aka 500'
-        "edge_table_name": "osm_edges_all",
+        "edge_table_name": "osm_edges_all_no_motorway",
         "node_table_name": "nodes_for_osm_all",
         "node_id_column": "node_id",
     }
@@ -166,7 +166,7 @@ def osm_eta():
         "output_schema": "osm_eta",
         "num_pois": 3,
         "poi_match_threshold": 152,  # aka 500'
-        "edge_table_name": "osm_edges_all",
+        "edge_table_name": "osm_edges_all_no_motorway",
         "node_table_name": "nodes_for_osm_all",
         "node_id_column": "node_id",
         "max_minutes": 45,
@@ -199,7 +199,7 @@ def eta_individual(county):
             "poi_match_threshold": 152,  # aka 500'
         },
         network_a_args={
-            "edge_table_name": "osm_edges_all",
+            "edge_table_name": "osm_edges_all_no_motorway",
             "node_table_name": "nodes_for_osm_all",
             "node_id_column": "node_id",
         },

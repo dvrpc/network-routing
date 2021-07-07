@@ -51,11 +51,13 @@ def generate_missing_network(
             where co_name = '{county_name}'
         )
         select s.uid
-        from public.osm_edges_drive s, regional_bounds rb
+        from 
+            osm_edges_drive_no_motorway s, 
+            regional_bounds rb
         where
             s.sidewalk < (st_length(s.geom) * 2)
         and s.analyze_sw = 1
-        and hwy_tag != 'motorway'
+        and highway not like '%%motorway%%'
         and st_intersects(s.geom, rb.geom)
     """
 
@@ -73,7 +75,7 @@ def generate_missing_network(
                 select
                     uid,
                     geom
-                from public.osm_edges_drive
+                from public.osm_edges_drive_no_motorway
                 where uid = {uid}
             ),
             left_side as (
@@ -107,7 +109,7 @@ def generate_missing_network(
             merged_gdf = pd.concat([merged_gdf, gdf])
 
     print("Writing to shapefile")
-    shp_path = f"./{output_table.replace('.', '_')}.shp"
+    shp_path = f"./shp/{output_table.replace('.', '_')}.shp"
     merged_gdf.to_file(shp_path)
 
     print("Writing to postgis")
