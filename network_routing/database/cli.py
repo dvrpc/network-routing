@@ -116,18 +116,18 @@ def make_nodes_for_edges(edge_tablename):
             "new_table_name": "nodes_for_osm_all",
             "uid_col": "node_id",
         },
-        "osm_edges_drive_no_motorway": {
-            "new_table_name": "nodes_for_osm_drive",
-            "uid_col": "node_id",
-        },
+        # "osm_edges_drive_no_motorway": {
+        #     "new_table_name": "nodes_for_osm_drive",
+        #     "uid_col": "node_id",
+        # },
         "pedestriannetwork_lines": {
             "new_table_name": "nodes_for_sidewalks",
             "uid_col": "sw_node_id",
         },
-        "improvements.montgomery_split": {
-            "new_table_name": "improvements.montco_new_nodes",
-            "uid_col": "node_id",
-        },
+        # "improvements.montgomery_split": {
+        #     "new_table_name": "improvements.montco_new_nodes",
+        #     "uid_col": "node_id",
+        # },
     }
 
     if edge_tablename not in table_config:
