@@ -15,7 +15,8 @@
 > db build-secondary 1
 > db build-secondary 2
 > db build-secondary 3
-> db make-nodes-for-edges
+> db build-secondary 4
+> db make-nodes-for-edges pedestriannetwork_lines
 
 # Run base analysis
 > gaps classify-osm-sw-coverage
@@ -32,6 +33,7 @@
 - Calculate the OSM vs Sidewalk accessible areas for each station and save result as new geo-table
 
 ```bash
+> db make-nodes-for-edges osm_edges_all_no_motorway
 > access osm-ridescore
 > access sw-ridescore
 > gaps isochrones-accessscore
