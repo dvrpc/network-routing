@@ -64,15 +64,12 @@ def classify_osm_sw_coverage():
 
 
 @click.command()
-@click.option("-s", "--schema")
-def identify_islands(schema: str):
+def identify_islands():
     """ Join intersecting sidewalks to create 'islands' """
 
     db = db_connection()
 
-    print("schema: ", schema)
-
-    generate_islands(db, schema)
+    generate_islands(db)
 
 
 @click.command()
@@ -115,7 +112,7 @@ def isochrones_eta(county: str):
         "network_a_edges": "pedestriannetwork_lines",
         "network_a_nodes": "nodes_for_sidewalks",
         "network_a_node_id_col": "sw_node_id",
-        "network_b_edges": "osm_edges_all",
+        "network_b_edges": "osm_edges_all_no_motorway",
         "network_b_nodes": "nodes_for_osm_all",
         "network_b_node_id_col": "node_id",
         "data_dir": "./data",
