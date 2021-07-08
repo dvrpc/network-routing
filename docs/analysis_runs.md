@@ -62,6 +62,9 @@
 ```bash
 > access eta-individual montgomery
 > gaps isochrones-eta montgomery
+
+> db make-nodes-for-edges improvements.montgomery_split
+
 > db export-geojson mcpc
 > db make-vector-tiles mcpc mcpc_v1
 ```

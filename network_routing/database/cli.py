@@ -124,10 +124,10 @@ def make_nodes_for_edges(edge_tablename):
             "new_table_name": "nodes_for_sidewalks",
             "uid_col": "sw_node_id",
         },
-        # "improvements.montgomery_split": {
-        #     "new_table_name": "improvements.montco_new_nodes",
-        #     "uid_col": "node_id",
-        # },
+        "improvements.montgomery_split": {
+            "new_table_name": "improvements.montco_new_nodes",
+            "uid_col": "node_id",
+        },
     }
 
     if edge_tablename not in table_config:
