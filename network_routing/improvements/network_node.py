@@ -46,7 +46,7 @@ class NetworkNodes:
         return self.db.query_as_list_of_singletons(f"select {col} from {tbl};")
 
     def nearby_nodes(
-        self, uid: int, n: int = 1, search_dist: float = 0.10, src: str = "new", dest: str = "old"
+        self, uid: int, n: int = 1, search_dist: float = 25.0, src: str = "new", dest: str = "old"
     ) -> list:
         """
         - Get the ID of the n-closest node within search_dist
@@ -65,29 +65,12 @@ class NetworkNodes:
             order by st_distance(dest.geom, src.geom) asc
             limit {n}        
         """
+        # print(query)
         result = self.db.query(query)
         if result:
             return result[n - 1][0]
         else:
             return None
-
-    # def connected_segments(self, uid: int, table: str = "new") -> list:
-    #     """
-    #     - Get a list of all segments that intersect this node
-    #     """
-    # query = f"""
-    #     with this_node as (
-    #         select geom from {self.nodes[table]['tbl']}
-    #         where {self.nodes[table]['col']} = {uid}
-    #     )
-    #     select count(*)
-    #     from {self.edges[table]} e, this_node
-    #     where st_intersects(
-    #         e.geom,
-    #         this_node.geom
-    #     )
-    # """
-    # return self.db.query_as_singleton(query)
 
     def uids_to_analyze(self, table: str = "new") -> list:
         """
@@ -107,7 +90,6 @@ class NetworkNodes:
             having
                 count(edges.*) = 1
         """
-        print(query)
         return self.db.query_as_list_of_singletons(query)
 
     def draw_lines(self, from_table: str = "new", to_table: str = "old"):
@@ -122,23 +104,28 @@ class NetworkNodes:
         print("Screening nodes to analyze")
         uids_to_analyze = self.uids_to_analyze(from_table)
 
-        all_results = []
-
+        flows = {}
+        print("Finding src nodes with dest nodes nearby")
         for src_uid in tqdm(uids_to_analyze, total=len(uids_to_analyze)):
 
             dest_uid = self.nearby_nodes(src_uid, src=from_table, dest=to_table)
 
             if dest_uid:
-                query = f"""
+                flows[src_uid] = dest_uid
+
+        all_results = []
+        print("Generating flow lines from each src -> dest")
+        for src_uid, dest_uid in tqdm(flows.items(), total=len(flows)):
+            query = f"""
                     with src as (
-                        select {from_uid_col}, geom 
+                        select {from_uid_col}, geom
                         from {from_tablename}
                         where {from_uid_col} = {src_uid}
                     ),
                     dest as (
-                        select {to_uid_col}, geom 
+                        select {to_uid_col}, geom
                         from {to_tablename}
-                        where {to_uid_col} = {dest_uid} 
+                        where {to_uid_col} = {dest_uid}
                     )
                     select
                         src.{from_uid_col} as src_id,
@@ -148,8 +135,8 @@ class NetworkNodes:
                     from
                         src, dest
                 """
-                gdf = self.db.gdf(query)
-                all_results.append(gdf)
+            gdf = self.db.gdf(query)
+            all_results.append(gdf)
 
         print("Merging results")
         merged_gdf = pd.concat(all_results)
