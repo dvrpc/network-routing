@@ -292,7 +292,7 @@ if __name__ == "__main__":
         "network_a_edges": "pedestriannetwork_lines",
         "network_a_nodes": "nodes_for_sidewalks",
         "network_a_node_id_col": "sw_node_id",
-        "network_b_edges": "osm_edges_all",
+        "network_b_edges": "osm_edges_all_no_motorway",
         "network_b_nodes": "nodes_for_osm_all",
         "network_b_node_id_col": "node_id",
         "data_dir": "./data",
