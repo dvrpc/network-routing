@@ -113,14 +113,14 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_geo
                 merged_gdf = pd.concat([merged_gdf, gdf])
 
         print("Writing shapefile")
-        shp_path = f"./cleaned_{county_name.lower()}.shp"
+        shp_path = f"./{county_name.lower()}_erased.shp"
         merged_gdf.to_file(shp_path)
 
         # After iterating, write a single table with all of the results to PostGIS
         print("Writing to postgis")
         db.import_gis(
             filepath=shp_path,
-            sql_tablename=f"improvements.cleaned_{county_name.lower()}",
+            sql_tablename=f"improvements.{county_name.lower()}_erased",
             explode=True,
             gpd_kwargs={"if_exists": "replace"},
         )
@@ -140,14 +140,14 @@ def split_features(db: Database, src_table: str = "improvements.cleaned_montgome
 
     all_gdfs = []
 
-    query_template = """
+    query_template = f"""
         with source_line as (
-            select uid, geom from improvements.cleaned_montgomery
+            select uid, geom from {src_table}
             where uid = UID_PLACEHOLDER
         ),
         intersecting_lines as (
             select st_collect(c.geom) as geom
-            from improvements.cleaned_montgomery c, source_line sl
+            from {src_table} c, source_line sl
             where st_intersects(
                 c.geom, sl.geom
             )
