@@ -1,5 +1,8 @@
 """
 """
+import pandas as pd
+from tqdm import tqdm
+
 from network_routing import pg_db_connection
 from pg_data_etl import Database
 
@@ -20,46 +23,150 @@ class NetworkNodes:
         new_node_uid_col: str,
         old_nodes: str,
         old_node_uid_col: str,
+        new_edges: str,
+        old_edges: str,
     ):
         self.db = db
-        self.new_nodes = new_nodes
-        self.old_nodes = old_nodes
-        self.new_node_uid_col = new_node_uid_col
-        self.old_node_uid_col = old_node_uid_col
+        self.nodes = {
+            "new": {"tbl": new_nodes, "col": new_node_uid_col},
+            "old": {"tbl": old_nodes, "col": old_node_uid_col},
+        }
+        self.edges = {
+            "new": new_edges,
+            "old": old_edges,
+        }
 
-    def new_node_uids(self, table: str):
-        if table == "new":
-            col = self.new_node_uid_col
-            tbl = self.new_nodes
+    def node_uids(self, table: str):
 
-        elif table == "old":
-            col = self.new_node_uid_col
-            tbl = self.new_nodes
+        values = self.nodes[table]
 
+        tbl = values["tbl"]
+        col = values["col"]
+
+        return self.db.query_as_list_of_singletons(f"select {col} from {tbl};")
+
+    def nearby_nodes(
+        self, uid: int, n: int = 1, search_dist: float = 0.10, src: str = "new", dest: str = "old"
+    ) -> list:
+        """
+        - Get the ID of the n-closest node within search_dist
+        """
+        query = f"""
+            with src as (
+                select geom from {self.nodes[src]['tbl']} where {self.nodes[src]['col']} = {uid}
+            )
+            select {self.nodes[dest]['col']}
+            from {self.nodes[dest]['tbl']} dest, src
+            where st_dwithin(
+                dest.geom,
+                src.geom,
+                {search_dist}
+            )
+            order by st_distance(dest.geom, src.geom) asc
+            limit {n}        
+        """
+        result = self.db.query(query)
+        if result:
+            return result[n - 1][0]
         else:
             return None
 
-        return db.query_as_list_of_singletons(f"select {col} from {tbl};")
+    # def connected_segments(self, uid: int, table: str = "new") -> list:
+    #     """
+    #     - Get a list of all segments that intersect this node
+    #     """
+    # query = f"""
+    #     with this_node as (
+    #         select geom from {self.nodes[table]['tbl']}
+    #         where {self.nodes[table]['col']} = {uid}
+    #     )
+    #     select count(*)
+    #     from {self.edges[table]} e, this_node
+    #     where st_intersects(
+    #         e.geom,
+    #         this_node.geom
+    #     )
+    # """
+    # return self.db.query_as_singleton(query)
 
-    def nearby_nodes(self, uid: int, search_dist: float) -> list:
-        """Get list of all nodes within search_dist"""
-        query = f"""
-        
+    def uids_to_analyze(self, table: str = "new") -> list:
         """
-        pass
+        - Figure out which uids should be analyzed
+        """
+        query = f"""
+            select
+                nodes.{self.nodes[table]['col']}
+            from
+                {self.nodes[table]['tbl']} nodes
+            left join
+                {self.edges[table]} edges 
+            on
+                st_intersects(nodes.geom, edges.geom) 
+            group by
+                nodes.{self.nodes[table]['col']}
+            having
+                count(edges.*) = 1
+        """
+        print(query)
+        return self.db.query_as_list_of_singletons(query)
 
-    def nearest_node(self):
-        """Get the single closest node"""
-        pass
+    def draw_lines(self, from_table: str = "new", to_table: str = "old"):
+        print(f"Handling {from_table.upper()} nodes to {to_table.upper()} nodes")
 
-    def connected_segments(self) -> list:
-        """Get a list of all segments that intersect this node"""
-        pass
+        from_tablename = self.nodes[from_table]["tbl"]
+        from_uid_col = self.nodes[from_table]["col"]
+
+        to_tablename = self.nodes[to_table]["tbl"]
+        to_uid_col = self.nodes[to_table]["col"]
+
+        print("Screening nodes to analyze")
+        uids_to_analyze = self.uids_to_analyze(from_table)
+
+        all_results = []
+
+        for src_uid in tqdm(uids_to_analyze, total=len(uids_to_analyze)):
+
+            dest_uid = self.nearby_nodes(src_uid, src=from_table, dest=to_table)
+
+            if dest_uid:
+                query = f"""
+                    with src as (
+                        select {from_uid_col}, geom 
+                        from {from_tablename}
+                        where {from_uid_col} = {src_uid}
+                    ),
+                    dest as (
+                        select {to_uid_col}, geom 
+                        from {to_tablename}
+                        where {to_uid_col} = {dest_uid} 
+                    )
+                    select
+                        src.{from_uid_col} as src_id,
+                        dest.{to_uid_col} as dest_id,
+                        '{from_table} to {to_table}' as tables,
+                        st_makeline(src.geom, dest.geom) as geom
+                    from
+                        src, dest
+                """
+                gdf = self.db.gdf(query)
+                all_results.append(gdf)
+
+        print("Merging results")
+        merged_gdf = pd.concat(all_results)
+        self.db.import_geodataframe(merged_gdf, "improvements.montgomery_connectors")
 
 
 if __name__ == "__main__":
     db = pg_db_connection()
 
     nn = NetworkNodes(
-        db, "improvements.montco_new_nodes", "node_id", "nodes_for_sidewalks", "sw_node_id"
+        db,
+        "improvements.montco_new_nodes",
+        "node_id",
+        "nodes_for_sidewalks",
+        "sw_node_id",
+        "improvements.montgomery_split",
+        "pedestriannetwork_lines",
     )
+
+    nn.draw_lines()
