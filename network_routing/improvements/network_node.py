@@ -77,6 +77,7 @@ class NetworkNodes:
     ) -> list:
         """
         - Get the ID of the n-closest node within search_dist
+        - If src and dest are the same table, choose the closest node that does not share the unique ID
         """
         query = f"""
             with src as (
@@ -88,11 +89,21 @@ class NetworkNodes:
                 dest.geom,
                 src.geom,
                 {search_dist}
-            )
+            )"""
+
+        # If source and destination are the same, make
+        # sure that we don't select the same node
+        if src == dest:
+            query += f"""
+            and {self.nodes[src]['col']} != {uid}
+        """
+
+        # All queries are ordered by distance and limited to N results
+        query += f"""
             order by st_distance(dest.geom, src.geom) asc
             limit {n}        
         """
-        # print(query)
+
         result = self.db.query(query)
         if result:
             return result[n - 1][0]
@@ -168,7 +179,9 @@ class NetworkNodes:
         print("Merging results")
         merged_gdf = pd.concat(all_results)
         output_tablename = "improvements.montgomery_connectors_to_" + to_tablename.replace(".", "_")
-        self.db.import_geodataframe(merged_gdf, output_tablename)
+        self.db.import_geodataframe(
+            merged_gdf, output_tablename, gpd_kwargs={"if_exists": "replace"}
+        )
 
 
 # if __name__ == "__main__":
