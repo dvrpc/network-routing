@@ -7,11 +7,9 @@ generate two new 'improvement concept' geometries, one for each
 side of the street centerline.
 
 """
-import geopandas as gpd
+import click
 import pandas as pd
 from tqdm import tqdm
-import sqlalchemy
-from geoalchemy2 import Geometry, WKTElement
 
 import warnings
 
@@ -19,6 +17,15 @@ from pg_data_etl import Database
 from network_routing import pg_db_connection
 
 warnings.filterwarnings("ignore")
+
+
+@click.command()
+def draw_missing_network_links():
+    """Create a full sidewalk network on streets lacking sidewalks on both sides"""
+
+    db = pg_db_connection()
+
+    generate_missing_network(db)
 
 
 def generate_missing_network(
