@@ -1,10 +1,37 @@
 """
 """
+import click
 import pandas as pd
 from tqdm import tqdm
 
 from network_routing import pg_db_connection
 from pg_data_etl import Database
+
+
+@click.command()
+@click.argument("connect_to")
+def reconnect_nodes(connect_to: str):
+    """
+    Draw connection lines between the new nodes and the existing nodes
+    """
+    if connect_to.upper() not in ["NEW", "OLD"]:
+        print("The argument you provided is not configured. Choose from 'NEW' or 'OLD'")
+        print(f"You chose: {connect_to}")
+        return None
+
+    db = pg_db_connection()
+
+    kwargs = {
+        "new_nodes": "improvements.montco_new_nodes",
+        "new_node_uid_col": "node_id",
+        "old_nodes": "nodes_for_sidewalks",
+        "old_node_uid_col": "sw_node_id",
+        "new_edges": "improvements.montgomery_split",
+        "old_edges": "pedestriannetwork_lines",
+    }
+
+    nn = NetworkNodes(db, **kwargs)
+    nn.draw_lines(to_table=connect_to.lower())
 
 
 class NetworkNodes:
@@ -140,20 +167,21 @@ class NetworkNodes:
 
         print("Merging results")
         merged_gdf = pd.concat(all_results)
-        self.db.import_geodataframe(merged_gdf, "improvements.montgomery_connectors")
+        output_tablename = "improvements.montgomery_connectors_to_" + to_tablename.replace(".", "_")
+        self.db.import_geodataframe(merged_gdf, output_tablename)
 
 
-if __name__ == "__main__":
-    db = pg_db_connection()
+# if __name__ == "__main__":
+#     db = pg_db_connection()
 
-    nn = NetworkNodes(
-        db,
-        "improvements.montco_new_nodes",
-        "node_id",
-        "nodes_for_sidewalks",
-        "sw_node_id",
-        "improvements.montgomery_split",
-        "pedestriannetwork_lines",
-    )
+#     nn = NetworkNodes(
+#         db,
+#         "improvements.montco_new_nodes",
+#         "node_id",
+#         "nodes_for_sidewalks",
+#         "sw_node_id",
+#         "improvements.montgomery_split",
+#         "pedestriannetwork_lines",
+#     )
 
-    nn.draw_lines()
+#     nn.draw_lines()

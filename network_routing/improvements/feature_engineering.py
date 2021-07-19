@@ -1,7 +1,6 @@
+import click
 import pandas as pd
 from tqdm import tqdm
-import sqlalchemy
-from geoalchemy2 import Geometry, WKTElement
 from pg_data_etl import Database
 
 from network_routing import pg_db_connection
@@ -10,6 +9,18 @@ from network_routing import pg_db_connection
 import warnings
 
 warnings.filterwarnings("ignore")
+
+
+@click.command()
+def feature_engineering():
+    """
+    Erase & split the drawn lines to remove existing feature and make a topologically connected network
+    """
+
+    db = pg_db_connection()
+
+    erase_features(db)
+    split_features(db)
 
 
 def erase_features(db: Database, tablename: str = "improvements.all_possible_geoms") -> None:
