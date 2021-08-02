@@ -57,6 +57,9 @@ from network_routing.database.setup.setup_03_more_inputs import setup_03_import_
 from network_routing.database.setup.setup_04_osm_without_motorway import (
     setup_04_remove_motorways_from_osm,
 )
+from network_routing.database.setup.setup_05_lts_and_mcpc_inputs import (
+    setup_05_import_mcpc_and_lts_shapefiles,
+)
 from network_routing.database.export.shapefile import (
     export_shapefiles_for_editing,
     export_shapefiles_for_downstream_ridescore,
@@ -88,6 +91,7 @@ def build_secondary(patch_number):
         2: setup_02_import_osm_drive_network,
         3: setup_03_import_mode_data,
         4: setup_04_remove_motorways_from_osm,
+        5: setup_05_import_mcpc_and_lts_shapefiles,
     }
 
     if patch_number not in patches:
