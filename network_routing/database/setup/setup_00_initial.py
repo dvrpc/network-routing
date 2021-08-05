@@ -39,10 +39,7 @@ def import_production_sql_data(remote_db: PostgreSQL, local_db: PostgreSQL):
     data_to_download = [
         (
             "transportation",
-            [
-                "pedestriannetwork_lines",
-                "pedestriannetwork_points",
-            ],
+            ["pedestriannetwork_lines", "pedestriannetwork_points", "passengerrailstations"],
         ),
         ("structure", ["points_of_interest"]),
         ("boundaries", ["municipalboundaries"]),
@@ -73,6 +70,7 @@ def import_data_from_portal_with_wget(db: PostgreSQL):
         (
             "Transportation",
             [
+                "PassengerRailStations",
                 "PedestrianNetwork_lines",
                 "PedestrianNetwork_points",
             ],
