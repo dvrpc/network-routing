@@ -132,6 +132,10 @@ def make_nodes_for_edges(edge_tablename):
             "new_table_name": "improvements.montco_new_nodes",
             "uid_col": "node_id",
         },
+        "lowstress_islands": {
+            "new_table_name": "nodes_for_lowstress_islands",
+            "uid_col": "node_id",
+        },
     }
 
     if edge_tablename not in table_config:
