@@ -26,16 +26,18 @@
 
 ---
 
-## Ridescore
+## Access Score
 
-- Run two access analyses against the same set of POIs (rail transit stops only), once using OSM "all" network and once using the sidewalk network
+- Run three access analyses against the same set of rail transit stops: OSM "all" network (2 miles), low-stress bicycle network (2 miles), and sidewalk network (1 mile)
 - Translate the results of the two access analyses into a set of isochrones
 - Calculate the OSM vs Sidewalk accessible areas for each station and save result as new geo-table
 
 ```bash
 > db make-nodes-for-edges osm_edges_all_no_motorway
-> access osm-ridescore
-> access sw-ridescore
+> db make-nodes-for-edges lowstress_islands
+> access osm-access-score
+> access lowstress-access-score
+> access sw-access-score
 > gaps isochrones-accessscore
 ```
 
