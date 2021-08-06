@@ -99,11 +99,7 @@ def sw_default():
 
 @click.command()
 def osm_access_score():
-    """
-    Analyze OSM network distance around each rail stop
-
-    This uses an OSM network that INCLUDES highways.
-    """
+    """Rail stops w/ OSM network (including highways)"""
 
     arguments = {
         "poi_table_name": "ridescore_pois",
@@ -111,9 +107,9 @@ def osm_access_score():
         "output_table_name": "osm",
         "output_schema": "access_score_osm",
         "num_pois": 1,
-        "max_minutes": 50,  # 48 minutes = 2 miles
+        "max_minutes": 50,  # 48 minutes = 2 miles @ 2.5 mph
         "poi_match_threshold": 152,  # aka 500'
-        "edge_table_name": "osm_edges_all_no_motorway",
+        "edge_table_name": "osm_edges_all",
         "node_table_name": "nodes_for_osm_all",
         "node_id_column": "node_id",
     }
@@ -123,10 +119,7 @@ def osm_access_score():
 
 @click.command()
 def lowstress_access_score():
-    """
-    Analyze network distance around each rail stop
-    using the low-stress bicycle network
-    """
+    """Rail stops w/ low-stress bicycle network"""
 
     arguments = {
         "poi_table_name": "ridescore_pois",
@@ -146,9 +139,7 @@ def lowstress_access_score():
 
 @click.command()
 def sw_access_score():
-    """
-    Analyze sidewalk network distance around each rail stop
-    """
+    """Rail stops w/ sidewalk network"""
 
     arguments = {
         "poi_table_name": "ridescore_pois",
@@ -168,7 +159,7 @@ def sw_access_score():
 
 @click.command()
 def sw_eta():
-    """Analyze sidewalk network distance for each 'type' of ETA point """
+    """ETA points by category w/ sidewalk network"""
 
     arguments = {
         "poi_table_name": "eta_points",
@@ -188,7 +179,7 @@ def sw_eta():
 
 @click.command()
 def osm_eta():
-    """Analyze OSM network distance for each 'type' of ETA point """
+    """ETA points by catgory w/ OSM network """
 
     arguments = {
         "poi_table_name": "eta_points",
@@ -209,9 +200,7 @@ def osm_eta():
 @click.command()
 @click.argument("county")
 def eta_individual(county):
-    """
-    Analyze network distance for each individual ETA point within the 'county`,
-    using both the OSM and sidewalk network.
+    """Analyze each individual ETA point within the 'county`, using both the OSM and sidewalk network.
 
     Results are written to CSV files on disk.
     """
