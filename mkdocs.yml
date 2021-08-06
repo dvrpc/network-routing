@@ -34,8 +34,11 @@ plugins:
 
 markdown_extensions:
   - pymdownx.tabbed
+  - def_list
   - pymdownx.highlight
   - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - markdown_include.include:
       base_path: docs
   - pymdownx.emoji:
