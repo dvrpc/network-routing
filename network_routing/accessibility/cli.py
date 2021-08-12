@@ -102,7 +102,7 @@ def osm_access_score():
     """Rail stops w/ OSM network (including highways)"""
 
     arguments = {
-        "poi_table_name": "ridescore_pois",
+        "poi_table_name": "access_score_final_poi_set",
         "poi_id_column": "dvrpc_id",
         "output_table_name": "osm",
         "output_schema": "access_score_osm",
@@ -122,7 +122,7 @@ def lowstress_access_score():
     """Rail stops w/ low-stress bicycle network"""
 
     arguments = {
-        "poi_table_name": "ridescore_pois",
+        "poi_table_name": "access_score_final_poi_set",
         "poi_id_column": "dvrpc_id",
         "output_table_name": "lts",
         "output_schema": "access_score_lts",
@@ -142,7 +142,7 @@ def sw_access_score():
     """Rail stops w/ sidewalk network"""
 
     arguments = {
-        "poi_table_name": "ridescore_pois",
+        "poi_table_name": "access_score_final_poi_set",
         "poi_id_column": "dvrpc_id",
         "output_table_name": "sw",
         "output_schema": "access_score_sw",
