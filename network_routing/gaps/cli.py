@@ -45,6 +45,7 @@ from network_routing.gaps.data_viz.ridescore_isochrones import (
     generate_isochrones,
     calculate_sidewalkscore,
 )
+from network_routing.gaps.data_viz.access_score_results import main as access_score_results_main
 from network_routing.gaps.data_viz.eta_isochrones import IsochroneGenerator
 
 
@@ -95,6 +96,14 @@ def isochrones_accessscore():
 
 
 @click.command()
+def accessscore_line_results():
+    """
+    Export line results from Access Score analysis
+    """
+    access_score_results_main()
+
+
+@click.command()
 @click.argument("county", default="montgomery")
 def isochrones_eta(county: str):
     """
@@ -138,6 +147,7 @@ _all_commands = [
     scrub_osm_tags,
     isochrones_accessscore,
     isochrones_eta,
+    accessscore_line_results,
 ]
 
 for cmd in _all_commands:

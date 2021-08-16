@@ -32,12 +32,30 @@
 - Translate the results of the two access analyses into a set of isochrones
 - Calculate the OSM vs Sidewalk accessible areas for each station and save result as new geo-table
 
+- Generate the nodes necessary for the three analyses:
+
 ```bash
 > db make-nodes-for-edges osm_edges_all_no_motorway
 > db make-nodes-for-edges lowstress_islands
+```
+
+- Run all three analyses:
+
+```bash
 > access osm-access-score
 > access lowstress-access-score
 > access sw-access-score
+```
+
+- Generate line-based representation of the results:
+
+```bash
+> gaps accessscore-line-results
+```
+
+- If you want to generate isochrones of the results:
+
+```bash
 > gaps isochrones-accessscore
 ```
 
