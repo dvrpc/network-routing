@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 from pg_data_etl import Database
 
-from network_routing import pg_db_connection
+from network_routing import pg_db_connection, GDRIVE_DATA
 
 # the RUNS dict contains the necessary tablenames/cutoff value
 # for each of the three analysis runs
@@ -74,7 +74,7 @@ def geodataframe_of_result_for_single_poi(
 
 
 def access_score_poi_ids(
-    db: Database, poi_tablename: str = "ridescore_pois", id_column: str = "dvrpc_id"
+    db: Database, poi_tablename: str = "access_score_final_poi_set", id_column: str = "dvrpc_id"
 ) -> list:
     """
     - Get a list of all unique IDs within the POI table
@@ -137,7 +137,12 @@ def main():
         ]
     )
 
-    db.import_geodataframe(all_results, "data_viz.access_score_segments")
+    db.import_geodataframe(
+        all_results, "data_viz.access_score_segments", gpd_kwargs={"if_exists": "replace"}
+    )
+
+    output_path = GDRIVE_DATA / "outputs/access_score_network_results.shp"
+    db.export_gis(table_or_sql="data_viz.access_score_segments", filepath=output_path)
 
 
 if __name__ == "__main__":
