@@ -142,7 +142,9 @@ def main():
     )
 
     output_path = GDRIVE_DATA / "outputs/access_score_network_results.shp"
-    db.export_gis(table_or_sql="data_viz.access_score_segments", filepath=output_path)
+    db.export_gis(
+        table_or_sql="data_viz.access_score_segments", filepath=output_path, filetype="shp"
+    )
 
 
 if __name__ == "__main__":
