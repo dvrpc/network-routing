@@ -63,6 +63,7 @@ from network_routing.database.setup.setup_05_lts_and_mcpc_inputs import (
 from network_routing.database.setup.setup_06_more_accessscore_inputs import (
     setup_06_more_accessscore_inputs,
 )
+from network_routing.database.setup.setup_07_mcpc_srts_projects import setup_07_import_srts_projects
 from network_routing.database.export.shapefile import (
     export_shapefiles_for_editing,
     export_shapefiles_for_downstream_ridescore,
@@ -96,6 +97,7 @@ def build_secondary(patch_number):
         4: setup_04_remove_motorways_from_osm,
         5: setup_05_import_mcpc_and_lts_shapefiles,
         6: setup_06_more_accessscore_inputs,
+        7: setup_07_import_srts_projects,
     }
 
     if patch_number not in patches:
