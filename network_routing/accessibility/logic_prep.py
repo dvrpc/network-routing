@@ -122,6 +122,7 @@ def construct_network(
     node_table_name: str,
     node_id_column: str,
     max_minutes: float,
+    edge_table_where_query: str | None = None,
 ) -> tuple[pdna.Network, gpd.GeoDataFrame, gpd.GeoDataFrame]:
     """
     Turn edge and node data from PostGIS into a `pandana.Network`
@@ -132,6 +133,7 @@ def construct_network(
         node_table_name (str): name of the companion node table
         node_id_column (str): name of the unique ID column in the node table
         max_minutes (float): the maximum distance in minutes that you intend to analyze
+        edge_table_where_query (str | None): optional extra filter for the edge network, e.g. `groupid in ('tag a', 'tag b')`
 
     Returns:
         pdna.Network: built using edges and nodes from arguments, and precomputed to `max_minutes`
@@ -153,6 +155,12 @@ def construct_network(
                 FROM {node_table_name}
             )
     """
+
+    if edge_table_where_query:
+        query += f"""
+        AND {edge_table_where_query}
+        """
+
     edge_gdf = db.gdf(query)
 
     # Get all nodes

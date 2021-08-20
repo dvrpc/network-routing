@@ -39,6 +39,7 @@ class RoutableNetwork:
         epsg (int): spatial data projection, defaults to `26918`
         num_pois (int): number of POIs to analyze when provided with groups (i.e. multiple features per ID), defaults to `3`
         poi_match_threshold (int): maximum allowable snapping distance between POI and node layers, defaults to `45`
+        edge_table_where_query (str | None): optional extra filter for the edge network, e.g. `groupid in ('tag a', 'tag b')`
 
     Returns:
         RoutableNetwork: network model
@@ -59,6 +60,7 @@ class RoutableNetwork:
         epsg: int = 26918,
         num_pois: int = 3,
         poi_match_threshold: int = 45,
+        edge_table_where_query: str | None = None,
     ):
         """
         Capture user input
@@ -69,6 +71,7 @@ class RoutableNetwork:
 
         # Edges
         self.edge_table_name = edge_table_name
+        self.edge_table_where_query = edge_table_where_query
 
         # Nodes
         self.node_table_name = node_table_name
@@ -128,6 +131,7 @@ class RoutableNetwork:
             self.node_table_name,
             self.node_id_column,
             self.max_minutes,
+            self.edge_table_where_query,
         )
 
     def compute_single_poi(self, poi_uid: int | str, write_to_csv: bool = False):
