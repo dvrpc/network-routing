@@ -233,6 +233,85 @@ def eta_individual(county):
     dn.compute()
 
 
+@click.command()
+def srts_before_after():
+    """Model the impact of a set of new sidewalk improvements"""
+
+    db = pg_db_connection()
+
+    tablename = "mcpc_srts_projects_with_existing_network"
+    network_tag_col = "groupid"
+    base_network_tag = "EXISTING NETWORK"
+
+    all_network_tags_to_analyze = db.query_as_list_of_singletons(
+        f"""select distinct {network_tag_col}
+            from {tablename}
+            where {network_tag_col} != '{base_network_tag}'"""
+    )
+
+    shared_arguments = {
+        "poi_table_name": "mcpc_school_pois",
+        "poi_id_column": "category",
+        "num_pois": 3,
+        "poi_match_threshold": 152,  # aka 500'
+        "edge_table_name": tablename,
+        "node_table_name": f"nodes_for_{tablename}",
+        "node_id_column": "node_id",
+        "max_minutes": 50,  # 48 minutes = 2 miles
+    }
+
+    # Run a network analysis for each tag in the SRTS table
+    for tag in all_network_tags_to_analyze:
+        print("#" * 80)
+        print(f"RUNNING: {tag}")
+        edge_network_filter = f"{network_tag_col} in ('{base_network_tag}', '{tag}')"
+
+        tag_sql = tag.lower().replace(" ", "_")
+
+        custom_arguments = {
+            "output_table_name": tag_sql,
+            "output_schema": f"srts_{tag_sql}",
+            "edge_table_where_query": edge_network_filter,
+        }
+
+        _ = _execute_analysis_into_one_output({**shared_arguments, **custom_arguments})
+
+    # Run a final analysis using just the base network
+
+    print("#" * 80)
+    print(f"RUNNING: BASE NETWORK")
+
+    custom_arguments = {
+        "output_table_name": "base_network",
+        "output_schema": f"srts_base_network",
+        "edge_table_where_query": f"{network_tag_col} = '{base_network_tag}' ",
+    }
+
+    _ = _execute_analysis_into_one_output({**shared_arguments, **custom_arguments})
+
+    # Make an example summary
+    example_id = "eisenhower"
+    query = f""" 
+        select 
+            n.node_id, 
+            b.n_1_publicschool as base_net_dist,
+            s.n_1_publicschool as new_net_dist,
+            b.n_1_publicschool - s.n_1_publicschool as diff,
+            n.geom
+        from
+            nodes_for_{tablename} n
+        left join
+            srts_base_network.base_network_results b
+        on
+            b.node_id = n.node_id::text
+        left join
+            srts_{example_id}.{example_id}_results s
+        on
+            s.node_id = n.node_id::text
+    """
+    db.gis_make_geotable_from_query(query, "data_viz.example_mcpc_srts", "POINT", 26918)
+
+
 _all_commands = [
     sw_default,
     osm_access_score,
@@ -241,6 +320,7 @@ _all_commands = [
     sw_eta,
     osm_eta,
     eta_individual,
+    srts_before_after,
 ]
 
 for cmd in _all_commands:
