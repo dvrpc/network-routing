@@ -36,7 +36,7 @@ def setup_05_import_mcpc_and_lts_shapefiles():
             name as poi_name,
             'Libraries' as category,
             uid as src_id,
-            st_transform(geom, 26918) as geom	
+            st_transform(geom, 26918) as geom
         from montgomery_county_libraries
 
         UNION
@@ -45,10 +45,10 @@ def setup_05_import_mcpc_and_lts_shapefiles():
             name as poi_name,
             'Municipal Buildings' as category,
             uid as src_id,
-            st_transform(geom, 26918) as geom	
+            st_transform(geom, 26918) as geom
         from montgomery_county_municipal_buildings
 
-        union 
+        union
 
         select
             name as poi_name,
@@ -58,14 +58,14 @@ def setup_05_import_mcpc_and_lts_shapefiles():
         from montgomery_county_schools
         where type != 'Charter'
 
-        union 
+        union
 
-        select 
+        select
             name as poi_name,
             type as category,
             uid as src_id,
             st_transform(geom, 26918) as geom
-        from eta_montgomery em 
+        from eta_montgomery em
         where type not in ('School - Private', 'School - Public')
 
         UNION
@@ -78,7 +78,7 @@ def setup_05_import_mcpc_and_lts_shapefiles():
                 (st_dumppoints(geom)).geom,
                 26918
             )
-        from montgomery_county_shopping_centers 
+        from montgomery_county_shopping_centers
     """
 
     db.gis_make_geotable_from_query(query, "mcpc_combined_pois", "POINT", 26918)
@@ -87,7 +87,7 @@ def setup_05_import_mcpc_and_lts_shapefiles():
 
     db.execute(
         """
-        update mcpc_combined_pois 
+        update mcpc_combined_pois
         set poi_uid = uid
         where category != 'Shopping Centers'
     """
@@ -103,6 +103,12 @@ def setup_05_import_mcpc_and_lts_shapefiles():
         where category  = 'Shopping Centers'
     """
     )
+
+    query = """
+    select * from mcpc_combined_pois
+    where category like '%%chool%%'
+    """
+    db.gis_make_geotable_from_query(query, "mcpc_school_pois", "POINT", 26918)
 
 
 if __name__ == "__main__":
