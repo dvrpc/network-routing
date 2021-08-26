@@ -76,10 +76,12 @@ def analyze_single_poi(
 
     # Check that output table doesn't exist yet if writing to CSV
     # If it exists, alert the user and do not compute this POI!
+
     if write_to_csv:
         output_path = Path("./data") / f"{edge_table_name}_{clean_id}.csv"
         if output_path.exists():
             print(f"{output_path=} already exists! Skipping...")
+            return None, None
 
     # Get all POIs with this uid
     # that are within 'poi_match_threshold' meters of a sidewalk
