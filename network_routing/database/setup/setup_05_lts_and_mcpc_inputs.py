@@ -32,6 +32,38 @@ def setup_05_import_mcpc_and_lts_shapefiles():
 
     # Use SQL queries to combine individual tables together
     query = """
+
+        with all_trail_points as (
+	        select
+                name as poi_name,
+                st_startpoint(geom) as geom
+            from
+                montgomery_county_trails
+
+	        union
+
+	        select
+                name as poi_name,
+                st_endpoint(geom) as geom
+            from
+                montgomery_county_trails        
+        ),
+        trailheads as (
+            select
+                poi_name,
+                'trailhead' as category,
+                9999999 as src_id,
+                st_transform(t.geom, 26918) as geom
+            from
+                all_trail_points t, osm_edges_all_no_motorway e 
+            where
+                st_dwithin(st_transform(t.geom, 26918), e.geom, 150)
+        )
+
+        select * from trailheads
+
+        UNION
+
         select
             name as poi_name,
             'Libraries' as category,
@@ -89,7 +121,7 @@ def setup_05_import_mcpc_and_lts_shapefiles():
         """
         update mcpc_combined_pois
         set poi_uid = uid
-        where category != 'Shopping Centers'
+        where category not in ('Shopping Centers', 'trailhead')
     """
     )
 
@@ -101,6 +133,17 @@ def setup_05_import_mcpc_and_lts_shapefiles():
             from mcpc_combined_pois
         )
         where category  = 'Shopping Centers'
+    """
+    )
+
+    db.execute(
+        """
+        update mcpc_combined_pois
+        set poi_uid = uid + (
+            select max(uid) + 1 as num
+            from mcpc_combined_pois
+        )
+        where category  = 'trailhead'
     """
     )
 
