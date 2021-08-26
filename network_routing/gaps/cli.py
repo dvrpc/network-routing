@@ -116,8 +116,8 @@ def isochrones_eta(county: str):
 
     args = {
         "db": db,
-        "poi_table": f"eta_{county}",
-        "poi_col": "eta_uid",
+        "poi_table": f"mcpc_combined_pois",
+        "poi_col": "poi_uid",
         "network_a_edges": "pedestriannetwork_lines",
         "network_a_nodes": "nodes_for_sidewalks",
         "network_a_node_id_col": "sw_node_id",

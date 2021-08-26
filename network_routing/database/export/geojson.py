@@ -129,19 +129,19 @@ def export_county_specific_data(db: PostgreSQL):
     - 'missing sidewalks' with priority results? TODO
     """
 
-    eta_points = """
-        select * from data_viz.ab_ratio_eta_montgomery
+    mcpc_combined_pois = """
+        select * from data_viz.ab_ratio_mcpc_combined_pois
     """
     eta_isos = """
-        select * from data_viz.isochrones_eta_montgomery
+        select * from data_viz.isochrones_mcpc_combined_pois
     """
     montco_missing_sidewalks = """
         select * from improvements.montgomery_split
     """
 
     queries = {
-        "eta_points": eta_points,
-        "eta_isos": eta_isos,
+        "mcpc_combined_pois": mcpc_combined_pois,
+        "mcpc_isos": eta_isos,
         "montco_missing_sidewalks": montco_missing_sidewalks,
     }
 

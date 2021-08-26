@@ -212,8 +212,8 @@ def eta_individual(county):
     dn = DoubleNetwork(
         db,
         shared_args={
-            "poi_table_name": f"eta_{county}",
-            "poi_id_column": "eta_uid",
+            "poi_table_name": "mcpc_combined_pois",
+            "poi_id_column": "poi_uid",
             "max_minutes": 45,
             "num_pois": 1,
             "poi_match_threshold": 152,  # aka 500'
