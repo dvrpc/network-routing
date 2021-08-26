@@ -138,6 +138,7 @@ dmypy.json
 **/.idea/
 
 /data*/
+/old-data/
 
 # Shapefiles
 *.shp
