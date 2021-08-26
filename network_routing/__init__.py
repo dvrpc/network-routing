@@ -15,9 +15,9 @@ DB_HOST = os.getenv("DB_HOST")
 GDRIVE_ROOT = os.getenv("GDRIVE_ROOT")
 if GDRIVE_ROOT:
     GDRIVE_ROOT = Path(GDRIVE_ROOT)
-    FOLDER_DATA_PRODUCTS = GDRIVE_ROOT / "My Drive/projects/RideScore/data products"
     GDRIVE_SW_GAPS_PROJECT_ROOT = GDRIVE_ROOT / "My Drive/projects/Sidewalk Gaps"
     GDRIVE_DATA = GDRIVE_ROOT / "Shared drives/network-routing-repo-data/data"
+    FOLDER_DATA_PRODUCTS = GDRIVE_DATA / "outputs"
 
 else:
     FOLDER_DATA_PRODUCTS, GDRIVE_SW_GAPS_PROJECT_ROOT, GDRIVE_DATA = None, None, None
