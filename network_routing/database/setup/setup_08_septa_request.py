@@ -21,7 +21,7 @@ def setup_08_import_septa_data():
     query = """
         select
             '15minnetwork' as src_table,
-            stop_id,
+            stop_id::text,
             st_transform(geom, 26918) as geom
         from septa_15minnetwork_proj
 
@@ -29,7 +29,7 @@ def setup_08_import_septa_data():
 
         select
             'heavynlight' as src_table,
-            stop_id,
+            stop_id::text,
             st_transform(geom, 26918) as geom
         from septa_heavynlightrail_proh
 
@@ -37,7 +37,7 @@ def setup_08_import_septa_data():
 
         select
             'regional' as src_table,
-            stop_id,
+            stop_id::text,
             st_transform(geom, 26918) as geom
         from septa_regional_proj srp 
     """
