@@ -133,6 +133,32 @@ def isochrones_eta(county: str):
 
 
 @click.command()
+def isochrones_septa():
+    """
+    Make SEPTA isos & POIs with stats
+
+    """
+    db = pg_db_connection()
+
+    args = {
+        "db": db,
+        "poi_table": f"pois_for_septa_tod_analysis",
+        "poi_col": "stop_id",
+        "network_a_edges": "pedestriannetwork_lines",
+        "network_a_nodes": "nodes_for_sidewalks",
+        "network_a_node_id_col": "sw_node_id",
+        "network_b_edges": "osm_edges_all_no_motorway",
+        "network_b_nodes": "nodes_for_osm_all",
+        "network_b_node_id_col": "node_id",
+        "data_dir": "./data",
+    }
+
+    i = IsochroneGenerator(**args)
+    i.save_isos_to_db()
+    i.save_pois_with_iso_stats_to_db()
+
+
+@click.command()
 def scrub_osm_tags():
     """ Clean 'highway' tags in the OSM data """
 
@@ -148,6 +174,7 @@ _all_commands = [
     isochrones_accessscore,
     isochrones_eta,
     accessscore_line_results,
+    isochrones_septa,
 ]
 
 for cmd in _all_commands:

@@ -312,6 +312,39 @@ def srts_before_after():
     db.gis_make_geotable_from_query(query, "data_viz.example_mcpc_srts", "POINT", 26918)
 
 
+@click.command()
+def septa_stops():
+    """Analyze each individual SEPTA stop w/ OSM and sidewalk networks.
+
+    Results are written to CSV files on disk.
+    """
+
+    db = pg_db_connection()
+
+    dn = DoubleNetwork(
+        db,
+        shared_args={
+            "poi_table_name": "pois_for_septa_tod_analysis",
+            "poi_id_column": "stop_id",
+            "max_minutes": 50,  # 48 minutes = 2 miles
+            "num_pois": 1,
+            "poi_match_threshold": 152,  # aka 500'
+        },
+        network_a_args={
+            "edge_table_name": "osm_edges_all_no_motorway",
+            "node_table_name": "nodes_for_osm_all",
+            "node_id_column": "node_id",
+        },
+        network_b_args={
+            "edge_table_name": "pedestriannetwork_lines",
+            "node_table_name": "nodes_for_sidewalks",
+            "node_id_column": "sw_node_id",
+        },
+    )
+
+    dn.compute()
+
+
 _all_commands = [
     sw_default,
     osm_access_score,
@@ -321,6 +354,7 @@ _all_commands = [
     osm_eta,
     eta_individual,
     srts_before_after,
+    septa_stops,
 ]
 
 for cmd in _all_commands:
