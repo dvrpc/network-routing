@@ -1,4 +1,4 @@
-from network_routing import db_connection, FOLDER_DATA_PRODUCTS, pg_db_connection
+from network_routing import FOLDER_DATA_PRODUCTS, pg_db_connection
 
 
 def export_data_for_single_muni(muni_name: str) -> None:
@@ -46,7 +46,7 @@ def export_data_for_single_muni(muni_name: str) -> None:
 
 
 def export_shapefiles_for_downstream_ridescore():
-    db = db_connection()
+    db = pg_db_connection()
 
     output_folder = FOLDER_DATA_PRODUCTS / "islands-and-hulls"
 
@@ -66,7 +66,7 @@ def export_shapefiles_for_editing():
     """
     Export a set of shapefiles that the Bike/Ped/Transit team will edit
     """
-    db = db_connection()
+    db = pg_db_connection()
 
     output_folder = FOLDER_DATA_PRODUCTS / "manual_edits"
 
@@ -79,16 +79,13 @@ def export_shapefiles_for_editing():
     ]
 
     for tbl in tables_to_export:
-
-        schema, tablename = tbl.split(".")
-
-        db.export_shapefile(tablename, output_folder, schema=schema)
+        db.export_gis(filepath=output_folder, table_or_sql=tbl)
 
     # Export the QAQC tables so their names don't clash
-    gdf = db.query_as_geo_df("SELECT * FROM rs_osm.qaqc_node_match")
+    gdf = db.gdf("SELECT * FROM rs_osm.qaqc_node_match")
     output_path = output_folder / "osm_qaqc.shp"
     gdf.to_file(output_path)
 
-    gdf = db.query_as_geo_df("SELECT * FROM rs_sw.qaqc_node_match")
+    gdf = db.gdf("SELECT * FROM rs_sw.qaqc_node_match")
     output_path = output_folder / "sw_qaqc.shp"
     gdf.to_file(output_path)

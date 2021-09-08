@@ -1,9 +1,9 @@
 import osmnx as ox
 
-from postgis_helpers import PostgreSQL
+from pg_data_etl import Database
 
 
-def import_osm_for_dvrpc_region(db: PostgreSQL, network_type: str = "all"):
+def import_osm_for_dvrpc_region(db: Database, network_type: str = "all"):
     """
     Import OpenStreetMap data to the database with osmnx.
     This bounding box overshoots the region and takes a bit to run.
@@ -28,7 +28,9 @@ def import_osm_for_dvrpc_region(db: PostgreSQL, network_type: str = "all"):
     db.import_geodataframe(edges, f"osm_edges_{network_type}")
 
     # Reproject from 4326 to 26918 to facilitate analysis queries
-    db.table_reproject_spatial_data(f"osm_edges_{network_type}", 4326, 26918, "LINESTRING")
+    db.gis_table_update_spatial_data_projection(
+        f"osm_edges_{network_type}", 4326, 26918, "LINESTRING"
+    )
 
     # Make a uuid column
     make_id_query = f"""

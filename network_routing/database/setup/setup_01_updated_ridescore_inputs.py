@@ -1,4 +1,4 @@
-from network_routing import db_connection, GDRIVE_SW_GAPS_PROJECT_ROOT
+from network_routing import pg_db_connection, GDRIVE_SW_GAPS_PROJECT_ROOT
 
 
 def setup_01_updated_ridescore_inputs():
@@ -6,14 +6,20 @@ def setup_01_updated_ridescore_inputs():
     Import the updated ridescore inputs showing access points to transit stations
     """
 
-    db = db_connection()
+    db = pg_db_connection()
 
     data_folder = GDRIVE_SW_GAPS_PROJECT_ROOT / "data-to-import"
 
     # Import shapefiles
     for filename_part in ["sw", "osm"]:
         filepath = data_folder / f"station_pois_for_{filename_part}.shp"
-        db.import_geodata(f"ridescore_transit_poi_{filename_part}", filepath, if_exists="replace")
+
+        db.import_gis(
+            method="geopandas",
+            filepath=filepath,
+            sql_tablename=f"ridescore_transit_poi_{filename_part}",
+            gpd_kwargs={"if_exists": "replace"},
+        )
 
     # Feature engineering to build a single table with all points combined
     query = """
@@ -41,7 +47,7 @@ def setup_01_updated_ridescore_inputs():
             passengerrailstations prs
         on prs.dvrpc_id = ag.dvrpc_id
     """
-    db.make_geotable_from_query(query, "ridescore_pois", "POINT", 26918, schema="public")
+    db.gis_make_geotable_from_query(query, "ridescore_pois", "POINT", 26918)
 
 
 if __name__ == "__main__":

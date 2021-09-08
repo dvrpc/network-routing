@@ -1,9 +1,9 @@
 from pathlib import Path
-from postgis_helpers import PostgreSQL
-from network_routing import FOLDER_DATA_PRODUCTS, db_connection
+from pg_data_etl import Database
+from network_routing import FOLDER_DATA_PRODUCTS
 
 
-def write_query_to_geojson(filename: str, query: str, db: PostgreSQL, folder: str):
+def write_query_to_geojson(filename: str, query: str, db: Database, folder: str):
     """
     Write SQL query out to geojson file on disk.
     """
@@ -23,7 +23,7 @@ def write_query_to_geojson(filename: str, query: str, db: PostgreSQL, folder: st
     output_filepath = output_folder / f"{filename}.geojson"
 
     # Extract geodataframe from SQL
-    gdf = db.query_as_geo_df(query)
+    gdf = db.gdf(query)
 
     # Ensure it's in the proper projection
     gdf = gdf.to_crs("EPSG:4326")
@@ -32,7 +32,7 @@ def write_query_to_geojson(filename: str, query: str, db: PostgreSQL, folder: st
     gdf.to_file(output_filepath, driver="GeoJSON")
 
 
-def export_gap_webmap_data(db: PostgreSQL):
+def export_gap_webmap_data(db: Database):
     """
     Export three geojson files:
         - centerlines
@@ -53,7 +53,7 @@ def export_gap_webmap_data(db: PostgreSQL):
     write_query_to_geojson("osm_sw_coverage", query_centerlines, db, "gaps")
 
     # Transit accessibility results
-    gdf_sample = db.query_as_geo_df(
+    gdf_sample = db.gdf(
         f"SELECT * FROM sw_defaults.regional_transit_stops_results LIMIT 1"
     )
 
@@ -62,7 +62,9 @@ def export_gap_webmap_data(db: PostgreSQL):
 
     # Build a dynamic SQL query, getting the LEAST of the n_1_* columns
     query_base_results = "SELECT geom, LEAST(" + ", ".join(cols_to_query)
-    query_base_results += f") as walk_time FROM sw_defaults.regional_transit_stops_results"
+    query_base_results += (
+        f") as walk_time FROM sw_defaults.regional_transit_stops_results"
+    )
 
     write_query_to_geojson("sw_nodes", query_base_results, db, "gaps")
 
@@ -98,7 +100,7 @@ def export_gap_webmap_data(db: PostgreSQL):
     write_query_to_geojson("islands", query_islands, db, "gaps")
 
 
-def export_ridescore_webmap_data(db: PostgreSQL):
+def export_ridescore_webmap_data(db: Database):
     """
     Export data for the ridescore analysis
     - isochrones
@@ -120,7 +122,7 @@ def export_ridescore_webmap_data(db: PostgreSQL):
         write_query_to_geojson(tablename, query, db, "ridescore")
 
 
-def export_county_specific_data(db: PostgreSQL):
+def export_county_specific_data(db: Database):
     """
     Export data for the MCPC-specific visualization:
 
@@ -151,7 +153,7 @@ def export_county_specific_data(db: PostgreSQL):
         write_query_to_geojson(filename, query, db, "mcpc")
 
 
-def export_septa_data(db: PostgreSQL):
+def export_septa_data(db: Database):
     """
     Export data for SEPTA
     """

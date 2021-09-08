@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
-import postgis_helpers as pGIS
 import pg_data_etl as pg
 
 from network_routing.accessibility.routable_network import RoutableNetwork
@@ -21,15 +20,6 @@ if GDRIVE_ROOT:
 
 else:
     FOLDER_DATA_PRODUCTS, GDRIVE_SW_GAPS_PROJECT_ROOT, GDRIVE_DATA = None, None, None
-
-
-def db_connection(database_name: str = DB_NAME, host: str = DB_HOST) -> pGIS.PostgreSQL:
-
-    CREDENTIALS = pGIS.configurations()
-
-    db = pGIS.PostgreSQL(database_name, verbosity="minimal", **CREDENTIALS[host])
-
-    return db
 
 
 def pg_db_connection(database_name: str = DB_NAME, host: str = DB_HOST) -> pg.Database:

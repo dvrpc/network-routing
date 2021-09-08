@@ -38,7 +38,7 @@ Examples:
 
 import click
 
-from network_routing import pg_db_connection, db_connection, FOLDER_DATA_PRODUCTS
+from network_routing import pg_db_connection, FOLDER_DATA_PRODUCTS
 from network_routing.database.setup.make_nodes import generate_nodes
 from network_routing.database.export.vector_tiles import (
     make_vector_tiles as _make_vector_tiles,
@@ -53,8 +53,12 @@ from network_routing.database.setup.setup_00_initial import setup_00_initial
 from network_routing.database.setup.setup_01_updated_ridescore_inputs import (
     setup_01_updated_ridescore_inputs,
 )
-from network_routing.database.setup.setup_02_osm_drive import setup_02_import_osm_drive_network
-from network_routing.database.setup.setup_03_more_inputs import setup_03_import_mode_data
+from network_routing.database.setup.setup_02_osm_drive import (
+    setup_02_import_osm_drive_network,
+)
+from network_routing.database.setup.setup_03_more_inputs import (
+    setup_03_import_mode_data,
+)
 from network_routing.database.setup.setup_04_osm_without_motorway import (
     setup_04_remove_motorways_from_osm,
 )
@@ -64,8 +68,12 @@ from network_routing.database.setup.setup_05_lts_and_mcpc_inputs import (
 from network_routing.database.setup.setup_06_more_accessscore_inputs import (
     setup_06_more_accessscore_inputs,
 )
-from network_routing.database.setup.setup_07_mcpc_srts_projects import setup_07_import_srts_projects
-from network_routing.database.setup.setup_08_septa_request import setup_08_import_septa_data
+from network_routing.database.setup.setup_07_mcpc_srts_projects import (
+    setup_07_import_srts_projects,
+)
+from network_routing.database.setup.setup_08_septa_request import (
+    setup_08_import_septa_data,
+)
 from network_routing.database.export.shapefile import (
     export_shapefiles_for_editing,
     export_shapefiles_for_downstream_ridescore,
@@ -82,7 +90,7 @@ def main():
 @click.command()
 def build_initial():
     """Roll a brand-new database for with the latest-and-greatest data"""
-    db = db_connection()
+    db = pg_db_connection()
 
     setup_00_initial(db)
 
@@ -90,7 +98,7 @@ def build_initial():
 @click.command()
 @click.argument("patch_number", type=int)
 def build_secondary(patch_number):
-    """Update the db as defined by PATCH NUMBER """
+    """Update the db as defined by PATCH NUMBER"""
 
     patches = {
         1: setup_01_updated_ridescore_inputs,
@@ -115,7 +123,7 @@ def build_secondary(patch_number):
 @click.command()
 @click.argument("edge_tablename")
 def make_nodes_for_edges(edge_tablename):
-    """ Generate topologically-sound nodes for edge tables """
+    """Generate topologically-sound nodes for edge tables"""
 
     db = pg_db_connection()
 
@@ -175,7 +183,9 @@ def export_geojson(data_group_name):
     }
 
     if data_group_name not in exporters:
-        print(f"GeoJSON export process named '{data_group_name}' does not exist. Options include:")
+        print(
+            f"GeoJSON export process named '{data_group_name}' does not exist. Options include:"
+        )
         for k in exporters.keys():
             print(f"\t -> {k}")
 
