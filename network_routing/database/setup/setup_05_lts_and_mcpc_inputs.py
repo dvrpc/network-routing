@@ -129,7 +129,7 @@ def setup_05_import_mcpc_and_lts_shapefiles():
         """
         update mcpc_combined_pois
         set poi_uid = src_id + (
-            select max(uid) + 1 as num
+            select max(poi_uid) + 1 as num
             from mcpc_combined_pois
         )
         where category  = 'Shopping Centers'
@@ -140,7 +140,7 @@ def setup_05_import_mcpc_and_lts_shapefiles():
         """
         update mcpc_combined_pois
         set poi_uid = uid + (
-            select max(uid) + 1 as num
+            select max(poi_uid) + 1 as num
             from mcpc_combined_pois
         )
         where category  = 'trailhead'
