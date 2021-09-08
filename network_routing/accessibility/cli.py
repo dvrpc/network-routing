@@ -198,14 +198,11 @@ def osm_eta():
 
 
 @click.command()
-@click.argument("county")
-def eta_individual(county):
-    """Analyze each individual ETA point within the 'county`, using both the OSM and sidewalk network.
+def mcpc_individual():
+    """Analyze each individual ETA/MCPC point within the 'county`, using both the OSM and sidewalk network.
 
     Results are written to CSV files on disk.
     """
-
-    county = county.lower()
 
     db = pg_db_connection()
 
@@ -352,7 +349,7 @@ _all_commands = [
     sw_access_score,
     sw_eta,
     osm_eta,
-    eta_individual,
+    mcpc_individual,
     srts_before_after,
     septa_stops,
 ]

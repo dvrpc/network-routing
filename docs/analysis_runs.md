@@ -80,7 +80,7 @@
   [Equity Through Access dataset](https://dvrpcgis.maps.arcgis.com/apps/MapSeries/index.html?appid=06eab792a06044f89b5b7fadeef660ba)
 
 ```bash
-> access eta-individual montgomery
+> access mcpc-individual
 > gaps isochrones-eta montgomery
 
 > db make-nodes-for-edges improvements.montgomery_split
