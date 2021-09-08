@@ -151,10 +151,36 @@ def export_county_specific_data(db: PostgreSQL):
         write_query_to_geojson(filename, query, db, "mcpc")
 
 
+def export_septa_data(db: PostgreSQL):
+    """
+    Export data for SEPTA
+    """
+
+    pois = """
+        select src_table, stop_id, ab_ratio, geom 
+        from data_viz.ab_ratio_pois_for_septa_tod_analysis
+    """
+    isos = """
+        select eta_uid as stop_id, src_network, geom 
+        from data_viz.isochrones_pois_for_septa_tod_analysis
+    """
+
+    queries = {
+        "septa_stops": pois,
+        "walksheds": isos,
+    }
+
+    for filename, query in queries.items():
+        print(filename, query)
+
+        write_query_to_geojson(filename, query, db, "septa")
+
+
 if __name__ == "__main__":
 
     db = db_connection()
 
     # export_gap_webmap_data(db)
     # export_ridescore_webmap_data(db)
-    export_county_specific_data(db)
+    # export_county_specific_data(db)
+    export_septa_data(db)
