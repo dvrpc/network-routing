@@ -151,6 +151,7 @@ def isochrones_septa():
         "network_b_nodes": "nodes_for_osm_all",
         "network_b_node_id_col": "node_id",
         "data_dir": "./data",
+        "distance_threshold_miles": 0.25,
     }
 
     i = IsochroneGenerator(**args)
