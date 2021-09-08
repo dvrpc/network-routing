@@ -1,11 +1,11 @@
 import pandas as pd
 from tqdm import tqdm
 
-from postgis_helpers import PostgreSQL
+from pg_data_etl import Database
 
 
 def generate_isochrones(
-    db: PostgreSQL,
+    db: Database,
     sidewalk_result_table: str = "rs_sw.sw_results",
     osm_result_table: str = "rs_osm.osm_results",
     output_tablename: str = "data_viz.ridescore_results",
@@ -27,7 +27,7 @@ def generate_isochrones(
         New SQL table is created named `output_tablename`
     """
 
-    output_schema, new_tablename = output_tablename.split(".")
+    # output_schema, new_tablename = output_tablename.split(".")
 
     # Make sure that the output schema exists
     sql_query = f"CREATE SCHEMA IF NOT EXISTS {output_schema};"
@@ -40,15 +40,15 @@ def generate_isochrones(
     all_results = []
 
     ridescore_results = [
-        sidewalk_result_table.split("."),
-        osm_result_table.split("."),
+        sidewalk_result_table,
+        osm_result_table,
     ]
 
-    for schema, result_table in ridescore_results:
+    for result_table in ridescore_results:
 
-        print(f"Generating isochrone for {schema.upper()}")
+        print(f"Generating isochrone for {result_table.upper()}")
 
-        result_cols = db.table_columns_as_list(result_table, schema=schema)
+        result_cols = db.columns(result_table)
 
         all_ids = [x[4:] for x in result_cols if "n_1_" in x]
 
@@ -56,10 +56,10 @@ def generate_isochrones(
             # Figure out if there's results
             node_count_query = f"""
                 SELECT COUNT(node_id)
-                FROM {schema}.{result_table}
+                FROM {result_table}
                 WHERE n_1_{poi_uid} <= {time_cutoff}
             """
-            node_count = db.query_as_single_item(node_count_query)
+            node_count = db.query_as_singleton(node_count_query)
 
             # Only make isochrones if there's nodes below the threshold
             if node_count > 0:
@@ -79,12 +79,12 @@ def generate_isochrones(
                                     st_concavehull(st_collect(geom), 0.99),
                                     {geom_idx}),
                                 45) as geom
-                    from {schema}.{result_table}
+                    from {result_table}
                     where n_1_{poi_uid} <= {time_cutoff}
                 """
                 gdf = db.query_as_geo_df(query)
 
-                gdf["schema"] = schema
+                gdf["schema"] = result_table.split(".")[0]
                 gdf["poi_uid"] = poi_uid
 
                 gdf = gdf.rename(columns={"geom": "geometry"}).set_geometry("geometry")
@@ -93,11 +93,11 @@ def generate_isochrones(
 
     merged_gdf = pd.concat(all_results)
 
-    db.import_geodataframe(merged_gdf, new_tablename, schema=output_schema)
+    db.import_geodataframe(merged_gdf, output_tablename)
 
 
 def calculate_sidewalkscore(
-    db: PostgreSQL,
+    db: Database,
     poi_query: str,
     uid_col: str = "poi_uid",
     osm_schema: str = "rs_osm",
@@ -115,7 +115,7 @@ def calculate_sidewalkscore(
     size to the OSM walkshed size. This attribute is used for symbology on the webmap.
 
     Args:
-        db (PostgreSQL): analysis database
+        db (Database): analysis database
         poi_query (str): SQL query that provides the geom and uid of the source points
         uid_col (str): name of the ID column in the query, defaults to 'poi_uid'
         osm_schema (str): name of the OSM schema, defaults to 'rs_osm'
@@ -128,7 +128,7 @@ def calculate_sidewalkscore(
 
     """
 
-    gdf = db.query_as_geo_df(poi_query)
+    gdf = db.gdf(poi_query)
 
     gdf[osm_schema] = 0.0
     gdf[sw_schema] = 0.0
@@ -142,7 +142,7 @@ def calculate_sidewalkscore(
             where {uid_col} = '{row.poi_uid}'
         """
 
-        result = db.query_as_list(query)
+        result = db.query_as_list_of_lists(query)
 
         # Drop each result into the appropriate column
         for colname, iso_area in result:
@@ -152,5 +152,4 @@ def calculate_sidewalkscore(
 
     gdf["sidewalkscore"] = gdf[sw_schema] / gdf[osm_schema]
 
-    output_schema, new_tablename = output_tablename.split(".")
-    db.import_geodataframe(gdf, new_tablename, schema=output_schema)
+    db.import_geodataframe(gdf, output_tablename)

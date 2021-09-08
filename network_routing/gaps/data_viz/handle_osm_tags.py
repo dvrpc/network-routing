@@ -1,7 +1,7 @@
-from postgis_helpers import PostgreSQL
+from pg_data_etl import Database
 
 
-def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None) -> None:
+def scrub_osm_tags(db: Database, custom_hierarchy: list = None) -> None:
     """
     - Some streets have multiple OSM 'highway' tags, like `'{trunk,motorway}'` or `'{residential,trunk_link}'`
 
@@ -47,7 +47,7 @@ def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None) -> None:
         where analyze_sw = 1
     """
 
-    tag_list = db.query_as_list(query)
+    tag_list = db.query_as_list_of_lists(query)
 
     results = []
 
@@ -76,14 +76,19 @@ def scrub_osm_tags(db: PostgreSQL, custom_hierarchy: list = None) -> None:
 
         results.append((tag_tuple[0], hierarchy[lowest_index_number]))
 
-    db.table_add_or_nullify_column(edge_table, "hwy_tag", "TEXT", schema="public")
+    db.execute(
+        f"""
+        ALTER TABLE {edge_table}
+        ADD COLUMN hwy_tag TEXT;
+    """
+    )
 
     for original_tag, simple_tag in results:
 
         print(f"Updating {original_tag} as {simple_tag}")
 
         update_query = f"""
-            UPDATE public.{edge_table}
+            UPDATE {edge_table}
             SET hwy_tag = '{simple_tag}'
             WHERE highway = '{original_tag}';
         """

@@ -19,7 +19,7 @@ The codebase is broken up into three primary modules, each with its own command-
 - [`access`](./accessibility.md) manages all accessibility/routing analyses
 - [`gaps`](./gaps.md) handles all other analysis processes
 
-It builds on top of a variety of libraries, including `pandana`, `postgis_helpers`, `osmnx`, `geopandas`/`pandas`, `geoalchemy2`/`sqlalchemy`, & `psycopg2`
+It builds on top of a variety of libraries, including `pandana`, `pg_data_etl`, `osmnx`, `geopandas`/`pandas`, `geoalchemy2`/`sqlalchemy`, & `psycopg2`
 
 ---
 

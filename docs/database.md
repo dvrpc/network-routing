@@ -18,14 +18,14 @@ To get up and running with this project, execute the following commands from you
 
 ## Python usage
 
-The Python interface to the PostgreSQL/PostGIS datastore is managed by `PostgreSQL` class defined within
-[`postgis_helpers`](https://github.com/aaronfraint/postgis-helpers), and a method to connect to the database is provided with a top-level import.
+The Python interface to the PostgreSQL/PostGIS datastore is managed by `Database` class defined within
+[`pg_data_etl`](https://github.com/aaronfraint/pg-data-etl), and a method to connect to the database is provided with a top-level import.
 
-To use this module within Python, import the `db_connection` function from `network_routing` and instantiate it:
+To use this module within Python, import the `pg_db_connection` function from `network_routing` and instantiate it:
 
 ```Python
->>> from network_routing import db_connection
->>> db = db_connection()
+>>> from network_routing import pg_db_connection
+>>> db = pg_db_connection()
 ```
 
 ---

@@ -17,7 +17,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
 
-import postgis_helpers as pGIS
 
 # Define filepaths
 load_dotenv(find_dotenv())
@@ -38,8 +37,3 @@ if GDRIVE_ROOT:
     FOLDER_DATA_PRODUCTS = GDRIVE_PROJECT_ROOT / "data products"
 else:
     FOLDER_DB_BACKUPS, FOLDER_DATA_PRODUCTS = None, None
-
-# Load SQL database credentials
-# CREDENTIALS = pGIS.configurations()
-
-# PROJECT_DB_NAME = "sidewalk_gap_analysis"

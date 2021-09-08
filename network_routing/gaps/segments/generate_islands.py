@@ -1,7 +1,7 @@
 from tqdm import tqdm
 from random import randint
 
-from postgis_helpers import PostgreSQL
+from pg_data_etl import Database
 
 
 def random_rgb(a: float = 1.0) -> str:
@@ -20,14 +20,14 @@ def random_rgb(a: float = 1.0) -> str:
     return f"rgba({r}, {g}, {b}, {a})"
 
 
-def generate_islands(db: PostgreSQL, tbl: str = "pedestriannetwork_lines"):
+def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines"):
     """
     Merge intersecting sidewalk geometries to create "islands" of connectivity.
 
     The output is a layer with one feature per 'island', and has a column for size of island and a randomly-generated RGB value.
 
     Args:
-        db (PostgreSQL): analysis database
+        db (Database): analysis database
         tbl (str): name of the table to analyze
 
     """
@@ -48,19 +48,38 @@ def generate_islands(db: PostgreSQL, tbl: str = "pedestriannetwork_lines"):
             ) AS geom
         FROM {tbl}
     """
-    db.make_geotable_from_query(query, "islands", "MULTILINESTRING", 26918, schema=output_schema)
+    db.gis_make_geotable_from_query(query, "islands", "MULTILINESTRING", 26918)
 
     # Add a column for size
-    db.table_add_or_nullify_column("islands", "size_miles", "FLOAT", schema=output_schema)
+    db.execute(
+        f"""
+        ALTER TABLE {output_schema}.islands
+        ADD COLUMN size_miles FLOAT;
+    """
+    )
 
-    query = f"UPDATE {output_schema}.islands SET size_miles = ST_LENGTH(geom) * 0.000621371;"
-    db.execute(query)
+    db.execute(
+        f"""
+        UPDATE {output_schema}.islands 
+        SET size_miles = ST_LENGTH(geom) * 0.000621371;
+    """
+    )
 
     # Add columns for rgba and muni names
     for colname in ["rgba", "muni_names"]:
-        db.table_add_or_nullify_column("islands", colname, "TEXT", schema=output_schema)
+        db.execute(
+            f"""
+            ALTER TABLE {output_schema}.islands
+            ADD COLUMN {colname} TEXT;
+        """
+        )
 
-    db.table_add_or_nullify_column("islands", "muni_count", "FLOAT", schema=output_schema)
+    db.execute(
+        f"""
+        ALTER TABLE {output_schema}.islands
+        ADD COLUMN muni_count FLOAT;
+    """
+    )
 
     # Iterate over each feature. Make a random rgb code and find intersecting municipalities
     query = f"SELECT uid FROM {output_schema}.islands"
@@ -83,7 +102,7 @@ def generate_islands(db: PostgreSQL, tbl: str = "pedestriannetwork_lines"):
             ORDER BY
                 pct_covered DESC
         """
-        munis = db.query_as_list(query)
+        munis = db.query_as_list_of_lists(query)
 
         # Record the muni names and the percent covered
         result = ""
@@ -103,7 +122,7 @@ def generate_islands(db: PostgreSQL, tbl: str = "pedestriannetwork_lines"):
 
 
 if __name__ == "__main__":
-    from network_routing import db_connection
+    from network_routing import pg_db_connection
 
-    db = db_connection()
+    db = pg_db_connection()
     generate_islands(db)

@@ -183,9 +183,7 @@ def export_geojson(data_group_name):
     }
 
     if data_group_name not in exporters:
-        print(
-            f"GeoJSON export process named '{data_group_name}' does not exist. Options include:"
-        )
+        print(f"GeoJSON export process named '{data_group_name}' does not exist. Options include:")
         for k in exporters.keys():
             print(f"\t -> {k}")
 

@@ -35,7 +35,7 @@ Examples:
 
 import click
 
-from network_routing import db_connection, pg_db_connection
+from network_routing import pg_db_connection
 
 from network_routing.gaps.segments.centerline_sidewalk_coverage import classify_centerlines
 from network_routing.gaps.segments.generate_islands import generate_islands
@@ -68,7 +68,7 @@ def classify_osm_sw_coverage():
 def identify_islands():
     """ Join intersecting sidewalks to create 'islands' """
 
-    db = db_connection()
+    db = pg_db_connection()
 
     generate_islands(db)
 
@@ -79,7 +79,7 @@ def isochrones_accessscore():
     Make 'Access Score' isos & POIs with stats
     """
 
-    db = db_connection()
+    db = pg_db_connection()
 
     generate_isochrones(db)
 
@@ -104,15 +104,12 @@ def accessscore_line_results():
 
 
 @click.command()
-@click.argument("county", default="montgomery")
-def isochrones_eta(county: str):
+def isochrones_mcpc():
     """
-    Make 'ETA' isos & POIs with stats
+    Make isos & POIs with stats for MCPC
 
     """
     db = pg_db_connection()
-
-    county = county.lower()
 
     args = {
         "db": db,
@@ -163,7 +160,7 @@ def isochrones_septa():
 def scrub_osm_tags():
     """ Clean 'highway' tags in the OSM data """
 
-    db = db_connection()
+    db = pg_db_connection()
 
     _scrub_osm_tags(db)
 
@@ -173,7 +170,7 @@ _all_commands = [
     identify_islands,
     scrub_osm_tags,
     isochrones_accessscore,
-    isochrones_eta,
+    isochrones_mcpc,
     accessscore_line_results,
     isochrones_septa,
 ]
