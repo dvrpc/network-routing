@@ -1,23 +1,21 @@
-name: network_routing_v2
+name: network_routing_v3
 channels:
   - conda-forge
 dependencies:
-  - python=3.8*
+  - python=3.9*
   - flake8
-  - pyproj
-  - geopandas
+  - pyproj<3
+  - geopandas<0.9
   - psycopg2
   - geoalchemy2
   - ipython
   - osmnx
   - pandana
-  - geopy
   - tqdm
   - xlrd
   - xlsxwriter
   - jupyterlab
   - python-dotenv
-  - seaborn
   - black
   - rich
   - mkdocs-material
@@ -26,6 +24,5 @@ dependencies:
   - pip
   - pip:
       - pg-data-etl>=0.3
-      - git+https://github.com/aaronfraint/postgis-helpers.git
       - git+https://github.com/aaronfraint/philly-transit-data.git
       - --editable .
