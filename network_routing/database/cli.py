@@ -173,7 +173,7 @@ def make_nodes_for_edges(edge_tablename):
 def export_geojson(data_group_name):
     """Save a group of .geojson files to be tiled for webmaps"""
 
-    db = db_connection()
+    db = pg_db_connection()
 
     exporters = {
         "ridescore": export_ridescore_webmap_data,
@@ -183,7 +183,9 @@ def export_geojson(data_group_name):
     }
 
     if data_group_name not in exporters:
-        print(f"GeoJSON export process named '{data_group_name}' does not exist. Options include:")
+        print(
+            f"GeoJSON export process named '{data_group_name}' does not exist. Options include:"
+        )
         for k in exporters.keys():
             print(f"\t -> {k}")
 
