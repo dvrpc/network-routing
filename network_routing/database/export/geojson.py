@@ -53,18 +53,14 @@ def export_gap_webmap_data(db: Database):
     write_query_to_geojson("osm_sw_coverage", query_centerlines, db, "gaps")
 
     # Transit accessibility results
-    gdf_sample = db.gdf(
-        f"SELECT * FROM sw_defaults.regional_transit_stops_results LIMIT 1"
-    )
+    gdf_sample = db.gdf(f"SELECT * FROM sw_defaults.regional_transit_stops_results LIMIT 1")
 
     # Make a list of all columns that have 'n_1_' in their name
     cols_to_query = [col for col in gdf_sample.columns if "n_1_" in col]
 
     # Build a dynamic SQL query, getting the LEAST of the n_1_* columns
     query_base_results = "SELECT geom, LEAST(" + ", ".join(cols_to_query)
-    query_base_results += (
-        f") as walk_time FROM sw_defaults.regional_transit_stops_results"
-    )
+    query_base_results += f") as walk_time FROM sw_defaults.regional_transit_stops_results"
 
     write_query_to_geojson("sw_nodes", query_base_results, db, "gaps")
 
@@ -131,8 +127,16 @@ def export_county_specific_data(db: Database):
     - 'missing sidewalks' with priority results? TODO
     """
 
-    mcpc_combined_pois = """
+    mcpc_combined_pois_full = """
         select * from data_viz.ab_ratio_mcpc_combined_pois
+    """
+    mcpc_combined_pois_centroids = """
+        select
+            poi_name, category, poi_uid, ab_ratio, st_centroid(st_collect(geom)) as geom
+        from
+            data_viz.ab_ratio_mcpc_combined_pois
+        group by
+            poi_name, category, poi_uid, ab_ratio
     """
     eta_isos = """
         select * from data_viz.isochrones_mcpc_combined_pois
@@ -142,7 +146,8 @@ def export_county_specific_data(db: Database):
     """
 
     queries = {
-        "mcpc_combined_pois": mcpc_combined_pois,
+        "pois_full": mcpc_combined_pois_full,
+        "pois_centroids": mcpc_combined_pois_centroids,
         "mcpc_isos": eta_isos,
         "montco_missing_sidewalks": montco_missing_sidewalks,
     }
@@ -179,10 +184,4 @@ def export_septa_data(db: Database):
 
 
 if __name__ == "__main__":
-
-    db = db_connection()
-
-    # export_gap_webmap_data(db)
-    # export_ridescore_webmap_data(db)
-    # export_county_specific_data(db)
-    export_septa_data(db)
+    pass
