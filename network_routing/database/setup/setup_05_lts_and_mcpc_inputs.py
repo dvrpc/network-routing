@@ -33,37 +33,36 @@ def setup_05_import_mcpc_and_lts_shapefiles():
     # Use SQL queries to combine individual tables together
     query = """
 
-        with all_trail_points as (
-	        select
-                name as poi_name,
-                st_startpoint(geom) as geom
-            from
-                montgomery_county_trails
-
-	        union
-
-	        select
-                name as poi_name,
-                st_endpoint(geom) as geom
-            from
-                montgomery_county_trails        
-        ),
-        trailheads as (
+    with transit_pois as (
             select
-                poi_name,
-                'trailhead' as category,
-                9999999 as src_id,
-                st_transform(t.geom, 26918) as geom
+                uid as src_id,
+                src as category,
+                case
+                    when stop_name is not null then stop_name
+                    when station_name is not null then station_name
+                    when stopname is not null then stopname
+                    when station is not null then station
+                    when bsl is not null then bsl
+                    when on_street is not null then concat(on_street, ' @ ', at_street)
+                end as poi_name,
+                geom
             from
-                all_trail_points t, osm_edges_all_no_motorway e 
-            where
-                st_dwithin(st_transform(t.geom, 26918), e.geom, 150)
-        )
+                regional_transit_stops
+    ),
+    montco as (
+        select geom from regional_counties
+        where co_name = 'Montgomery'
+    )
 
-        select * from trailheads
+        select
+            s.poi_name,
+            s.category,
+            s.src_id,
+            s.geom
+        from transit_pois s, montco m
+        where st_within(s.geom, m.geom)
 
-        UNION
-
+    union 
         select
             name as poi_name,
             'Libraries' as category,
@@ -111,6 +110,19 @@ def setup_05_import_mcpc_and_lts_shapefiles():
                 26918
             )
         from montgomery_county_shopping_centers
+
+        UNION
+
+        select
+            name as poi_name,
+            'Parks' as category,
+            uid as src_id,
+            st_transform(
+                (st_dumppoints(geom)).geom,
+                26918
+            )
+        from montgomery_county_parks
+
     """
 
     db.gis_make_geotable_from_query(query, "mcpc_combined_pois", "POINT", 26918)
@@ -121,7 +133,7 @@ def setup_05_import_mcpc_and_lts_shapefiles():
         """
         update mcpc_combined_pois
         set poi_uid = uid
-        where category not in ('Shopping Centers', 'trailhead')
+        where category not in ('Shopping Centers', 'Parks')
     """
     )
 
@@ -139,11 +151,21 @@ def setup_05_import_mcpc_and_lts_shapefiles():
     db.execute(
         """
         update mcpc_combined_pois
-        set poi_uid = uid + (
+        set poi_uid = src_id + (
             select max(poi_uid) + 1 as num
             from mcpc_combined_pois
         )
-        where category  = 'trailhead'
+        where category  = 'Parks'
+    """
+    )
+
+    db.execute(
+        """
+    delete from mcpc_combined_pois 
+    where not st_within(
+                geom, 
+                (select geom from regional_counties where co_name = 'Montgomery')
+    )
     """
     )
 
