@@ -81,12 +81,14 @@
 
 ```bash
 > access mcpc-individual
-> gaps isochrones-eta montgomery
+> gaps isochrones-mcpc
 
 > db make-nodes-for-edges improvements.montgomery_split
 
 > db export-geojson mcpc
-> db make-vector-tiles mcpc mcpc_v1
+> db make-vector-tiles mcpc mcpc_v4
 ```
 
 - To do: score gaps closest to each POI type
+
+- To do: document gap creation process and before/after project comparison code
