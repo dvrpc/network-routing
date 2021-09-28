@@ -80,7 +80,7 @@ def main():
 
 @click.command()
 def sw_default():
-    """Run the RoutableNetwork with default settings """
+    """Run the RoutableNetwork with default settings"""
 
     arguments = {
         "edge_table_name": "pedestriannetwork_lines",
@@ -179,7 +179,7 @@ def sw_eta():
 
 @click.command()
 def osm_eta():
-    """ETA points by catgory w/ OSM network """
+    """ETA points by catgory w/ OSM network"""
 
     arguments = {
         "poi_table_name": "eta_points",
@@ -342,6 +342,26 @@ def septa_stops():
     dn.compute()
 
 
+@click.command()
+def part():
+    """Analyze PART POIs"""
+
+    arguments = {
+        "edge_table_name": "pedestriannetwork_lines",
+        "node_table_name": "nodes_for_sidewalks",
+        "node_id_column": "sw_node_id",
+        "poi_table_name": "part_no_z",
+        "poi_id_column": "name",
+        "output_table_name": "pois",
+        "output_schema": "part",
+        "max_minutes": 180,
+        "poi_match_threshold": 152,  # aka 500'
+        "num_pois": 1,
+    }
+
+    _ = _execute_analysis_into_one_output(arguments)
+
+
 _all_commands = [
     sw_default,
     osm_access_score,
@@ -352,6 +372,7 @@ _all_commands = [
     mcpc_individual,
     srts_before_after,
     septa_stops,
+    part,
 ]
 
 for cmd in _all_commands:

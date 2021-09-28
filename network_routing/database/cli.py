@@ -79,6 +79,9 @@ from network_routing.database.export.shapefile import (
     export_shapefiles_for_downstream_ridescore,
     export_data_for_single_muni,
 )
+from network_routing.database.setup.setup_09_part import (
+    setup_09_import_part_data,
+)
 
 
 @click.group()
@@ -109,6 +112,7 @@ def build_secondary(patch_number):
         6: setup_06_more_accessscore_inputs,
         7: setup_07_import_srts_projects,
         8: setup_08_import_septa_data,
+        9: setup_09_import_part_data,
     }
 
     if patch_number not in patches:
