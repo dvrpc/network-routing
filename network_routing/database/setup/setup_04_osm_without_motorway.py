@@ -8,14 +8,15 @@ def setup_04_remove_motorways_from_osm():
     db = pg_db_connection()
 
     for src_table in ["osm_edges_all", "osm_edges_drive"]:
-        query = f"""
-            select * from {src_table}
-            where highway not like '%%motorway%%'
-        """
+        if src_table in db.tables():
+            query = f"""
+                select * from {src_table}
+                where highway not like '%%motorway%%'
+            """
 
-        db.gis_make_geotable_from_query(
-            query, f"{src_table}_no_motorway", geom_type="LineString", epsg=26918
-        )
+            db.gis_make_geotable_from_query(
+                query, f"{src_table}_no_motorway", geom_type="LineString", epsg=26918
+            )
 
 
 if __name__ == "__main__":
