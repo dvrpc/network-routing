@@ -128,15 +128,31 @@ def export_county_specific_data(db: Database):
     """
 
     mcpc_combined_pois_full = """
-        select * from data_viz.ab_ratio_mcpc_combined_pois
+        select *
+        from data_viz.ab_ratio_mcpc_combined_pois
+        where category != 'NJT rail'
     """
     mcpc_combined_pois_centroids = """
+        with centroids as (
+                select
+                    poi_name, category, poi_uid, ab_ratio, st_centroid(st_collect(geom)) as geom
+                from
+                    data_viz.ab_ratio_mcpc_combined_pois
+                where category != 'NJT rail'
+                group by
+                    poi_name, category, poi_uid, ab_ratio
+        )
+
         select
-            poi_name, category, poi_uid, ab_ratio, st_centroid(st_collect(geom)) as geom
+            st_collect(geom) as geom, 
+            poi_name, 
+            category, 
+            min(poi_uid) as poi_uid, 
+            ab_ratio
         from
-            data_viz.ab_ratio_mcpc_combined_pois
+            centroids
         group by
-            poi_name, category, poi_uid, ab_ratio
+            poi_name, category, ab_ratio, geom
     """
     eta_isos = """
         select * from data_viz.isochrones_mcpc_combined_pois
