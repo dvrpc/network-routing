@@ -10,7 +10,9 @@ def setup_09_import_part_data():
 
     shapefile_folder = GDRIVE_DATA / "inputs/PART"
     for shp in shapefile_folder.rglob("*.shp"):
-        db.import_gis(filepath=shp, sql_tablename=shp.stem.lower())
+        db.import_gis(
+            filepath=shp, sql_tablename=shp.stem.lower(), gpd_kwargs={"if_exists": "replace"}
+        )
 
 
 if __name__ == "__main__":
