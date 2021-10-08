@@ -37,15 +37,21 @@ import click
 
 from network_routing import pg_db_connection
 
-from network_routing.gaps.segments.centerline_sidewalk_coverage import classify_centerlines
+from network_routing.gaps.segments.centerline_sidewalk_coverage import (
+    classify_centerlines,
+)
 from network_routing.gaps.segments.generate_islands import generate_islands
 
-from network_routing.gaps.data_viz.handle_osm_tags import scrub_osm_tags as _scrub_osm_tags
+from network_routing.gaps.data_viz.handle_osm_tags import (
+    scrub_osm_tags as _scrub_osm_tags,
+)
 from network_routing.gaps.data_viz.ridescore_isochrones import (
     generate_isochrones,
     calculate_sidewalkscore,
 )
-from network_routing.gaps.data_viz.access_score_results import main as access_score_results_main
+from network_routing.gaps.data_viz.access_score_results import (
+    main as access_score_results_main,
+)
 from network_routing.gaps.data_viz.eta_isochrones import IsochroneGenerator
 
 
@@ -57,7 +63,7 @@ def main():
 
 @click.command()
 def classify_osm_sw_coverage():
-    """ Classify OSM w/ length of parallel sidewalks """
+    """Classify OSM w/ length of parallel sidewalks"""
 
     db = pg_db_connection()
 
@@ -66,7 +72,7 @@ def classify_osm_sw_coverage():
 
 @click.command()
 def identify_islands():
-    """ Join intersecting sidewalks to create 'islands' """
+    """Join intersecting sidewalks to create 'islands'"""
 
     db = pg_db_connection()
 
@@ -157,8 +163,35 @@ def isochrones_septa():
 
 
 @click.command()
+def isochrones_part():
+    """
+    Make PART isos & POIs with stats
+
+    """
+    db = pg_db_connection()
+
+    args = {
+        "db": db,
+        "poi_table": f"part",
+        "poi_col": "stop_id",
+        "network_a_edges": "pedestriannetwork_lines",
+        "network_a_nodes": "nodes_for_sidewalks",
+        "network_a_node_id_col": "sw_node_id",
+        "network_b_edges": "osm_edges_all_no_motorway",
+        "network_b_nodes": "nodes_for_osm_all",
+        "network_b_node_id_col": "node_id",
+        "data_dir": "./data",
+        "distance_threshold_miles": 0.25,
+    }
+
+    i = IsochroneGenerator(**args)
+    i.save_isos_to_db()
+    i.save_pois_with_iso_stats_to_db()
+
+
+@click.command()
 def scrub_osm_tags():
-    """ Clean 'highway' tags in the OSM data """
+    """Clean 'highway' tags in the OSM data"""
 
     db = pg_db_connection()
 
@@ -173,6 +206,7 @@ _all_commands = [
     isochrones_mcpc,
     accessscore_line_results,
     isochrones_septa,
+    isochrones_part,
 ]
 
 for cmd in _all_commands:
