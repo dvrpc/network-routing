@@ -173,7 +173,7 @@ def isochrones_part():
     args = {
         "db": db,
         "poi_table": f"part",
-        "poi_col": "stop_id",
+        "poi_col": "uid",
         "network_a_edges": "pedestriannetwork_lines",
         "network_a_nodes": "nodes_for_sidewalks",
         "network_a_node_id_col": "sw_node_id",
