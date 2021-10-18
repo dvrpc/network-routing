@@ -14,6 +14,14 @@ def setup_09_import_part_data():
             filepath=shp, sql_tablename=shp.stem.lower(), gpd_kwargs={"if_exists": "replace"}
         )
 
+    # Clean up the point layer:
+    # remove the 'level_0' column from the raw data
+    query = """
+        ALTER TABLE part
+        DROP COLUMN IF EXISTS level_0;
+    """
+    db.execute(query)
+
 
 if __name__ == "__main__":
     setup_09_import_part_data()

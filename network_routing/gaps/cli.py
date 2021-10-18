@@ -37,15 +37,21 @@ import click
 
 from network_routing import pg_db_connection
 
-from network_routing.gaps.segments.centerline_sidewalk_coverage import classify_centerlines
+from network_routing.gaps.segments.centerline_sidewalk_coverage import (
+    classify_centerlines,
+)
 from network_routing.gaps.segments.generate_islands import generate_islands
 
-from network_routing.gaps.data_viz.handle_osm_tags import scrub_osm_tags as _scrub_osm_tags
+from network_routing.gaps.data_viz.handle_osm_tags import (
+    scrub_osm_tags as _scrub_osm_tags,
+)
 from network_routing.gaps.data_viz.ridescore_isochrones import (
     generate_isochrones,
     calculate_sidewalkscore,
 )
-from network_routing.gaps.data_viz.access_score_results import main as access_score_results_main
+from network_routing.gaps.data_viz.access_score_results import (
+    main as access_score_results_main,
+)
 from network_routing.gaps.data_viz.eta_isochrones import IsochroneGenerator
 
 
@@ -57,7 +63,7 @@ def main():
 
 @click.command()
 def classify_osm_sw_coverage():
-    """ Classify OSM w/ length of parallel sidewalks """
+    """Classify OSM w/ length of parallel sidewalks"""
 
     db = pg_db_connection()
 
@@ -66,7 +72,7 @@ def classify_osm_sw_coverage():
 
 @click.command()
 def identify_islands():
-    """ Join intersecting sidewalks to create 'islands' """
+    """Join intersecting sidewalks to create 'islands'"""
 
     db = pg_db_connection()
 
@@ -157,8 +163,52 @@ def isochrones_septa():
 
 
 @click.command()
+def isochrones_part():
+    """
+    Make PART isos & POIs with stats
+    """
+
+    db = pg_db_connection()
+
+    # Generate isochrones
+    iso_args = {
+        "sidewalk_result_table": "part_sw.pois_results",
+        "osm_result_table": "part_osm.pois_results",
+        "output_tablename": "data_viz.part_isos",
+    }
+
+    generate_isochrones(db, **iso_args)
+
+    # Generate a point layer that summarizes the isochrone results
+    query = """
+        select 
+        replace(
+            replace(
+                replace(lower(name), ' ', ''),
+                '-',
+                ''
+            ),
+            '/',
+            ''
+        ) as poi_uid, *
+        from part
+    """
+
+    final_point_args = {
+        "poi_query": query,
+        "uid_col": "poi_uid",
+        "osm_schema": "part_osm",
+        "sw_schema": "part_sw",
+        "iso_table": "data_viz.part_isos",
+        "output_tablename": "data_viz.part_pois_with_scores",
+    }
+
+    calculate_sidewalkscore(db, **final_point_args)
+
+
+@click.command()
 def scrub_osm_tags():
-    """ Clean 'highway' tags in the OSM data """
+    """Clean 'highway' tags in the OSM data"""
 
     db = pg_db_connection()
 
@@ -173,6 +223,7 @@ _all_commands = [
     isochrones_mcpc,
     accessscore_line_results,
     isochrones_septa,
+    isochrones_part,
 ]
 
 for cmd in _all_commands:

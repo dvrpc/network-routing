@@ -199,5 +199,31 @@ def export_septa_data(db: Database):
         write_query_to_geojson(filename, query, db, "septa")
 
 
+def export_PART_data(db: Database):
+    """
+    Export data for PART
+    """
+
+    pois = """
+        select * from data_viz.part_pois_with_scores
+    """
+    isos = """
+        select * from data_viz.part_isos
+    """
+    raw_sw = """
+        select * from part_sw.pois_results
+    """
+    raw_osm = """
+        select * from part_osm.pois_results
+    """
+
+    queries = {"septa_stops": pois, "walksheds": isos, "raw_sw": raw_sw, "raw_osm": raw_osm}
+
+    for filename, query in queries.items():
+        print(filename, query)
+
+        write_query_to_geojson(filename, query, db, "PART")
+
+
 if __name__ == "__main__":
     pass
