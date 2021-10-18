@@ -166,27 +166,44 @@ def isochrones_septa():
 def isochrones_part():
     """
     Make PART isos & POIs with stats
-
     """
+
     db = pg_db_connection()
 
-    args = {
-        "db": db,
-        "poi_table": f"part",
-        "poi_col": "uid",
-        "network_a_edges": "pedestriannetwork_lines",
-        "network_a_nodes": "nodes_for_sidewalks",
-        "network_a_node_id_col": "sw_node_id",
-        "network_b_edges": "osm_edges_all_no_motorway",
-        "network_b_nodes": "nodes_for_osm_all",
-        "network_b_node_id_col": "node_id",
-        "data_dir": "./data",
-        "distance_threshold_miles": 0.25,
+    # Generate isochrones
+    iso_args = {
+        "sidewalk_result_table": "part_sw.pois_results",
+        "osm_result_table": "part_osm.pois_results",
+        "output_tablename": "data_viz.part_isos",
     }
 
-    i = IsochroneGenerator(**args)
-    i.save_isos_to_db()
-    i.save_pois_with_iso_stats_to_db()
+    generate_isochrones(db, **iso_args)
+
+    # Generate a point layer that summarizes the isochrone results
+    query = """
+        select 
+        replace(
+            replace(
+                replace(lower(name), ' ', ''),
+                '-',
+                ''
+            ),
+            '/',
+            ''
+        ) as poi_uid, *
+        from part
+    """
+
+    final_point_args = {
+        "poi_query": query,
+        "uid_col": "poi_uid",
+        "osm_schema": "part_osm",
+        "sw_schema": "part_sw",
+        "iso_table": "data_viz.part_isos",
+        "output_tablename": "data_viz.part_pois_with_scores",
+    }
+
+    calculate_sidewalkscore(db, **final_point_args)
 
 
 @click.command()
