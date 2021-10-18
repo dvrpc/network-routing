@@ -99,13 +99,11 @@
 
 Analyze POIs in the Pottstown area.
 
-``bash
+```bash
 
 > access part-sidewalk
 > access part-osm
 > gaps isochrones-part
 > db export-geojson part
-
-```
 
 ```
