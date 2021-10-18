@@ -353,7 +353,7 @@ def part_sidewalk():
         "poi_table_name": "part",
         "poi_id_column": "name",
         "output_table_name": "pois",
-        "output_schema": "part",
+        "output_schema": "part_sw",
         "max_minutes": 180,
         "poi_match_threshold": 152,  # aka 500'
         "num_pois": 1,
@@ -374,7 +374,7 @@ def part_osm():
         "poi_id_column": "name",
         "output_table_name": "pois",
         "output_schema": "part_osm",
-        "max_minutes": 180,
+        "max_minutes": 45,
         "poi_match_threshold": 152,  # aka 500'
         "num_pois": 1,
     }
