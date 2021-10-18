@@ -343,8 +343,8 @@ def septa_stops():
 
 
 @click.command()
-def part():
-    """Analyze PART POIs"""
+def part_sidewalk():
+    """Analyze PART POIs w/ sidewalk network"""
 
     arguments = {
         "edge_table_name": "pedestriannetwork_lines",
@@ -354,6 +354,26 @@ def part():
         "poi_id_column": "name",
         "output_table_name": "pois",
         "output_schema": "part",
+        "max_minutes": 180,
+        "poi_match_threshold": 152,  # aka 500'
+        "num_pois": 1,
+    }
+
+    _ = _execute_analysis_into_one_output(arguments)
+
+
+@click.command()
+def part_osm():
+    """Analyze PART POIs w/ OSM network"""
+
+    arguments = {
+        "edge_table_name": "osm_edges_all_no_motorway",
+        "node_table_name": "nodes_for_osm_all",
+        "node_id_column": "node_id",
+        "poi_table_name": "part",
+        "poi_id_column": "name",
+        "output_table_name": "pois",
+        "output_schema": "part_osm",
         "max_minutes": 180,
         "poi_match_threshold": 152,  # aka 500'
         "num_pois": 1,
@@ -372,7 +392,8 @@ _all_commands = [
     mcpc_individual,
     srts_before_after,
     septa_stops,
-    part,
+    part_sidewalk,
+    part_osm,
 ]
 
 for cmd in _all_commands:
