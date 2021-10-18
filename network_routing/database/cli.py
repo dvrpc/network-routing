@@ -48,6 +48,7 @@ from network_routing.database.export.geojson import (
     export_ridescore_webmap_data,
     export_county_specific_data,
     export_septa_data,
+    export_PART_data,
 )
 from network_routing.database.setup.setup_00_initial import setup_00_initial
 from network_routing.database.setup.setup_01_updated_ridescore_inputs import (
@@ -184,12 +185,11 @@ def export_geojson(data_group_name):
         "gaps": export_gap_webmap_data,
         "mcpc": export_county_specific_data,
         "septa": export_septa_data,
+        "part": export_PART_data,
     }
 
     if data_group_name not in exporters:
-        print(
-            f"GeoJSON export process named '{data_group_name}' does not exist. Options include:"
-        )
+        print(f"GeoJSON export process named '{data_group_name}' does not exist. Options include:")
         for k in exporters.keys():
             print(f"\t -> {k}")
 
