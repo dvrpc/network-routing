@@ -92,3 +92,20 @@
 - To do: score gaps closest to each POI type
 
 - To do: document gap creation process and before/after project comparison code
+
+---
+
+## PART
+
+Analyze POIs in the Pottstown area.
+
+``bash
+
+> access part-sidewalk
+> access part-osm
+> gaps isochrones-part
+> db export-geojson part
+
+```
+
+```
