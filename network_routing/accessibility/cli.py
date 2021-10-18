@@ -350,7 +350,7 @@ def part():
         "edge_table_name": "pedestriannetwork_lines",
         "node_table_name": "nodes_for_sidewalks",
         "node_id_column": "sw_node_id",
-        "poi_table_name": "part_no_z",
+        "poi_table_name": "part",
         "poi_id_column": "name",
         "output_table_name": "pois",
         "output_schema": "part",
