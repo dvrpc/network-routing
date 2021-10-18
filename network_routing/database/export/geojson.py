@@ -217,7 +217,7 @@ def export_PART_data(db: Database):
         select * from part_osm.pois_results
     """
 
-    queries = {"septa_stops": pois, "walksheds": isos, "raw_sw": raw_sw, "raw_osm": raw_osm}
+    queries = {"part_pois": pois, "walksheds": isos, "raw_sw": raw_sw, "raw_osm": raw_osm}
 
     for filename, query in queries.items():
         print(filename, query)
