@@ -27,7 +27,7 @@ def generate_isochrones(
         New SQL table is created named `output_tablename`
     """
 
-    # output_schema, new_tablename = output_tablename.split(".")
+    output_schema, new_tablename = output_tablename.split(".")
 
     # Make sure that the output schema exists
     sql_query = f"CREATE SCHEMA IF NOT EXISTS {output_schema};"
@@ -82,7 +82,7 @@ def generate_isochrones(
                     from {result_table}
                     where n_1_{poi_uid} <= {time_cutoff}
                 """
-                gdf = db.query_as_geo_df(query)
+                gdf = db.gdf(query)
 
                 gdf["schema"] = result_table.split(".")[0]
                 gdf["poi_uid"] = poi_uid
