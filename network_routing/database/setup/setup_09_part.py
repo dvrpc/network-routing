@@ -22,6 +22,13 @@ def setup_09_import_part_data():
     """
     db.execute(query)
 
+    query2 = """  
+        ALTER TABLE part 
+        ALTER COLUMN geom 
+        TYPE Geometry(Point, 26918) 
+        USING ST_Transform(geom, 26918);
+    """
+    db.execute(query2)
 
 if __name__ == "__main__":
     setup_09_import_part_data()
