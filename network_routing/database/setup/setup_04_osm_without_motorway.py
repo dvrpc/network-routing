@@ -7,7 +7,7 @@ def setup_04_remove_motorways_from_osm():
     """
     db = pg_db_connection()
 
-    for src_table in ["osm_edges_all", "osm_edges_drive"]:
+    for src_table in ["public.osm_edges_all", "public.osm_edges_drive"]:
         if src_table in db.tables():
             query = f"""
                 select * from {src_table}
