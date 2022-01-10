@@ -20,12 +20,13 @@ warnings.filterwarnings("ignore")
 
 
 @click.command()
-def draw_missing_network_links():
+@click.argument("county")
+def draw_missing_network_links(county):
     """Create a full sidewalk network on streets lacking sidewalks on both sides"""
 
     db = pg_db_connection()
 
-    generate_missing_network(db)
+    generate_missing_network(db, county_name=county)
 
 
 def generate_missing_network(
