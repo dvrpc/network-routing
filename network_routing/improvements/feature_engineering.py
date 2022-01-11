@@ -32,7 +32,17 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_geo
     """
 
     # counties = db.query_as_list_of_singletons("select distinct co_name from regional_counties")
-    counties = ["Montgomery"]
+    counties = [
+        "Gloucester",
+        "Camden",
+        "Burlington",
+        "Mercer",
+        # "Montgomery",
+        # "Bucks",
+        # "Chester",
+        # "Delaware",
+        # "Philadelphia",
+    ]
 
     # Operate one county at a time, writing/appending results before moving to the next one
     for county_name in counties:
@@ -202,5 +212,5 @@ def split_features(db: Database, src_table: str = "improvements.cleaned_montgome
 
 if __name__ == "__main__":
     db = pg_db_connection()
-    # erase_features(db)
-    split_features(db)
+    erase_features(db)
+    # split_features(db)
