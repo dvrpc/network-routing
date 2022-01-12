@@ -225,5 +225,31 @@ def export_PART_data(db: Database):
         write_query_to_geojson(filename, query, db, "PART")
 
 
+def export_regional_gap_data(db: Database):
+    """
+    Export data showing all gaps across the region
+    """
+    filename = "regional_sidewalk_gaps"
+    query = """
+        with all_gaps as (
+                  select geom from improvements.gloucester_erased
+            union select geom from improvements.camden_erased
+            union select geom from improvements.burlington_erased
+            union select geom from improvements.mercer_erased
+            union select geom from improvements.montgomery_erased
+            union select geom from improvements.bucks_erased
+            union select geom from improvements.chester_erased
+            union select geom from improvements.delaware_erased
+            union select geom from improvements.philadelphia_erased
+        )
+        select
+            row_number() over () as uid,
+            geom
+        from all_gaps
+    """
+
+    write_query_to_geojson(filename, query, db, "regional_gaps")
+
+
 if __name__ == "__main__":
     pass
