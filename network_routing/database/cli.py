@@ -49,6 +49,7 @@ from network_routing.database.export.geojson import (
     export_county_specific_data,
     export_septa_data,
     export_PART_data,
+    export_regional_gap_data,
 )
 from network_routing.database.setup.setup_00_initial import setup_00_initial
 from network_routing.database.setup.setup_01_updated_ridescore_inputs import (
@@ -186,6 +187,7 @@ def export_geojson(data_group_name):
         "mcpc": export_county_specific_data,
         "septa": export_septa_data,
         "part": export_PART_data,
+        "regional_gaps": export_regional_gap_data,
     }
 
     if data_group_name not in exporters:
