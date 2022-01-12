@@ -12,15 +12,20 @@ warnings.filterwarnings("ignore")
 
 
 @click.command()
-def feature_engineering():
+@click.option("--erase/--no-erase", default=False)
+@click.option("--split/--no-split", default=False)
+def feature_engineering(erase, split):
     """
     Erase & split the drawn lines to remove existing feature and make a topologically connected network
     """
 
     db = pg_db_connection()
 
-    erase_features(db)
-    split_features(db)
+    if erase:
+        erase_features(db)
+
+    if split:
+        split_features(db)
 
 
 def erase_features(db: Database, tablename: str = "improvements.all_possible_geoms") -> None:
@@ -37,11 +42,11 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_geo
         "Camden",
         "Burlington",
         "Mercer",
-        # "Montgomery",
-        # "Bucks",
-        # "Chester",
-        # "Delaware",
-        # "Philadelphia",
+        "Montgomery",
+        "Bucks",
+        "Chester",
+        "Delaware",
+        "Philadelphia",
     ]
 
     # Operate one county at a time, writing/appending results before moving to the next one
@@ -56,7 +61,9 @@ def erase_features(db: Database, tablename: str = "improvements.all_possible_geo
             select uid from {src_table}
             where st_within(
                 st_centroid(geom),
-                (select geom from regional_counties where co_name = '{county_name}')
+                (select geom 
+                 from regional_counties where co_name = '{county_name}'
+                 order by st_area(geom) desc limit 1)
             )
         """
         )
