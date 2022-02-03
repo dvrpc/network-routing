@@ -3,7 +3,7 @@ from network_routing import pg_db_connection, GDRIVE_DATA
 
 def setup_06_more_accessscore_inputs():
     """
-    Import MCPC and LTS shapefiles from GoogleDrive
+    Import AccessScore POI shapefile from GoogleDrive
     """
     db = pg_db_connection()
 
