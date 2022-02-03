@@ -29,40 +29,6 @@ def explode_gdf_if_multipart(gdf: GeoDataFrame) -> GeoDataFrame:
     return gdf
 
 
-# def import_production_sql_data(remote_db: Database, local_db: Database):
-#     """Copy data from DVRPC's production SQL database to a SQL database on localhost.
-
-#     NOTE: this connection will only work within the firewall.
-#     """
-
-#     data_to_download = [
-#         (
-#             "transportation",
-#             ["pedestriannetwork_lines", "pedestriannetwork_points", "passengerrailstations"],
-#         ),
-#         ("structure", ["points_of_interest"]),
-#         ("boundaries", ["municipalboundaries"]),
-#         ("demographics", "ipd_2018"),
-#     ]
-
-#     for schema, table_list in data_to_download:
-
-#         for table_name in table_list:
-
-#             # Extract the data from the remote database
-#             # and rename the geom column
-#             query = f"SELECT * FROM {schema}.{table_name};"
-#             gdf = remote_db.query_as_geo_df(query, geom_col="shape")
-#             gdf = gdf.rename(columns={"shape": "geometry"}).set_geometry("geometry")
-
-#             gdf = explode_gdf_if_multipart(gdf)
-
-#             gdf = gdf.to_crs("EPSG:26918")
-
-#             # Save to the local database
-#             local_db.import_geodataframe(gdf, table_name.lower())
-
-
 def import_data_from_portal(db: Database):
     """Download starter data via public ArcGIS API using geopandas"""
     data_to_download = [
@@ -94,46 +60,7 @@ def import_data_from_portal(db: Database):
 
             sql_tablename = tbl.lower()
 
-            db.import_geodataframe(
-                gdf, sql_tablename, gpd_kwargs={"if_exists": "replace"}
-            )
-
-
-def load_helper_functions(db: Database):
-    """Add a SQL function to get a median()"""
-
-    db.execute(
-        """
-        DROP FUNCTION IF EXISTS _final_median(anyarray);
-        CREATE FUNCTION _final_median(anyarray) RETURNS float8 AS $$
-        WITH q AS
-        (
-            SELECT val
-            FROM unnest($1) val
-            WHERE VAL IS NOT NULL
-            ORDER BY 1
-        ),
-        cnt AS
-        (
-            SELECT COUNT(*) as c FROM q
-        )
-        SELECT AVG(val)::float8
-        FROM
-        (
-            SELECT val FROM q
-            LIMIT  2 - MOD((SELECT c FROM cnt), 2)
-            OFFSET GREATEST(CEIL((SELECT c FROM cnt) / 2.0) - 1,0)
-        ) q2;
-        $$ LANGUAGE sql IMMUTABLE;
-
-        CREATE AGGREGATE median(anyelement) (
-        SFUNC=array_append,
-        STYPE=anyarray,
-        FINALFUNC=_final_median,
-        INITCOND='{}'
-        );
-    """
-    )
+            db.import_geodataframe(gdf, sql_tablename, gpd_kwargs={"if_exists": "replace"})
 
 
 def create_new_geodata(db: Database):
@@ -156,41 +83,27 @@ def create_new_geodata(db: Database):
             (co_name in {nj_counties} and state_name = 'New Jersey')
         group by co_name, state_name
     """
-    db.gis_make_geotable_from_query(
-        regional_counties, "regional_counties", "Polygon", 26918
-    )
+    db.gis_make_geotable_from_query(regional_counties, "regional_counties", "Polygon", 26918)
 
 
 def setup_00_initial(local_db: Database):
     """Batch execute the entire process"""
 
-    # if platform.system() in ["Linux", "Windows"] and "dvrpc.org" in socket.getfqdn():
-
-    #     dvrpc_credentials = pGIS.configurations()["dvrpc_gis"]
-    #     remote_db = PostgreSQL("gis", **dvrpc_credentials)
-
-    #     # 1) Copy SQL data from production database
-    #     import_production_sql_data(remote_db, local_db)
-
-    # else:
-    # 1b) Import data from public ArcGIS Portal
+    # 1) Import data from public ArcGIS Portal
     import_data_from_portal(local_db)
 
-    # 2) Load the MEDIAN() function into SQL
-    load_helper_functions(local_db)
-
-    # 3) Create new layers using what's already been imported
+    # 2) Create new layers using what's already been imported
     create_new_geodata(local_db)
 
-    # 4) Import all regional transit stops
+    # 3) Import all regional transit stops
     transit_data = TransitData()
     stops, lines = transit_data.all_spatial_data()
 
     stops = stops.to_crs("EPSG:26918")
 
-    local_db.import_geodataframe(stops, "regional_transit_stops")
+    local_db.import_geodataframe(stops, "regional_transit_stops", explode=True)
 
-    # 5) Import OSM data for the entire region
+    # 4) Import OSM data for the entire region
     import_osm_for_dvrpc_region(local_db, network_type="all")
 
 
