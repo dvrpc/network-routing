@@ -1,11 +1,11 @@
-from network_routing import pg_db_connection, GDRIVE_SW_GAPS_PROJECT_ROOT
+from network_routing import pg_db_connection, GDRIVE_DATA
 
 
 def setup_03_import_mode_data():
     """
     Import DVRPC's 'Equity Through Access' point dataset
     """
-    shp_path = GDRIVE_SW_GAPS_PROJECT_ROOT / "data-to-import" / "eta_essential_services.shp"
+    shp_path = GDRIVE_DATA / "ETA pois" / "eta_essential_services.shp"
 
     db = pg_db_connection()
 
