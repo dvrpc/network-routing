@@ -9,6 +9,13 @@ You can place this file wherever you intend to run the analysis from. It should 
 ```
 DATABASE_URL=postgresql://username:password@host:5432/database_name
 GDRIVE_ROOT=/Volumes/GoogleDrive/My Drive
+PG_DUMP_PATH=pg_dump
+```
+
+If the `pg_dump` executable in your Python environment does not match the Postgres server version you're running, you'll need to define a full path to the specific version of `pg_dump` that matches your server version. For example, on a Mac with postgres.app installed, you should set `PG_DUMP_PATH` to this:
+
+```
+PG_DUMP_PATH=/Applications/Postgres.app/Contents/Versions/latest/bin/pg_dump
 ```
 
 Make sure that this database exists, and that the PostGIS extension has been enabled. After you've created the database you can enable postgis by running: `CREATE EXTENSION postgis;`

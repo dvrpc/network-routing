@@ -32,4 +32,4 @@ prepare-for-analysis:
 
 
 database-backup:
-	pg_dump ${DATABASE_URL} > network_routing_backup.sql
+	${PG_DUMP_PATH} ${DATABASE_URL} > network_routing_backup.sql
