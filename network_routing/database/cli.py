@@ -53,6 +53,9 @@ from network_routing.database.export.geojson import (
 )
 from network_routing.database.setup.setup_00_initial import setup_00_initial
 
+from network_routing.database.setup.setup_01_initial_accessscore_pois import (
+    setup_01_updated_ridescore_inputs,
+)
 
 from network_routing.database.setup.setup_02_osm_drive import (
     setup_02_import_osm_drive_network,
@@ -105,7 +108,7 @@ def build_secondary(patch_number):
     """Update the db as defined by PATCH NUMBER"""
 
     patches = {
-        # patch number 1 was superseded by patch 6, and was removed
+        1: setup_01_updated_ridescore_inputs,
         2: setup_02_import_osm_drive_network,
         3: setup_03_import_mode_data,
         4: setup_04_remove_motorways_from_osm,
