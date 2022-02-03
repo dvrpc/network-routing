@@ -52,9 +52,8 @@ from network_routing.database.export.geojson import (
     export_regional_gap_data,
 )
 from network_routing.database.setup.setup_00_initial import setup_00_initial
-from network_routing.database.setup.setup_01_updated_ridescore_inputs import (
-    setup_01_updated_ridescore_inputs,
-)
+
+
 from network_routing.database.setup.setup_02_osm_drive import (
     setup_02_import_osm_drive_network,
 )
