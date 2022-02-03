@@ -105,7 +105,7 @@ def build_secondary(patch_number):
     """Update the db as defined by PATCH NUMBER"""
 
     patches = {
-        1: setup_01_updated_ridescore_inputs,
+        # patch number 1 was superseded by patch 6, and was removed
         2: setup_02_import_osm_drive_network,
         3: setup_03_import_mode_data,
         4: setup_04_remove_motorways_from_osm,
