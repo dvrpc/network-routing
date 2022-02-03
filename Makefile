@@ -17,6 +17,7 @@ prepare-initial-database:
 
 
 prepare-for-analysis:
+	db build-secondary 1
 	db build-secondary 2
 	db build-secondary 3
 	db build-secondary 4
@@ -28,6 +29,7 @@ prepare-for-analysis:
 	db make-nodes-for-edges osm_edges_all_no_motorway
 	db make-nodes-for-edges pedestriannetwork_lines
 	db make-nodes-for-edges lowstress_islands
+
 
 database-backup:
 	pg_dump ${DATABASE_URL} > network_routing_backup.sql
