@@ -39,11 +39,12 @@ def setup_05_import_mcpc_and_lts_shapefiles():
                 src as category,
                 case
                     when stop_name is not null then stop_name
-                    when station_name is not null then station_name
+                    when station_na is not null then station_na
                     when stopname is not null then stopname
                     when station is not null then station
-                    when bsl is not null then bsl
-                    when on_street is not null then concat(on_street, ' @ ', at_street)
+                    when description_bsl is not null then description_bsl
+                    when route is not null then route
+                    when station_id is not null then station_id
                 end as poi_name,
                 geom
             from
