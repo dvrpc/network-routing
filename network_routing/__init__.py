@@ -7,21 +7,19 @@ from network_routing.accessibility.routable_network import RoutableNetwork
 
 # Load environment variables
 load_dotenv(find_dotenv())
-DB_NAME = os.getenv("DB_NAME")
-DB_HOST = os.getenv("DB_HOST")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Define downstream folder paths
 GDRIVE_ROOT = os.getenv("GDRIVE_ROOT")
 if GDRIVE_ROOT:
     GDRIVE_ROOT = Path(GDRIVE_ROOT)
-    GDRIVE_SW_GAPS_PROJECT_ROOT = GDRIVE_ROOT / "My Drive/projects/Sidewalk Gaps"
     GDRIVE_DATA = GDRIVE_ROOT / "Shared drives/network-routing-repo-data/data"
     FOLDER_DATA_PRODUCTS = GDRIVE_DATA / "outputs"
 
 else:
-    FOLDER_DATA_PRODUCTS, GDRIVE_SW_GAPS_PROJECT_ROOT, GDRIVE_DATA = None, None, None
+    FOLDER_DATA_PRODUCTS, GDRIVE_DATA = None, None
 
 
-def pg_db_connection(database_name: str = DB_NAME, host: str = DB_HOST) -> pg.Database:
-    db = pg.Database.from_config(database_name, host)
+def pg_db_connection() -> pg.Database:
+    db = pg.Database.from_uri(DATABASE_URL)
     return db
