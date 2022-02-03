@@ -1,4 +1,4 @@
-from network_routing import pg_db_connection, GDRIVE_SW_GAPS_PROJECT_ROOT
+from network_routing import pg_db_connection
 from .get_osm import import_osm_for_dvrpc_region
 
 
