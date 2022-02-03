@@ -5,7 +5,7 @@ def setup_03_import_mode_data():
     """
     Import DVRPC's 'Equity Through Access' point dataset
     """
-    shp_path = GDRIVE_DATA / "ETA pois" / "eta_essential_services.shp"
+    shp_path = GDRIVE_DATA / "inputs" / "ETA pois" / "eta_essential_services.shp"
 
     db = pg_db_connection()
 
