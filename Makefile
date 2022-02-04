@@ -10,6 +10,8 @@ all:
 	@echo -----------------------------------------
 	@echo - prepare-initial-database
 	@echo - prepare-for-analysis
+	@echo - sidewalk-gaps-map
+	@echo - database-backup
 
 
 prepare-initial-database:
@@ -29,6 +31,11 @@ prepare-for-analysis:
 	db make-nodes-for-edges osm_edges_all_no_motorway
 	db make-nodes-for-edges pedestriannetwork_lines
 	db make-nodes-for-edges lowstress_islands
+
+
+sidewalk-gaps-map:
+	gaps classify-osm-sw-coverage
+	gaps identify-islands
 
 
 database-backup:
