@@ -38,6 +38,11 @@ sidewalk-gaps-map:
 	gaps scrub-osm-tags
 	gaps identify-islands
 	access sw-default
+
+	access sw-access-score
+	access osm-access-score
+	gaps isochrones-accessscore
+
 	db export-geojson gaps
 	db make-vector-tiles gaps sidewalk_gap_analysis
 
