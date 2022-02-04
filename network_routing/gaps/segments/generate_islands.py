@@ -83,7 +83,7 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines"):
 
     # Iterate over each feature. Make a random rgb code and find intersecting municipalities
     query = f"SELECT uid FROM {output_schema}.islands"
-    uids = db.query_as_df(query)
+    uids = db.df(query)
     for idx, row in tqdm(uids.iterrows(), total=uids.shape[0]):
 
         # Query the intersecting municipalities
