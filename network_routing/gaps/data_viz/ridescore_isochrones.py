@@ -6,9 +6,9 @@ from pg_data_etl import Database
 
 def generate_isochrones(
     db: Database,
-    sidewalk_result_table: str = "rs_sw.sw_results",
-    osm_result_table: str = "rs_osm.osm_results",
-    output_tablename: str = "data_viz.ridescore_results",
+    sidewalk_result_table: str = "access_score_sw.sw_results",
+    osm_result_table: str = "access_score_osm.osm_results",
+    output_tablename: str = "data_viz.accessscore_results",
 ) -> None:
     """
     - Using the results of the OSM and Sidewalk ridescore analyses,
