@@ -35,8 +35,11 @@ prepare-for-analysis:
 
 sidewalk-gaps-map:
 	gaps classify-osm-sw-coverage
+	gaps scrub-osm-tags
 	gaps identify-islands
-
+	access sw-default
+	db export-geojson gaps
+	db make-vector-tiles gaps sidewalk_gap_analysis
 
 database-backup:
 	${PG_DUMP_PATH} ${DATABASE_URL} > network_routing_backup.sql
