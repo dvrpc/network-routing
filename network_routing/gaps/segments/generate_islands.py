@@ -48,7 +48,7 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines"):
             ) AS geom
         FROM {tbl}
     """
-    db.gis_make_geotable_from_query(query, "islands", "MULTILINESTRING", 26918)
+    db.gis_make_geotable_from_query(query, f"{output_schema}.islands", "MULTILINESTRING", 26918)
 
     # Add a column for size
     db.execute(
@@ -85,7 +85,6 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines"):
     query = f"SELECT uid FROM {output_schema}.islands"
     uids = db.query_as_df(query)
     for idx, row in tqdm(uids.iterrows(), total=uids.shape[0]):
-        # print(row.uid)
 
         # Query the intersecting municipalities
         query = f"""
