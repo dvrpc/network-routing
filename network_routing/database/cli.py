@@ -45,7 +45,7 @@ from network_routing.database.export.vector_tiles import (
 )
 from network_routing.database.export.geojson import (
     export_gap_webmap_data,
-    export_ridescore_webmap_data,
+    export_accessscore_webmap_data,
     export_county_specific_data,
     export_septa_data,
     export_PART_data,
@@ -86,6 +86,9 @@ from network_routing.database.export.shapefile import (
 from network_routing.database.setup.setup_09_part import (
     setup_09_import_part_data,
 )
+from network_routing.database.setup.setup_10_merge_accesscore_w_regional_transit import (
+    setup_10_merge_accessscore_w_regional_stops,
+)
 
 
 @click.group()
@@ -117,6 +120,7 @@ def build_secondary(patch_number):
         7: setup_07_import_srts_projects,
         8: setup_08_import_septa_data,
         9: setup_09_import_part_data,
+        10: setup_10_merge_accessscore_w_regional_stops,
     }
 
     if patch_number not in patches:
@@ -184,7 +188,7 @@ def export_geojson(data_group_name):
     db = pg_db_connection()
 
     exporters = {
-        "ridescore": export_ridescore_webmap_data,
+        "accessscore": export_accessscore_webmap_data,
         "gaps": export_gap_webmap_data,
         "mcpc": export_county_specific_data,
         "septa": export_septa_data,

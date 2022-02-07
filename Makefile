@@ -28,6 +28,7 @@ prepare-for-analysis:
 	db build-secondary 7
 	db build-secondary 8
 	db build-secondary 9
+	db build-secondary 10
 	db make-nodes-for-edges osm_edges_all_no_motorway
 	db make-nodes-for-edges pedestriannetwork_lines
 	db make-nodes-for-edges lowstress_islands
@@ -38,12 +39,13 @@ sidewalk-gaps-map:
 	gaps scrub-osm-tags
 	gaps identify-islands
 	access sw-default
+	db export-geojson gaps
 
 	access sw-access-score
 	access osm-access-score
 	gaps isochrones-accessscore
+	db export-geojson accessscore
 
-	db export-geojson gaps
 	db make-vector-tiles gaps sidewalk_gap_analysis
 
 database-backup:
