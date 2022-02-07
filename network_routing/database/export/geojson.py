@@ -66,26 +66,7 @@ def export_gap_webmap_data(db: Database):
 
     # Transit stops
     query_transit_stops = """
-        select
-            uid,
-            src,
-            case
-                when stop_name is not null then stop_name
-                when station_na is not null then station_na
-                when stopname is not null then stopname
-                when station is not null then station
-                when description_bsl is not null then description_bsl
-                when route is not null then route
-                when station_id is not null then station_id
-            end as stop_name,
-            st_transform(geom, 4326) as geom
-        from
-            regional_transit_stops
-        where
-            st_within(
-                geom,
-                (select st_collect(geom) from regional_counties)
-            )
+        select * from regional_transit_with_accessscore
     """
     write_query_to_geojson("transit_stops", query_transit_stops, db, "gaps")
 
