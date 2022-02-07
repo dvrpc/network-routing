@@ -97,7 +97,7 @@ def export_gap_webmap_data(db: Database):
     write_query_to_geojson("islands", query_islands, db, "gaps")
 
 
-def export_ridescore_webmap_data(db: Database):
+def export_accessscore_webmap_data(db: Database):
     """
     Export data for the ridescore analysis
     - isochrones
@@ -106,9 +106,9 @@ def export_ridescore_webmap_data(db: Database):
     """
 
     tables_to_export = [
-        "data_viz.ridescore_isos",
-        "data_viz.sidewalkscore",
-        "public.ridescore_pois",
+        "data_viz.accessscore_results",
+        "data_viz.accessscore_points",
+        "public.access_score_final_poi_set",
     ]
 
     for tbl in tables_to_export:
@@ -116,7 +116,7 @@ def export_ridescore_webmap_data(db: Database):
 
         schema, tablename = tbl.split(".")
 
-        write_query_to_geojson(tablename, query, db, "ridescore")
+        write_query_to_geojson(tablename, query, db, "gaps")
 
 
 def export_county_specific_data(db: Database):

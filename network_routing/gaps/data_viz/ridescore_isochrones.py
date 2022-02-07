@@ -100,13 +100,13 @@ def calculate_sidewalkscore(
     db: Database,
     poi_query: str,
     uid_col: str = "poi_uid",
-    osm_schema: str = "rs_osm",
-    sw_schema: str = "rs_sw",
-    iso_table: str = "data_viz.ridescore_isos",
-    output_tablename: str = "data_viz.ridescore",
+    osm_schema: str = "access_score_osm",
+    sw_schema: str = "access_score_sw",
+    iso_table: str = "data_viz.accessscore_results",
+    output_tablename: str = "data_viz.accessscore_points",
 ) -> None:
     """
-    - Using `data_viz.ridescore_pois`, generate a layer with a single point for each transit stop.
+    - Generate a layer with a single point for each transit stop.
 
     - Update this layer with a columns `rs_sw` and `rs_osm` to hold attributes on how large
     the sidewalk and OSM isochrones are for the station.
@@ -147,8 +147,6 @@ def calculate_sidewalkscore(
         # Drop each result into the appropriate column
         for colname, iso_area in result:
             gdf.at[idx, colname] = iso_area
-
-    print(gdf)
 
     gdf["sidewalkscore"] = gdf[sw_schema] / gdf[osm_schema]
 

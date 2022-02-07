@@ -93,7 +93,7 @@ def isochrones_accessscore():
         select
             st_centroid(st_collect(geom)) as geom,
             type, line, station, operator, dvrpc_id as poi_uid
-        from ridescore_pois
+        from access_score_final_poi_set
         group by type, line, station, operator, dvrpc_id 
         order by dvrpc_id
     """
