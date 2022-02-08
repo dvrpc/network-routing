@@ -44,6 +44,7 @@ from network_routing.database.export.vector_tiles import (
     make_vector_tiles as _make_vector_tiles,
 )
 from network_routing.database.export.geojson import (
+    export_dock_data,
     export_gap_webmap_data,
     export_ridescore_webmap_data,
     export_county_specific_data,
@@ -86,7 +87,9 @@ from network_routing.database.export.shapefile import (
 from network_routing.database.setup.setup_09_part import (
     setup_09_import_part_data,
 )
-
+from network_routing.database.setup.setup_10_docks import (
+    setup_10_import_docks_data,
+)
 
 @click.group()
 def main():
@@ -117,6 +120,7 @@ def build_secondary(patch_number):
         7: setup_07_import_srts_projects,
         8: setup_08_import_septa_data,
         9: setup_09_import_part_data,
+        10: setup_10_import_docks_data,
     }
 
     if patch_number not in patches:
@@ -190,6 +194,7 @@ def export_geojson(data_group_name):
         "septa": export_septa_data,
         "part": export_PART_data,
         "regional_gaps": export_regional_gap_data,
+        "docks": export_dock_data,
     }
 
     if data_group_name not in exporters:

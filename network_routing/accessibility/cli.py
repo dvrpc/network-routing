@@ -382,6 +382,47 @@ def part_osm():
     _ = _execute_analysis_into_one_output(arguments)
 
 
+@click.command()
+def docks_sidewalk():
+    """Analyze Dock POIs w/ sidewalk network"""
+
+    arguments = {
+        "edge_table_name": "pedestriannetwork_lines",
+        "node_table_name": "nodes_for_sidewalks",
+        "node_id_column": "sw_node_id",
+        "poi_table_name": "docks",
+        "poi_id_column": "id",
+        "output_table_name": "docks_sidewalk",
+        "output_schema": "docks_sw",
+        "max_minutes": 45,
+        "poi_match_threshold": 152,  # aka 500'
+        "num_pois": 1,
+    }
+
+    _ = _execute_analysis_into_one_output(arguments)
+
+
+@click.command()
+def docks_osm():
+    """Analyze dock POIs w/ OSM network"""
+
+    arguments = {
+        "edge_table_name": "osm_edges_all_no_motorway",
+        "node_table_name": "nodes_for_osm_all",
+        "node_id_column": "node_id",
+        "poi_table_name": "docks",
+        "poi_id_column": "id",
+        "output_table_name": "docks_open_street",
+        "output_schema": "docks_osm",
+        "max_minutes": 45,
+        "poi_match_threshold": 152,  # aka 500'
+        "num_pois": 1,
+    }
+
+    _ = _execute_analysis_into_one_output(arguments)
+
+
+
 _all_commands = [
     sw_default,
     osm_access_score,
@@ -394,6 +435,8 @@ _all_commands = [
     septa_stops,
     part_sidewalk,
     part_osm,
+    docks_sidewalk,
+    docks_osm,
 ]
 
 for cmd in _all_commands:
