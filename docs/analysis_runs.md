@@ -107,3 +107,16 @@ Analyze POIs in the Pottstown area.
 > db export-geojson part
 
 ```
+
+## PART
+
+Analyze New Jersey Docks along the delaware river.
+
+```bash
+
+> access docks-sidewalk
+> access docks-osm
+> gaps isochrones-docks
+> db export-geojson docks
+
+```
