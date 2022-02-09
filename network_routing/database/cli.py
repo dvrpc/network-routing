@@ -44,6 +44,7 @@ from network_routing.database.export.vector_tiles import (
     make_vector_tiles as _make_vector_tiles,
 )
 from network_routing.database.export.geojson import (
+    export_dock_data,
     export_gap_webmap_data,
     export_accessscore_webmap_data,
     export_county_specific_data,
@@ -91,6 +92,11 @@ from network_routing.database.setup.setup_10_merge_accesscore_w_regional_transit
 )
 
 
+
+from network_routing.database.setup.setup_11_docks import (
+    setup_11_import_docks_data,
+)
+
 @click.group()
 def main():
     """The command 'db' is used to run data import & export processes"""
@@ -121,6 +127,7 @@ def build_secondary(patch_number):
         8: setup_08_import_septa_data,
         9: setup_09_import_part_data,
         10: setup_10_merge_accessscore_w_regional_stops,
+        11: setup_11_import_docks_data,
     }
 
     if patch_number not in patches:
@@ -194,6 +201,7 @@ def export_geojson(data_group_name):
         "septa": export_septa_data,
         "part": export_PART_data,
         "regional_gaps": export_regional_gap_data,
+        "docks": export_dock_data,
     }
 
     if data_group_name not in exporters:

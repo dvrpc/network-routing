@@ -199,12 +199,33 @@ def export_PART_data(db: Database):
         select * from part_osm.pois_results
     """
 
-    queries = {"part_pois": pois, "walksheds": isos, "raw_sw": raw_sw, "raw_osm": raw_osm}
+    queries = {"pois": pois, "walksheds": isos, "raw_sw": raw_sw, "raw_osm": raw_osm}
 
     for filename, query in queries.items():
         print(filename, query)
 
         write_query_to_geojson(filename, query, db, "PART")
+
+def export_dock_data(db: Database):
+    """
+    Export data for NJ docks
+    """
+    isos = """
+        select * from data_viz.dock_isos
+    """
+    raw_sw = """
+        select * from docks_sw.docks_sidewalk_results
+    """
+    raw_osm = """
+        select * from docks_osm.docks_open_street_results
+    """
+
+    queries = { "walksheds": isos, "raw_sw": raw_sw, "raw_osm": raw_osm}
+
+    for filename, query in queries.items():
+        print(filename, query)
+
+        write_query_to_geojson(filename, query, db, "Dock")
 
 
 def export_regional_gap_data(db: Database):

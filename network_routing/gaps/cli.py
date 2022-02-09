@@ -207,6 +207,50 @@ def isochrones_part():
 
 
 @click.command()
+def isochrones_docks():
+    """
+    Make dock isos with stats
+    """
+
+    db = pg_db_connection()
+
+    # Generate isochrones
+    iso_args = {
+        "sidewalk_result_table": "docks_sw.docks_sidewalk_results",
+        "osm_result_table": "docks_osm.docks_open_street_results",
+        "output_tablename": "data_viz.dock_isos",
+    }
+
+    generate_isochrones(db, **iso_args)
+
+    # Generate a point layer that summarizes the isochrone results
+    query = """
+        select 
+        replace(
+            replace(
+                replace(lower(id), ' ', ''),
+                '-',
+                ''
+            ),
+            '/',
+            ''
+        ) as poi_uid, *
+        from docks
+    """
+
+    final_point_args = {
+        "poi_query": query,
+        "uid_col": "poi_uid",
+        "osm_schema": "docks_osm",
+        "sw_schema": "docks_sw",
+        "iso_table": "data_viz.dock_isos",
+        "output_tablename": "data_viz.dock_pois_with_scores",
+    }
+
+    calculate_sidewalkscore(db, **final_point_args)
+
+
+@click.command()
 def scrub_osm_tags():
     """Clean 'highway' tags in the OSM data"""
 
@@ -224,6 +268,7 @@ _all_commands = [
     accessscore_line_results,
     isochrones_septa,
     isochrones_part,
+    isochrones_docks,
 ]
 
 for cmd in _all_commands:
