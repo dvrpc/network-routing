@@ -87,8 +87,11 @@ from network_routing.database.export.shapefile import (
 from network_routing.database.setup.setup_09_part import (
     setup_09_import_part_data,
 )
-from network_routing.database.setup.setup_10_docks import (
-    setup_10_import_docks_data,
+
+
+
+from network_routing.database.setup.setup_11_docks import (
+    setup_11_import_docks_data,
 )
 
 @click.group()
@@ -120,7 +123,8 @@ def build_secondary(patch_number):
         7: setup_07_import_srts_projects,
         8: setup_08_import_septa_data,
         9: setup_09_import_part_data,
-        10: setup_10_import_docks_data,
+
+        11: setup_11_import_docks_data,
     }
 
     if patch_number not in patches:

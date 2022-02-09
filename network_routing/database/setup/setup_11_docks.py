@@ -1,7 +1,7 @@
 from network_routing import pg_db_connection, GDRIVE_DATA
 
 
-def setup_10_import_docks_data():
+def setup_11_import_docks_data():
     """
     Import dock data
     """
@@ -31,4 +31,4 @@ def setup_10_import_docks_data():
     db.execute(query2)
 
 if __name__ == "__main__":
-    setup_10_import_docks_data()
+    setup_11_import_docks_data()
