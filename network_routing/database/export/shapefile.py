@@ -89,3 +89,32 @@ def export_shapefiles_for_editing():
     gdf = db.gdf("SELECT * FROM rs_sw.qaqc_node_match")
     output_path = output_folder / "sw_qaqc.shp"
     gdf.to_file(output_path)
+
+
+def export_shapefile_for_rmms():
+    """
+    Export data for the consultant team working on the
+    Racial Minority Mobility Choices study
+    """
+    db = pg_db_connection()
+
+    output_folder = FOLDER_DATA_PRODUCTS / "rmmc-study"
+    filepath = output_folder / "walktime_to_transit.geojson"
+
+    cols = db.columns("sw_defaults.regional_transit_stops_results")
+
+    n1_cols = [x for x in cols if "n_1_" in x]
+
+    query = (
+        "select uid, geom, "
+        + ", ".join(n1_cols)
+        + " from sw_defaults.regional_transit_stops_results"
+    )
+    print(query)
+    gdf = db.gdf(query)
+
+    gdf.to_file(filepath, driver="GeoJSON")
+
+
+if __name__ == "__main__":
+    export_shapefile_for_rmms()

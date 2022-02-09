@@ -66,26 +66,7 @@ def export_gap_webmap_data(db: Database):
 
     # Transit stops
     query_transit_stops = """
-        select
-            uid,
-            src,
-            case
-                when stop_name is not null then stop_name
-                when station_na is not null then station_na
-                when stopname is not null then stopname
-                when station is not null then station
-                when description_bsl is not null then description_bsl
-                when route is not null then route
-                when station_id is not null then station_id
-            end as stop_name,
-            st_transform(geom, 4326) as geom
-        from
-            regional_transit_stops
-        where
-            st_within(
-                geom,
-                (select st_collect(geom) from regional_counties)
-            )
+        select * from regional_transit_with_accessscore
     """
     write_query_to_geojson("transit_stops", query_transit_stops, db, "gaps")
 
@@ -97,7 +78,7 @@ def export_gap_webmap_data(db: Database):
     write_query_to_geojson("islands", query_islands, db, "gaps")
 
 
-def export_ridescore_webmap_data(db: Database):
+def export_accessscore_webmap_data(db: Database):
     """
     Export data for the ridescore analysis
     - isochrones
@@ -106,9 +87,9 @@ def export_ridescore_webmap_data(db: Database):
     """
 
     tables_to_export = [
-        "data_viz.ridescore_isos",
-        "data_viz.sidewalkscore",
-        "public.ridescore_pois",
+        "data_viz.accessscore_results",
+        "data_viz.accessscore_points",
+        "public.access_score_final_poi_set",
     ]
 
     for tbl in tables_to_export:
@@ -116,7 +97,7 @@ def export_ridescore_webmap_data(db: Database):
 
         schema, tablename = tbl.split(".")
 
-        write_query_to_geojson(tablename, query, db, "ridescore")
+        write_query_to_geojson(tablename, query, db, "gaps")
 
 
 def export_county_specific_data(db: Database):
