@@ -123,7 +123,8 @@ def build_secondary(patch_number):
         7: setup_07_import_srts_projects,
         8: setup_08_import_septa_data,
         9: setup_09_import_part_data,
-
+        10: setup_10_merge_accessscore_w_regional_stops,
+        11: setup_11_import_docks_data,
     }
 
     if patch_number not in patches:
