@@ -124,7 +124,6 @@ def build_secondary(patch_number):
         8: setup_08_import_septa_data,
         9: setup_09_import_part_data,
 
-        11: setup_11_import_docks_data,
     }
 
     if patch_number not in patches:
