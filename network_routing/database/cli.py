@@ -90,12 +90,13 @@ from network_routing.database.setup.setup_09_part import (
 from network_routing.database.setup.setup_10_merge_accesscore_w_regional_transit import (
     setup_10_merge_accessscore_w_regional_stops,
 )
-
-
-
 from network_routing.database.setup.setup_11_docks import (
     setup_11_import_docks_data,
 )
+from network_routing.database.setup.setup_12_delco_trailheads import (
+    setup_12_import_delco_trailheads,
+)
+
 
 @click.group()
 def main():
@@ -128,6 +129,7 @@ def build_secondary(patch_number):
         9: setup_09_import_part_data,
         10: setup_10_merge_accessscore_w_regional_stops,
         11: setup_11_import_docks_data,
+        12: setup_12_import_delco_trailheads,
     }
 
     if patch_number not in patches:

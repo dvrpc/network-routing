@@ -422,6 +422,25 @@ def docks_osm():
     _ = _execute_analysis_into_one_output(arguments)
 
 
+@click.command()
+def delco_osm():
+    """Analyze Delco Trailheads w/ OSM network"""
+
+    arguments = {
+        "edge_table_name": "osm_edges_all_no_motorway",
+        "node_table_name": "nodes_for_osm_all",
+        "node_id_column": "node_id",
+        "poi_table_name": "delco_trailheads",
+        "poi_id_column": "original_gid",
+        "output_table_name": "trailheads",
+        "output_schema": "delco",
+        "max_minutes": 50,  # 48 minutes = 2 miles
+        "poi_match_threshold": 152,  # aka 500'
+        "num_pois": 1,
+    }
+
+    _ = _execute_analysis_into_one_output(arguments)
+
 
 _all_commands = [
     sw_default,
@@ -437,6 +456,7 @@ _all_commands = [
     part_osm,
     docks_sidewalk,
     docks_osm,
+    delco_osm,
 ]
 
 for cmd in _all_commands:
