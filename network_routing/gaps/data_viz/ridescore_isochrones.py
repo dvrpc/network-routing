@@ -3,6 +3,8 @@ from tqdm import tqdm
 
 from pg_data_etl import Database
 
+from network_routing.gaps.data_viz.make_single_isochrone import generate_isochrones_for_single_table
+
 
 def generate_isochrones(
     db: Database,
@@ -33,10 +35,6 @@ def generate_isochrones(
     sql_query = f"CREATE SCHEMA IF NOT EXISTS {output_schema};"
     db.execute(sql_query)
 
-    # Convert 1 mile to minutes
-    miles = 1
-    time_cutoff = miles * 60 / 2.5
-
     all_results = []
 
     ridescore_results = [
@@ -46,50 +44,9 @@ def generate_isochrones(
 
     for result_table in ridescore_results:
 
-        print(f"Generating isochrone for {result_table.upper()}")
+        gdf = generate_isochrones_for_single_table(db, result_table, mileage_cutoff=1)
 
-        result_cols = db.columns(result_table)
-
-        all_ids = [x[4:] for x in result_cols if "n_1_" in x]
-
-        for poi_uid in tqdm(all_ids, total=len(all_ids)):
-            # Figure out if there's results
-            node_count_query = f"""
-                SELECT COUNT(node_id)
-                FROM {result_table}
-                WHERE n_1_{poi_uid} <= {time_cutoff}
-            """
-            node_count = db.query_as_singleton(node_count_query)
-
-            # Only make isochrones if there's nodes below the threshold
-            if node_count > 0:
-
-                # If there's only two points we want to extract
-                # the linestring from the concavehull operation
-                if node_count == 2:
-                    geom_idx = 2
-                # Otherwise, grab the polygon instead
-                # See: https://postgis.net/docs/ST_CollectionExtract.html
-                else:
-                    geom_idx = 3
-
-                query = f"""
-                    select  st_buffer(
-                                st_collectionextract(
-                                    st_concavehull(st_collect(geom), 0.99),
-                                    {geom_idx}),
-                                45) as geom
-                    from {result_table}
-                    where n_1_{poi_uid} <= {time_cutoff}
-                """
-                gdf = db.gdf(query)
-
-                gdf["schema"] = result_table.split(".")[0]
-                gdf["poi_uid"] = poi_uid
-
-                gdf = gdf.rename(columns={"geom": "geometry"}).set_geometry("geometry")
-
-                all_results.append(gdf)
+        all_results.append(gdf)
 
     merged_gdf = pd.concat(all_results)
 
