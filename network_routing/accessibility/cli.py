@@ -435,7 +435,7 @@ def delco_osm():
         "output_table_name": "trailheads",
         "output_schema": "delco",
         "max_minutes": 50,  # 48 minutes = 2 miles
-        "poi_match_threshold": 152,  # aka 500'
+        "poi_match_threshold": 500,  # aka 0.3 miles
         "num_pois": 1,
     }
 
