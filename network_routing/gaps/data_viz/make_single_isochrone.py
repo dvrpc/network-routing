@@ -87,4 +87,4 @@ if __name__ == "__main__":
 
     gdf = generate_isochrones_for_single_table(db, "delco.trailheads_results", 2)
 
-    db.import_geodataframe(gdf, "data_viz.delco_isochrones_2miles")
+    db.import_geodataframe(gdf, "data_viz.delco_isochrones_2miles_v2")
