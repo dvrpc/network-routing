@@ -101,7 +101,7 @@ def setup_00_initial(local_db: Database):
 
     stops = stops.to_crs("EPSG:26918")
 
-    local_db.import_geodataframe(stops, "regional_transit_stops", explode=True)
+    local_db.import_geodataframe(stops, "regional_transit_stops")
 
     db.execute(
         """
