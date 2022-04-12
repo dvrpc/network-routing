@@ -103,13 +103,6 @@ def setup_00_initial(local_db: Database):
 
     local_db.import_geodataframe(stops, "regional_transit_stops")
 
-    db.execute(
-        """
-        alter table regional_transit_stops 
-        drop column level_0;
-    """
-    )
-
     # 4) Import OSM data for the entire region
     import_osm_for_dvrpc_region(local_db, network_type="all")
 
