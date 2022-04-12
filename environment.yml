@@ -4,8 +4,8 @@ channels:
 dependencies:
   - python=3.9*
   - flake8
-  - pyproj<3
-  - geopandas<0.9
+  - pyproj
+  - geopandas
   - psycopg2
   - geoalchemy2
   - ipython
