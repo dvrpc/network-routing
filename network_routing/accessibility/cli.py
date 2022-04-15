@@ -466,7 +466,7 @@ def rrmp_lts():
     """Analyze Regional Rail station for the RR Master Plan with LTS links"""
 
     arguments = {
-        "edge_table_name": "low_stress_islands",
+        "edge_table_name": "lowstress_islands",
         "node_table_name": "nodes_for_lowstress_islands",
         "node_id_column": "node_id",
         "poi_table_name": "regional_rail_master_plan_pois",
