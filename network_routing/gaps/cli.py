@@ -269,8 +269,8 @@ def isochrones_rrmp():
 
     generate_isochrones(
         db,
-        sidewalk_result_table="rrmp_sw.regional_rail_stops",
-        osm_result_table="rrmp_lts.regional_rail_stops",
+        sidewalk_result_table="rrmp_sw.regional_rail_stops_results",
+        osm_result_table="rrmp_lts.regional_rail_stops_results",
         output_tablename="data_viz.rrmp_isochrones",
         sw_cutoff=0.75,
         osm_cutoff=3.0,
