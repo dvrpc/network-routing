@@ -31,6 +31,7 @@ prepare-for-analysis:
 	db build-secondary 10
 	db build-secondary 11
 	db build-secondary 12
+	db build-secondary 13
 	db make-nodes-for-edges osm_edges_all_no_motorway
 	db make-nodes-for-edges pedestriannetwork_lines
 	db make-nodes-for-edges lowstress_islands
@@ -49,6 +50,14 @@ sidewalk-gaps-map:
 	db export-geojson accessscore
 
 	db make-vector-tiles gaps sidewalk_gap_analysis
+
+
+rrmp:
+	access rrmp-sw
+	access rrmp-lts
+	gaps isochrones-rrmp
+	db export-geojson rrmp
+
 
 database-backup:
 	${PG_DUMP_PATH} ${DATABASE_URL} > network_routing_backup.sql

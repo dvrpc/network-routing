@@ -32,6 +32,13 @@ def write_query_to_geojson(filename: str, query: str, db: Database, folder: str)
     gdf.to_file(output_filepath, driver="GeoJSON")
 
 
+def export_rrmp_data(db: Database):
+    write_query_to_geojson(
+        "station_points", "select * from regional_rail_master_plan_pois", db, "rrmp"
+    )
+    write_query_to_geojson("isochrones", "select * from data_viz.rrmp_isochrones", db, "rrmp")
+
+
 def export_gap_webmap_data(db: Database):
     """
     Export three geojson files:
@@ -206,6 +213,7 @@ def export_PART_data(db: Database):
 
         write_query_to_geojson(filename, query, db, "PART")
 
+
 def export_dock_data(db: Database):
     """
     Export data for NJ docks
@@ -220,7 +228,7 @@ def export_dock_data(db: Database):
         select * from docks_osm.docks_open_street_results
     """
 
-    queries = { "walksheds": isos, "raw_sw": raw_sw, "raw_osm": raw_osm}
+    queries = {"walksheds": isos, "raw_sw": raw_sw, "raw_osm": raw_osm}
 
     for filename, query in queries.items():
         print(filename, query)

@@ -51,6 +51,7 @@ from network_routing.database.export.geojson import (
     export_septa_data,
     export_PART_data,
     export_regional_gap_data,
+    export_rrmp_data,
 )
 from network_routing.database.setup.setup_00_initial import setup_00_initial
 
@@ -96,6 +97,9 @@ from network_routing.database.setup.setup_11_docks import (
 from network_routing.database.setup.setup_12_delco_trailheads import (
     setup_12_import_delco_trailheads,
 )
+from network_routing.database.setup.setup_13_regional_rail_master_plan import (
+    setup_13_regional_rail_master_plan,
+)
 
 
 @click.group()
@@ -130,6 +134,7 @@ def build_secondary(patch_number):
         10: setup_10_merge_accessscore_w_regional_stops,
         11: setup_11_import_docks_data,
         12: setup_12_import_delco_trailheads,
+        13: setup_13_regional_rail_master_plan,
     }
 
     if patch_number not in patches:
@@ -204,6 +209,7 @@ def export_geojson(data_group_name):
         "part": export_PART_data,
         "regional_gaps": export_regional_gap_data,
         "docks": export_dock_data,
+        "rrmp": export_rrmp_data,
     }
 
     if data_group_name not in exporters:

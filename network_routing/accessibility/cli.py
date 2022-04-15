@@ -442,6 +442,44 @@ def delco_osm():
     _ = _execute_analysis_into_one_output(arguments)
 
 
+@click.command()
+def rrmp_sw():
+    """Analyze Regional Rail station for the RR Master Plan with sidewalks"""
+
+    arguments = {
+        "edge_table_name": "pedestriannetwork_lines",
+        "node_table_name": "nodes_for_sidewalks",
+        "node_id_column": "sw_node_id",
+        "poi_table_name": "regional_rail_master_plan_pois",
+        "poi_id_column": "dvrpc_id",
+        "output_table_name": "regional_rail_stops",
+        "output_schema": "rrmp_sw",
+        "max_minutes": 180,
+        "poi_match_threshold": 152,  # aka 500'
+    }
+
+    _ = _execute_analysis_into_one_output(arguments)
+
+
+@click.command()
+def rrmp_lts():
+    """Analyze Regional Rail station for the RR Master Plan with LTS links"""
+
+    arguments = {
+        "edge_table_name": "low_stres_islands",
+        "node_table_name": "nodes_for_lowstress_islands",
+        "node_id_column": "node_id",
+        "poi_table_name": "regional_rail_master_plan_pois",
+        "poi_id_column": "dvrpc_id",
+        "output_table_name": "regional_rail_stops",
+        "output_schema": "rrmp_lts",
+        "max_minutes": 180,
+        "poi_match_threshold": 152,  # aka 500'
+    }
+
+    _ = _execute_analysis_into_one_output(arguments)
+
+
 _all_commands = [
     sw_default,
     osm_access_score,
@@ -457,6 +495,8 @@ _all_commands = [
     docks_sidewalk,
     docks_osm,
     delco_osm,
+    rrmp_sw,
+    rrmp_lts,
 ]
 
 for cmd in _all_commands:

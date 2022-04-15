@@ -259,6 +259,24 @@ def scrub_osm_tags():
     _scrub_osm_tags(db)
 
 
+@click.command()
+def isochrones_rrmp():
+    """
+    Make isochrones for the RR Master Plan
+    """
+
+    db = pg_db_connection()
+
+    generate_isochrones(
+        db,
+        sidewalk_result_table="rrmp_sw.regional_rail_stops",
+        osm_result_table="rrmp_lts.regional_rail_stops",
+        output_tablename="data_viz.rrmp_isochrones",
+        sw_cutoff=0.75,
+        osm_cutoff=3.0,
+    )
+
+
 _all_commands = [
     classify_osm_sw_coverage,
     identify_islands,
@@ -269,6 +287,7 @@ _all_commands = [
     isochrones_septa,
     isochrones_part,
     isochrones_docks,
+    isochrones_rrmp,
 ]
 
 for cmd in _all_commands:
