@@ -11,6 +11,8 @@ def generate_isochrones(
     sidewalk_result_table: str = "access_score_sw.sw_results",
     osm_result_table: str = "access_score_osm.osm_results",
     output_tablename: str = "data_viz.accessscore_results",
+    sw_cutoff: float = 1.0,
+    osm_cutoff: float = 1.0,
 ) -> None:
     """
     - Using the results of the OSM and Sidewalk ridescore analyses,
@@ -24,6 +26,8 @@ def generate_isochrones(
         sidewalk_result_table (str): table with sidewalk network results
         osm_result_table (str): table with OpenStreetMap results
         output_tablename (str): name of the output table, with schema
+        sw_cutoff (float): the distance in miles to use for the sidewalk isochrones
+        osm_cutoff (float): the distance in miles to use for the OSM isochrones
 
     Returns:
         New SQL table is created named `output_tablename`
@@ -38,13 +42,23 @@ def generate_isochrones(
     all_results = []
 
     ridescore_results = [
-        sidewalk_result_table,
-        osm_result_table,
+        {
+            "tablename": sidewalk_result_table,
+            "cutoff": sw_cutoff,
+        },
+        {
+            "tablename": osm_result_table,
+            "cutoff": osm_cutoff,
+        },
     ]
 
-    for result_table in ridescore_results:
+    for result_config in ridescore_results:
 
-        gdf = generate_isochrones_for_single_table(db, result_table, mileage_cutoff=1)
+        gdf = generate_isochrones_for_single_table(
+            db,
+            result_config["tablename"],
+            mileage_cutoff=result_config["cutoff"],
+        )
 
         all_results.append(gdf)
 
