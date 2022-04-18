@@ -3,6 +3,13 @@ from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
 import pg_data_etl as pg
 
+import warnings
+from shapely.errors import ShapelyDeprecationWarning
+
+for warning in [FutureWarning, ShapelyDeprecationWarning]:
+    warnings.simplefilter(action="ignore", category=warning)
+
+
 from network_routing.accessibility.routable_network import RoutableNetwork
 
 # Load environment variables
