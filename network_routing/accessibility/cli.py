@@ -90,7 +90,7 @@ def sw_default():
         "poi_id_column": "category",
         "output_table_name": "regional_transit_stops",
         "output_schema": "sw_defaults",
-        "max_minutes": 180,
+        "max_minutes": 120,
         "poi_match_threshold": 152,  # aka 500'
     }
 
