@@ -51,5 +51,5 @@ nav:
   - Prepare the Database: database.md
   - Sidewalk Gap Analysis: sidewalk_gap_analysis.md
   - Other Analyses: other_analyses.md
-  - Network Analysis Methodology: accessibility.md
-  - Run the Analysis in the Cloud: remote_execution.md
+  - Network Analysis Methodology: methodology.md
+  - Run the Analysis in the Cloud: cloud.md
