@@ -1,18 +1,14 @@
-# :material-walk: Accessibility
+# :material-grid: Network Analysis Methodology
 
-## Quickstart
+## Introduction
 
-All accessibility analyses can be called with the CLI prefix `access`. To execute the default analysis, run:
+The core logic for the accessibility analysis is encapsulated within the [`RoutableNetwork`](https://github.com/dvrpc/network-routing/blob/master/network_routing/accessibility/routable_network.py#L10) class.
 
-```bash
-> access sw-default
-```
+This code builds upon the [`pandana`](https://github.com/UDST/pandana) library, adding the ability to read data inputs from PostgreSQL and to save analysis results back to PostgreSQL.
 
 ---
 
 ## Workflow
-
-The core logic for the accessibility analysis is encapsulated within the [`RoutableNetwork`](https://github.com/dvrpc/network-routing/blob/master/network_routing/accessibility/routable_network.py#L10) class:
 
 #### Step 1: Setup
 
@@ -36,11 +32,27 @@ The core logic for the accessibility analysis is encapsulated within the [`Routa
 
 ## Python usage
 
-To use directly in a Python process, import the `RoutableNetwork` class from the `network_routing` module and instantiate the class with keyword arguments
+To use this code directly in a Python process, import the `RoutableNetwork` class from the `network_routing` module, instantiate the class with keyword arguments, and run the command to compute every POI result into a single output table in postgres:
 
 ```python
->>> from network_routing import RoutableNetwork, db_connection
->>> db = db_connection()
->>> my_kwargs = {"poi_table_name": "my_table_name", "poi_id_column": "id_colname"}
->>> net = RoutableNetwork(db, "schema_name", **my_kwargs)
+
+from network_routing import pg_db_connection
+from network_routing.accessibility.routable_network import RoutableNetwork
+
+db = pg_db_connection()
+
+arguments = {
+    "edge_table_name": "pedestriannetwork_lines",
+    "node_table_name": "nodes_for_sidewalks",
+    "node_id_column": "sw_node_id",
+    "poi_table_name": "regional_transit_with_accessscore",
+    "poi_id_column": "category",
+    "output_table_name": "regional_transit_stops",
+    "output_schema": "sw_defaults",
+    "max_minutes": 120,
+    "poi_match_threshold": 152,
+}
+
+net = RoutableNetwork(db, **arguments)
+net.compute_every_poi_into_one_postgres_table()
 ```

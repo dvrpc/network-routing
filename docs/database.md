@@ -1,68 +1,23 @@
-# :material-database: Database
+# :material-database: Prepare the Database
 
-## Quickstart
+## Import the starter datasets from the web
 
-All of the necessary database processes can be called by the CLI with the command `db`
+Import the sidewalk and OpenStreetMap networks as well as a few other datasets from DVRPC's GIS server:
 
-To get up and running with this project, execute the following commands from your terminal:
-
-```bash
-> db build-initial
-> db build-secondary 1
-> db build-secondary 2
-> db build-secondary 3
-> db make-nodes-for-edges
+```
+make prepare-initial-database
 ```
 
 ---
 
-## Python usage
+## Import the additional datasets from Google Drive
 
-The Python interface to the PostgreSQL/PostGIS datastore is managed by `Database` class defined within
-[`pg_data_etl`](https://github.com/aaronfraint/pg-data-etl), and a method to connect to the database is provided with a top-level import.
+There are a number of shapefiles necessary for some of the analysis configurations that have been added to a shared Google Drive folder.
 
-To use this module within Python, import the `pg_db_connection` function from `network_routing` and instantiate it:
+These files are organized under sub-folders within `Shared drives/network-routing-repo-data/data/inputs`. Make sure you have this folder synced to your computer with all files available offline.
 
-```Python
->>> from network_routing import pg_db_connection
->>> db = pg_db_connection()
+To import these files and create the network nodes necessary for the routing analyses, run the following command:
+
 ```
-
----
-
-## Setup commands
-
-`> db build-initial`
-
-- Create a brand new database
-- If behind DVRPC's firewall it will connect directly to the source data's SQL database
-- If run outside the firewall it will attempt to use `wget` to download the data via DVRPC's ArcGIS Portal
-
-`> db build-secondary NUMBER`
-
-- Run a secondary data import process identified with an integer
-- For an example, see [`setup_01_updated_ridescore_inputs.py`](https://github.com/dvrpc/network-routing/blob/master/network_routing/database/setup/setup_01_updated_ridescore_inputs.py)
-
-`> db make-nodes-for-edges`
-
-- Generate topologically-sound node layers for `pedestriannetwork_lines`, `osm_edges_all`, and `osm_edges_drive`
-
----
-
-## Export commands
-
-`> db export-geojson ANALYSIS_NAME`
-
-- Export a set of geojson files, indicated by `ANALYSIS_NAME`
-- Options include: `ridescore` and `gaps`
-- Output folder is `FOLDER_DATA_PRODUCTS`
-
-`> db make-vector-tiles FILENAME`
-
-- Generate a tileset named `FILENAME` from a folder full of geojson files
-- Files are read from `FOLDER_DATA_PRODUCTS`
-
-`> db export-shapefiles EXPORT_NAME`
-
-- Export a set of shapefiles that others will edit manually
-- Options include: `manual_edits` and `ridescore_downstream_analysis`
+make prepare-for-analysis
+```

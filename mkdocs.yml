@@ -46,12 +46,10 @@ markdown_extensions:
       emoji_generator: !!python/name:materialx.emoji.to_svg
 
 nav:
-  - Quickstart: index.md
-  - Installation: installation.md
-  - Setup: setup.md
-  - Database: database.md
-  - Accessibility: accessibility.md
-  - Gaps: gaps.md
-  - Improvements: improvements.md
-  - Analysis Runs: analysis_runs.md
-  - Python Reference: reference_python.md
+  - About: index.md
+  - Installation & Setup: installation.md
+  - Prepare the Database: database.md
+  - Sidewalk Gap Analysis: sidewalk_gap_analysis.md
+  - Other Analyses: other_analyses.md
+  - Network Analysis Methodology: accessibility.md
+  - Run the Analysis in the Cloud: remote_execution.md
