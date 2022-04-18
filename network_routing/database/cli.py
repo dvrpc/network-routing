@@ -100,6 +100,7 @@ from network_routing.database.setup.setup_12_delco_trailheads import (
 from network_routing.database.setup.setup_13_regional_rail_master_plan import (
     setup_13_regional_rail_master_plan,
 )
+from network_routing.database.setup.setup_14_eta_schools import setup_14_eta_schools
 
 
 @click.group()
@@ -135,6 +136,7 @@ def build_secondary(patch_number):
         11: setup_11_import_docks_data,
         12: setup_12_import_delco_trailheads,
         13: setup_13_regional_rail_master_plan,
+        14: setup_14_eta_schools,
     }
 
     if patch_number not in patches:

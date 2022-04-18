@@ -98,6 +98,25 @@ def sw_default():
 
 
 @click.command()
+def eta_schools():
+    """Run the RoutableNetwork with default settings"""
+
+    arguments = {
+        "edge_table_name": "pedestriannetwork_lines",
+        "node_table_name": "nodes_for_sidewalks",
+        "node_id_column": "sw_node_id",
+        "poi_table_name": "eta_schools",
+        "poi_id_column": "placetype",
+        "output_table_name": "school",
+        "output_schema": "eta_schools",
+        "max_minutes": 120,
+        "poi_match_threshold": 152,  # aka 500'
+    }
+
+    _ = _execute_analysis_into_one_output(arguments)
+
+
+@click.command()
 def osm_access_score():
     """Rail stops w/ OSM network (including highways)"""
 
@@ -497,6 +516,7 @@ _all_commands = [
     delco_osm,
     rrmp_sw,
     rrmp_lts,
+    eta_schools,
 ]
 
 for cmd in _all_commands:

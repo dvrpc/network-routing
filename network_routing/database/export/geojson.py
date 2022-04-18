@@ -41,10 +41,13 @@ def export_rrmp_data(db: Database):
 
 def export_gap_webmap_data(db: Database):
     """
-    Export three geojson files:
+    Export six geojson files:
         - centerlines
-        - sw_nodes
+        - sw_nodes with transit results
         - transit_stops
+        - islands of connectivity
+        - eta schools
+        - sidewalk nodes with transit results
     """
 
     # Centerlines with sidewalk amounts, as a ratio
@@ -83,6 +86,16 @@ def export_gap_webmap_data(db: Database):
         FROM data_viz.islands
     """
     write_query_to_geojson("islands", query_islands, db, "gaps")
+
+    # ETA Schools
+    school_points = """
+        select * from eta_schools
+    """
+    school_results = """
+        select * from eta_schools.school_results
+    """
+    write_query_to_geojson("school_points", school_points, db, "gaps")
+    write_query_to_geojson("school_results", school_results, db, "gaps")
 
 
 def export_accessscore_webmap_data(db: Database):
