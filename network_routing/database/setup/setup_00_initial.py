@@ -37,11 +37,9 @@ def import_data_from_portal(db: Database):
             [
                 "PassengerRailStations",
                 "PedestrianNetwork_lines",
-                "PedestrianNetwork_points",
             ],
         ),
         ("Boundaries", ["MunicipalBoundaries"]),
-        ("Demographics", ["IPD_2018"]),
     ]
 
     # Load each table up via mapserver URL
@@ -101,7 +99,9 @@ def setup_00_initial(local_db: Database):
 
     stops = stops.to_crs("EPSG:26918")
 
-    local_db.import_geodataframe(stops, "regional_transit_stops")
+    local_db.import_geodataframe(
+        stops, "regional_transit_stops", gpd_kwargs={"if_exists": "replace"}
+    )
 
     # 4) Import OSM data for the entire region
     import_osm_for_dvrpc_region(local_db, network_type="all")
