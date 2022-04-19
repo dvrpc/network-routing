@@ -110,3 +110,10 @@ to interact with the code files and terminal, install the `Remote-SSH` VSCode pl
 to connect to the droplet and run commands.
 
 At the end of your analysis you'll need to use the FTP to copy the output files from the server back to your local computer.
+
+## Memory errors
+
+If an analysis script is unexpectedly "killed" by the droplet, you may have run out of RAM. If this happens, configure
+the droplet's swap usage by following [this tutorial from Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-20-04).
+
+You can keep an eye on RAM, swap, CPU, and running processes by logging in to the droplet and running `htop`.
