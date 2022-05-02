@@ -473,7 +473,7 @@ def rrmp_sw():
         "poi_id_column": "dvrpc_id",
         "output_table_name": "regional_rail_stops",
         "output_schema": "rrmp_sw",
-        "max_minutes": 180,
+        "max_minutes": 60,
         "poi_match_threshold": 152,  # aka 500'
     }
 
@@ -492,7 +492,7 @@ def rrmp_lts():
         "poi_id_column": "dvrpc_id",
         "output_table_name": "regional_rail_stops",
         "output_schema": "rrmp_lts",
-        "max_minutes": 180,
+        "max_minutes": 60,
         "poi_match_threshold": 152,  # aka 500'
     }
 
