@@ -20,7 +20,7 @@ def random_rgb(a: float = 1.0) -> str:
     return f"rgba({r}, {g}, {b}, {a})"
 
 
-def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines"):
+def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines", islands:str='islands'):
     """
     Merge intersecting sidewalk geometries to create "islands" of connectivity.
 
@@ -29,6 +29,7 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines"):
     Args:
         db (Database): analysis database
         tbl (str): name of the table to analyze
+        islands (str) output name of your islands table
 
     """
 
@@ -48,19 +49,19 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines"):
             ) AS geom
         FROM {tbl}
     """
-    db.gis_make_geotable_from_query(query, f"{output_schema}.islands", "MULTILINESTRING", 26918)
+    db.gis_make_geotable_from_query(query, f"{output_schema}.{islands}", "MULTILINESTRING", 26918)
 
     # Add a column for size
     db.execute(
         f"""
-        ALTER TABLE {output_schema}.islands
+        ALTER TABLE {output_schema}.{islands}
         ADD COLUMN size_miles FLOAT;
     """
     )
 
     db.execute(
         f"""
-        UPDATE {output_schema}.islands 
+        UPDATE {output_schema}.{islands} 
         SET size_miles = ST_LENGTH(geom) * 0.000621371;
     """
     )
@@ -69,20 +70,20 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines"):
     for colname in ["rgba", "muni_names"]:
         db.execute(
             f"""
-            ALTER TABLE {output_schema}.islands
+            ALTER TABLE {output_schema}.{islands}
             ADD COLUMN {colname} TEXT;
         """
         )
 
     db.execute(
         f"""
-        ALTER TABLE {output_schema}.islands
+        ALTER TABLE {output_schema}.{islands}
         ADD COLUMN muni_count FLOAT;
     """
     )
 
     # Iterate over each feature. Make a random rgb code and find intersecting municipalities
-    query = f"SELECT uid FROM {output_schema}.islands"
+    query = f"SELECT uid FROM {output_schema}.{islands}"
     uids = db.df(query)
     for idx, row in tqdm(uids.iterrows(), total=uids.shape[0]):
 
@@ -93,7 +94,7 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines"):
                 st_length(st_intersection(i.geom, m.geom)) / st_length(i.geom) * 100 as pct_covered
             FROM
                 municipalboundaries m,
-                data_viz.islands i
+                data_viz.{islands} i
             WHERE
                     st_intersects(m.geom, i.geom)
                 AND
@@ -109,7 +110,7 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines"):
             result += f"{muni_name}: {round(pct_covered, 1)},"
 
         update = f"""
-            UPDATE {output_schema}.islands
+            UPDATE {output_schema}.{islands}
             SET
                 muni_names = '{result}',
                 muni_count = {len(munis)},
