@@ -20,7 +20,12 @@ def random_rgb(a: float = 1.0) -> str:
     return f"rgba({r}, {g}, {b}, {a})"
 
 
-def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines", islands:str='islands'):
+def generate_islands(
+    db: Database,
+    tbl: str = "pedestriannetwork_lines",
+    islands: str = "islands",
+    output_schema: str = "data_viz",
+):
     """
     Merge intersecting sidewalk geometries to create "islands" of connectivity.
 
@@ -32,8 +37,6 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines", islands
         islands (str) output name of your islands table
 
     """
-
-    output_schema = "data_viz"
 
     db.execute(
         f"""
@@ -49,7 +52,9 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines", islands
             ) AS geom
         FROM {tbl}
     """
-    db.gis_make_geotable_from_query(query, f"{output_schema}.{islands}", "MULTILINESTRING", 26918)
+    db.gis_make_geotable_from_query(
+        query, f"{output_schema}.{islands}", "MULTILINESTRING", 26918
+    )
 
     # Add a column for size
     db.execute(
@@ -86,7 +91,6 @@ def generate_islands(db: Database, tbl: str = "pedestriannetwork_lines", islands
     query = f"SELECT uid FROM {output_schema}.{islands}"
     uids = db.df(query)
     for idx, row in tqdm(uids.iterrows(), total=uids.shape[0]):
-
         # Query the intersecting municipalities
         query = f"""
             SELECT
