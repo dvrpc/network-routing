@@ -98,7 +98,7 @@ def generate_islands(
                 st_length(st_intersection(i.geom, m.geom)) / st_length(i.geom) * 100 as pct_covered
             FROM
                 municipalboundaries m,
-                data_viz.{islands} i
+                {output_schema}.{islands} i
             WHERE
                     st_intersects(m.geom, i.geom)
                 AND
