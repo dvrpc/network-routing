@@ -23,6 +23,7 @@ def random_rgb(a: float = 1.0) -> str:
 def generate_islands(
     db: Database,
     tbl: str = "pedestriannetwork_lines",
+    id_col: str = "objectid",
     islands: str = "islands",
     output_schema: str = "data_viz",
 ):
@@ -45,13 +46,17 @@ def generate_islands(
     )
 
     query = f"""
-        SELECT
-            ST_COLLECTIONEXTRACT(
-                UNNEST(ST_CLUSTERINTERSECTING(geom)),
-                2
-            ) AS geom
-        FROM {tbl}
-    """
+        SELECT ST_Collect(geom) AS geom, 
+                ARRAY_AGG({id_col}) AS id_agg
+        FROM   (
+          SELECT *,
+                 ST_ClusterDBSCAN(geom, 0, 1) OVER() AS _clst
+          FROM {tbl}
+        ) q
+        GROUP BY
+          _clst
+        ;
+        """
     db.gis_make_geotable_from_query(
         query, f"{output_schema}.{islands}", "MULTILINESTRING", 26918
     )
@@ -126,7 +131,10 @@ def generate_islands(
 
 
 if __name__ == "__main__":
-    from network_routing import pg_db_connection
+    # from network_routing import pg_db_connection
+    db = Database.from_config("lts2", "localhost")
 
-    db = pg_db_connection()
-    generate_islands(db)
+    # db = pg_db_connection()
+    # generate_islands(db)
+    generate_islands(db, "sidewalk.ped_network",
+                     "objectid", "sw_islands", "sidewalk")
